@@ -153,7 +153,7 @@ export function AppShell({ children, variant, user }: AppShellProps) {
         <div className="flex h-14 items-center justify-between px-4">
           <Logo />
           <div className="flex items-center gap-2">
-            <ThemeToggle />
+            {variant !== 'admin' && <ThemeToggle />}
             <Button
               variant="ghost"
               size="icon"
@@ -173,7 +173,7 @@ export function AppShell({ children, variant, user }: AppShellProps) {
         >
           <div className="flex h-16 items-center justify-between border-b border-border px-6">
             <Logo />
-            <ThemeToggle />
+            {variant !== 'admin' && <ThemeToggle />}
           </div>
 
           <div className="flex-1 overflow-y-auto py-4">
