@@ -1,0 +1,6 @@
+export { LandingCatalogo } from './LandingCatalogo'
+export { Header } from './Header'
+export { Hero } from './Hero'
+export { CourseCatalog } from './CourseCatalog'
+export { CourseCard } from './CourseCard'
+export { Footer } from './Footer'

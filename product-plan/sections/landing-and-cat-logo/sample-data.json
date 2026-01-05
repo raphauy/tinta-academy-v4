@@ -1,0 +1,254 @@
+{
+  "_meta": {
+    "models": {
+      "courses": "Cada curso representa una formación ofrecida por Tinta Academy, ya sea presencial u online. Incluye toda la información necesaria para que un visitante decida inscribirse.",
+      "educators": "Los educadores son los instructores certificados que imparten los cursos. Cada curso tiene un educador asignado.",
+      "tags": "Etiquetas que permiten categorizar y filtrar cursos por temática o característica.",
+      "heroContent": "Contenido del hero principal de la landing page.",
+      "footerLinks": "Enlaces organizados por columnas para el footer de la página."
+    },
+    "relationships": [
+      "Cada Course tiene un educatorId que referencia a un Educator",
+      "Cada Course puede tener múltiples Tags asociados via tagIds",
+      "Los cursos presenciales tienen fecha de inicio, cupo máximo y ubicación física",
+      "Los cursos online son videos grabados: no tienen fecha ni cupo, siempre están disponibles"
+    ]
+  },
+  "heroContent": {
+    "headline": "Descubrí el mundo del vino",
+    "subheadline": "Formación especializada con certificación internacional WSET. Cursos presenciales en Montevideo y online para toda Latinoamérica.",
+    "ctaText": "Explorar cursos",
+    "videoUrl": "/videos/hero-tinta.mp4"
+  },
+  "educators": [
+    {
+      "id": "edu-001",
+      "name": "Gabi Zimmer",
+      "title": "WSET Certified Educator",
+      "bio": "Sommelier y educadora certificada WSET con más de 10 años de experiencia en el mundo del vino. Fundadora de Tinta Academy.",
+      "imageUrl": "/gabi.webp"
+    },
+    {
+      "id": "edu-002",
+      "name": "Martín Delgado",
+      "title": "Sommelier & Wine Consultant",
+      "bio": "Sommelier profesional especializado en vinos del nuevo mundo. Colaborador de Tinta Academy para talleres y catas especiales.",
+      "imageUrl": "/images/educators/martin-delgado.jpg"
+    }
+  ],
+  "tags": [
+    { "id": "tag-001", "name": "Certificación WSET", "slug": "certificacion-wset" },
+    { "id": "tag-002", "name": "Iniciación", "slug": "iniciacion" },
+    { "id": "tag-003", "name": "Cata de vinos", "slug": "cata-de-vinos" },
+    { "id": "tag-004", "name": "Vinos del mundo", "slug": "vinos-del-mundo" },
+    { "id": "tag-005", "name": "Maridaje", "slug": "maridaje" },
+    { "id": "tag-006", "name": "Vinos uruguayos", "slug": "vinos-uruguayos" }
+  ],
+  "upcomingCourses": [
+    {
+      "id": "course-001",
+      "slug": "wset-nivel-1-marzo-2025",
+      "title": "WSET Nivel 1 Cualificación en Vinos",
+      "type": "wset",
+      "wsetLevel": 1,
+      "modality": "presencial",
+      "description": "Tu primer paso en el mundo del vino con certificación internacional. Aprenderás los principales tipos y estilos de vino, uvas comunes, cómo almacenar y servir vino, y los principios básicos del maridaje.",
+      "startDate": "2025-03-15",
+      "endDate": "2025-03-15",
+      "duration": 6,
+      "maxCapacity": 12,
+      "enrolledCount": 8,
+      "priceUSD": 350,
+      "location": "Montevideo",
+      "address": "Bvar. España 2482, Montevideo",
+      "imageUrl": "/images/courses/wset-1.jpg",
+      "educatorId": "edu-001",
+      "tagIds": ["tag-001", "tag-002"],
+      "status": "enrolling"
+    },
+    {
+      "id": "course-002",
+      "slug": "wset-nivel-2-abril-2025",
+      "title": "WSET Nivel 2 Cualificación en Vinos",
+      "type": "wset",
+      "wsetLevel": 2,
+      "modality": "presencial",
+      "description": "Profundizá tu conocimiento con esta cualificación intermedia. Explorarás las principales regiones vinícolas del mundo, variedades de uva, técnicas de elaboración y factores que influyen en el estilo y calidad del vino.",
+      "startDate": "2025-04-05",
+      "endDate": "2025-04-26",
+      "duration": 28,
+      "maxCapacity": 10,
+      "enrolledCount": 3,
+      "priceUSD": 890,
+      "location": "Montevideo",
+      "address": "Bvar. España 2482, Montevideo",
+      "imageUrl": "/images/courses/wset-2.jpg",
+      "educatorId": "edu-001",
+      "tagIds": ["tag-001", "tag-004"],
+      "status": "enrolling"
+    },
+    {
+      "id": "course-003",
+      "slug": "pasaporte-cultura-vino-marzo-2025",
+      "title": "Pasaporte a la Cultura del Vino",
+      "type": "taller",
+      "modality": "presencial",
+      "description": "Un viaje sensorial por el mundo del vino en una sola tarde. Ideal para quienes quieren iniciarse sin compromiso de certificación. Incluye degustación de 6 vinos y material didáctico.",
+      "startDate": "2025-03-22",
+      "endDate": "2025-03-22",
+      "duration": 3,
+      "maxCapacity": 20,
+      "enrolledCount": 14,
+      "priceUSD": 85,
+      "location": "Montevideo",
+      "address": "Bvar. España 2482, Montevideo",
+      "imageUrl": "/images/courses/pasaporte-vino.jpg",
+      "educatorId": "edu-001",
+      "tagIds": ["tag-002", "tag-003"],
+      "status": "enrolling"
+    },
+    {
+      "id": "course-004",
+      "slug": "descubre-vinos-uruguay-online",
+      "title": "Descubrí los Vinos del Uruguay",
+      "type": "curso",
+      "modality": "online",
+      "description": "Curso online con videos grabados sobre los vinos uruguayos. Conocé las regiones, variedades emblemáticas como el Tannat, y aprendé a catar como un profesional a tu propio ritmo.",
+      "duration": 4,
+      "priceUSD": 89,
+      "location": "Online",
+      "imageUrl": "/images/courses/vinos-uruguay-online.jpg",
+      "educatorId": "edu-001",
+      "tagIds": ["tag-002", "tag-006"],
+      "status": "available"
+    },
+    {
+      "id": "course-005",
+      "slug": "introduccion-mundo-vino-online",
+      "title": "Introducción al Mundo del Vino",
+      "type": "curso",
+      "modality": "online",
+      "description": "Tu primer acercamiento al fascinante universo del vino. Videos grabados que podés ver cuando quieras, material descargable y acceso de por vida.",
+      "duration": 6,
+      "priceUSD": 120,
+      "location": "Online",
+      "imageUrl": "/images/courses/intro-vinos-online.jpg",
+      "educatorId": "edu-001",
+      "tagIds": ["tag-002", "tag-004"],
+      "status": "available"
+    }
+  ],
+  "pastCourses": [
+    {
+      "id": "course-101",
+      "slug": "wset-nivel-1-noviembre-2024",
+      "title": "WSET Nivel 1 Cualificación en Vinos",
+      "type": "wset",
+      "wsetLevel": 1,
+      "modality": "presencial",
+      "description": "Tu primer paso en el mundo del vino con certificación internacional. Aprenderás los principales tipos y estilos de vino, uvas comunes, cómo almacenar y servir vino, y los principios básicos del maridaje.",
+      "startDate": "2024-11-18",
+      "endDate": "2024-11-18",
+      "duration": 6,
+      "maxCapacity": 12,
+      "enrolledCount": 12,
+      "priceUSD": 350,
+      "location": "Montevideo",
+      "address": "Bvar. España 2482, Montevideo",
+      "imageUrl": "/images/courses/wset-1.jpg",
+      "educatorId": "edu-001",
+      "tagIds": ["tag-001", "tag-002"],
+      "status": "finished"
+    },
+    {
+      "id": "course-102",
+      "slug": "wset-nivel-2-octubre-2024",
+      "title": "WSET Nivel 2 Cualificación en Vinos",
+      "type": "wset",
+      "wsetLevel": 2,
+      "modality": "presencial",
+      "description": "Profundizá tu conocimiento con esta cualificación intermedia. Explorarás las principales regiones vinícolas del mundo, variedades de uva, técnicas de elaboración y factores que influyen en el estilo y calidad del vino.",
+      "startDate": "2024-10-05",
+      "endDate": "2024-10-26",
+      "duration": 28,
+      "maxCapacity": 10,
+      "enrolledCount": 10,
+      "priceUSD": 850,
+      "location": "Montevideo",
+      "address": "Bvar. España 2482, Montevideo",
+      "imageUrl": "/images/courses/wset-2.jpg",
+      "educatorId": "edu-001",
+      "tagIds": ["tag-001", "tag-004"],
+      "status": "finished"
+    },
+    {
+      "id": "course-103",
+      "slug": "maridaje-asado-septiembre-2024",
+      "title": "Taller de Maridaje: Vino & Asado",
+      "type": "taller",
+      "modality": "presencial",
+      "description": "La combinación perfecta de dos pasiones rioplatenses. Aprendé a elegir el vino ideal para cada corte de carne en este taller práctico con degustación y asado incluido.",
+      "startDate": "2024-09-14",
+      "endDate": "2024-09-14",
+      "duration": 4,
+      "maxCapacity": 16,
+      "enrolledCount": 16,
+      "priceUSD": 95,
+      "location": "Montevideo",
+      "address": "Bvar. España 2482, Montevideo",
+      "imageUrl": "/images/courses/maridaje-asado.jpg",
+      "educatorId": "edu-002",
+      "tagIds": ["tag-005", "tag-003"],
+      "status": "finished"
+    },
+    {
+      "id": "course-104",
+      "slug": "wset-nivel-1-agosto-2024",
+      "title": "WSET Nivel 1 Cualificación en Vinos",
+      "type": "wset",
+      "wsetLevel": 1,
+      "modality": "presencial",
+      "description": "Tu primer paso en el mundo del vino con certificación internacional. Aprenderás los principales tipos y estilos de vino, uvas comunes, cómo almacenar y servir vino.",
+      "startDate": "2024-08-10",
+      "endDate": "2024-08-10",
+      "duration": 6,
+      "maxCapacity": 12,
+      "enrolledCount": 12,
+      "priceUSD": 320,
+      "location": "Montevideo",
+      "address": "Bvar. España 2482, Montevideo",
+      "imageUrl": "/images/courses/wset-1.jpg",
+      "educatorId": "edu-001",
+      "tagIds": ["tag-001", "tag-002"],
+      "status": "finished"
+    }
+  ],
+  "footerLinks": {
+    "about": [
+      { "label": "Sobre Tinta Academy", "href": "/about" },
+      { "label": "Qué es WSET", "href": "/wset" },
+      { "label": "Nuestros Educadores", "href": "/educadores" }
+    ],
+    "courses": [
+      { "label": "Todos los Cursos", "href": "/cursos" },
+      { "label": "WSET Nivel 1", "href": "/cursos?type=wset&level=1" },
+      { "label": "WSET Nivel 2", "href": "/cursos?type=wset&level=2" },
+      { "label": "Talleres", "href": "/cursos?type=taller" }
+    ],
+    "legal": [
+      { "label": "Términos y Condiciones", "href": "/terminos" },
+      { "label": "Política de Privacidad", "href": "/privacidad" },
+      { "label": "Política de Reembolso", "href": "/reembolsos" }
+    ],
+    "social": [
+      { "label": "Instagram", "href": "https://instagram.com/tinta.wine", "icon": "instagram" },
+      { "label": "Facebook", "href": "https://facebook.com/tinta.wine", "icon": "facebook" },
+      { "label": "LinkedIn", "href": "https://linkedin.com/company/tinta-wine", "icon": "linkedin" }
+    ]
+  },
+  "contactInfo": {
+    "email": "hola@tinta.wine",
+    "phone": "+598 99 123 456",
+    "address": "Montevideo, Uruguay"
+  }
+}

@@ -1,0 +1,454 @@
+{
+  "_meta": {
+    "models": {
+      "educator": "El educador actual que está usando el panel. Contiene su perfil profesional.",
+      "dashboardMetrics": "Métricas agregadas para el dashboard: total de alumnos, cursos activos, progreso promedio y datos para gráficos de evolución.",
+      "courses": "Cursos creados por el educador, pueden ser online o presenciales, con diferentes estados.",
+      "modules": "Módulos que agrupan lecciones dentro de un curso online.",
+      "lessons": "Lecciones individuales con video y recursos descargables.",
+      "enrolledStudents": "Alumnos inscritos en los cursos del educador con su información de progreso.",
+      "emailTemplates": "Plantillas reutilizables para enviar comunicaciones a alumnos.",
+      "emailCampaigns": "Historial de comunicaciones enviadas o programadas."
+    },
+    "relationships": [
+      "Cada Course pertenece al Educator actual",
+      "Cada Course online contiene uno o más Modules",
+      "Cada Module contiene una o más Lessons",
+      "Cada Lesson puede tener Resources descargables",
+      "Los EnrolledStudents están inscritos en Courses específicos",
+      "Las EmailCampaigns usan un EmailTemplate y se envían a los alumnos de un Course"
+    ]
+  },
+  "educator": {
+    "id": "edu-001",
+    "name": "Gabriela Zimmer",
+    "title": "Sommelier WSET Diploma",
+    "bio": "Sommelier certificada con más de 15 años de experiencia en educación vinícola. WSET Diploma holder y Approved Programme Provider. Fundadora de Tinta Academy.",
+    "email": "gabriela@tinta.wine",
+    "image": "/educators/gabriela-zimmer.jpg"
+  },
+  "dashboardMetrics": {
+    "totalStudents": 127,
+    "activeStudents": 89,
+    "totalCourses": 4,
+    "activeCourses": 3,
+    "averageProgress": 67,
+    "completionRate": 42,
+    "studentsThisMonth": 12,
+    "studentsLastMonth": 8,
+    "chartData": {
+      "students": [
+        { "month": "Jul", "value": 45 },
+        { "month": "Ago", "value": 58 },
+        { "month": "Sep", "value": 72 },
+        { "month": "Oct", "value": 89 },
+        { "month": "Nov", "value": 108 },
+        { "month": "Dic", "value": 127 }
+      ],
+      "progress": [
+        { "month": "Jul", "value": 52 },
+        { "month": "Ago", "value": 58 },
+        { "month": "Sep", "value": 61 },
+        { "month": "Oct", "value": 64 },
+        { "month": "Nov", "value": 65 },
+        { "month": "Dic", "value": 67 }
+      ]
+    }
+  },
+  "courses": [
+    {
+      "id": "course-001",
+      "title": "WSET Nivel 2 en Vinos",
+      "slug": "wset-nivel-2-vinos",
+      "type": "wset",
+      "modality": "online",
+      "status": "published",
+      "description": "Curso completo de WSET Nivel 2 que cubre los principales estilos de vino del mundo, técnicas de cata sistemática y factores que influyen en el estilo y calidad del vino.",
+      "image": "/courses/wset-nivel-2.jpg",
+      "duration": "8 semanas",
+      "priceUSD": 450,
+      "priceUYU": 19500,
+      "totalStudents": 45,
+      "activeStudents": 32,
+      "averageProgress": 58,
+      "totalModules": 6,
+      "totalLessons": 24,
+      "createdAt": "2024-06-15",
+      "publishedAt": "2024-07-01"
+    },
+    {
+      "id": "course-002",
+      "title": "Cata de Vinos del Valle del Ródano",
+      "slug": "cata-rodano",
+      "type": "cata",
+      "modality": "presencial",
+      "status": "published",
+      "description": "Exploración sensorial de los grandes vinos del Ródano: desde los potentes Châteauneuf-du-Pape hasta los elegantes Côte-Rôtie. Incluye 8 vinos de degustación.",
+      "image": "/courses/cata-rodano.jpg",
+      "duration": "3 horas",
+      "priceUSD": null,
+      "priceUYU": 2800,
+      "maxCapacity": 20,
+      "enrolledCount": 14,
+      "location": "Bodega Bouza, Montevideo",
+      "eventDate": "2025-01-17",
+      "eventTime": "18:00 - 21:00",
+      "createdAt": "2024-11-01",
+      "publishedAt": "2024-11-05"
+    },
+    {
+      "id": "course-003",
+      "title": "Taller de Cata: Desarrolla tu Paladar",
+      "slug": "taller-cata-paladar",
+      "type": "taller",
+      "modality": "online",
+      "status": "published",
+      "description": "Aprende a identificar aromas, sabores y texturas en el vino. Desarrolla un vocabulario profesional de cata y mejora tu capacidad de evaluación sensorial.",
+      "image": "/courses/taller-cata.jpg",
+      "duration": "4 semanas",
+      "priceUSD": 0,
+      "priceUYU": 0,
+      "totalStudents": 67,
+      "activeStudents": 45,
+      "averageProgress": 78,
+      "totalModules": 4,
+      "totalLessons": 12,
+      "createdAt": "2024-03-10",
+      "publishedAt": "2024-04-01"
+    },
+    {
+      "id": "course-004",
+      "title": "Introducción a los Vinos de Borgoña",
+      "slug": "vinos-borgona",
+      "type": "curso",
+      "modality": "online",
+      "status": "draft",
+      "description": "Descubre la complejidad y elegancia de los vinos de Borgoña. Desde los Villages hasta los Grand Crus, aprende a navegar esta fascinante región.",
+      "image": "/courses/borgona.jpg",
+      "duration": "6 semanas",
+      "priceUSD": 180,
+      "priceUYU": 7800,
+      "totalStudents": 0,
+      "activeStudents": 0,
+      "averageProgress": 0,
+      "totalModules": 5,
+      "totalLessons": 18,
+      "createdAt": "2024-12-01",
+      "publishedAt": null
+    }
+  ],
+  "modules": [
+    {
+      "id": "mod-001",
+      "courseId": "course-001",
+      "title": "Introducción al Vino",
+      "description": "Fundamentos de viticultura, vinificación y factores que influyen en el estilo del vino.",
+      "order": 1,
+      "lessonsCount": 4,
+      "completedByStudents": 38
+    },
+    {
+      "id": "mod-002",
+      "courseId": "course-001",
+      "title": "Técnica de Cata Sistemática",
+      "description": "Metodología WSET para evaluar vinos de forma objetiva y consistente.",
+      "order": 2,
+      "lessonsCount": 3,
+      "completedByStudents": 35
+    },
+    {
+      "id": "mod-003",
+      "courseId": "course-001",
+      "title": "Vinos Blancos del Mundo",
+      "description": "Principales variedades blancas y regiones productoras: Chardonnay, Sauvignon Blanc, Riesling y más.",
+      "order": 3,
+      "lessonsCount": 5,
+      "completedByStudents": 28
+    },
+    {
+      "id": "mod-004",
+      "courseId": "course-001",
+      "title": "Vinos Tintos del Mundo",
+      "description": "Cabernet Sauvignon, Merlot, Pinot Noir, Syrah y otras grandes variedades tintas.",
+      "order": 4,
+      "lessonsCount": 5,
+      "completedByStudents": 22
+    },
+    {
+      "id": "mod-005",
+      "courseId": "course-001",
+      "title": "Vinos Espumosos y Fortificados",
+      "description": "Champagne, Cava, Prosecco, Oporto, Jerez y otros estilos especiales.",
+      "order": 5,
+      "lessonsCount": 4,
+      "completedByStudents": 15
+    },
+    {
+      "id": "mod-006",
+      "courseId": "course-001",
+      "title": "Maridaje y Servicio",
+      "description": "Principios de maridaje, temperatura de servicio y almacenamiento de vinos.",
+      "order": 6,
+      "lessonsCount": 3,
+      "completedByStudents": 10
+    }
+  ],
+  "lessons": [
+    {
+      "id": "les-001",
+      "moduleId": "mod-001",
+      "title": "¿Qué es el vino?",
+      "description": "Definición, historia y clasificación básica de los vinos.",
+      "videoUrl": "https://iframe.mediadelivery.net/embed/123456/abc123",
+      "videoDuration": 845,
+      "order": 1,
+      "resources": [
+        {
+          "id": "res-001",
+          "title": "Guía de variedades de uva",
+          "type": "pdf",
+          "size": "2.4 MB",
+          "url": "/resources/guia-variedades.pdf"
+        }
+      ]
+    },
+    {
+      "id": "les-002",
+      "moduleId": "mod-001",
+      "title": "El viñedo: clima y suelo",
+      "description": "Cómo el terroir influye en el carácter del vino.",
+      "videoUrl": "https://iframe.mediadelivery.net/embed/123456/def456",
+      "videoDuration": 1230,
+      "order": 2,
+      "resources": []
+    },
+    {
+      "id": "les-003",
+      "moduleId": "mod-001",
+      "title": "Vinificación en blanco",
+      "description": "Proceso de elaboración de vinos blancos paso a paso.",
+      "videoUrl": "https://iframe.mediadelivery.net/embed/123456/ghi789",
+      "videoDuration": 1105,
+      "order": 3,
+      "resources": [
+        {
+          "id": "res-002",
+          "title": "Diagrama de vinificación",
+          "type": "pdf",
+          "size": "1.1 MB",
+          "url": "/resources/diagrama-vinificacion.pdf"
+        }
+      ]
+    },
+    {
+      "id": "les-004",
+      "moduleId": "mod-001",
+      "title": "Vinificación en tinto",
+      "description": "Maceración, fermentación y crianza de vinos tintos.",
+      "videoUrl": "https://iframe.mediadelivery.net/embed/123456/jkl012",
+      "videoDuration": 1320,
+      "order": 4,
+      "resources": []
+    },
+    {
+      "id": "les-005",
+      "moduleId": "mod-002",
+      "title": "Introducción a la cata sistemática",
+      "description": "Metodología WSET: apariencia, nariz, paladar y conclusiones.",
+      "videoUrl": "https://iframe.mediadelivery.net/embed/123456/mno345",
+      "videoDuration": 1450,
+      "order": 1,
+      "resources": [
+        {
+          "id": "res-003",
+          "title": "Ficha de cata WSET",
+          "type": "pdf",
+          "size": "0.8 MB",
+          "url": "/resources/ficha-cata-wset.pdf"
+        }
+      ]
+    }
+  ],
+  "enrolledStudents": [
+    {
+      "id": "stu-001",
+      "courseId": "course-001",
+      "name": "Carolina Méndez",
+      "email": "carolina.mendez@gmail.com",
+      "image": null,
+      "enrolledAt": "2024-09-15",
+      "lastAccessAt": "2024-12-28",
+      "completedLessons": 8,
+      "totalLessons": 24,
+      "progress": 33
+    },
+    {
+      "id": "stu-002",
+      "courseId": "course-001",
+      "name": "Martín Rodríguez",
+      "email": "martin.r@hotmail.com",
+      "image": "/students/martin-r.jpg",
+      "enrolledAt": "2024-08-20",
+      "lastAccessAt": "2024-12-30",
+      "completedLessons": 18,
+      "totalLessons": 24,
+      "progress": 75
+    },
+    {
+      "id": "stu-003",
+      "courseId": "course-001",
+      "name": "Lucía Fernández",
+      "email": "lucia.fernandez@empresa.com.uy",
+      "image": "/students/lucia-f.jpg",
+      "enrolledAt": "2024-10-01",
+      "lastAccessAt": "2024-12-29",
+      "completedLessons": 24,
+      "totalLessons": 24,
+      "progress": 100
+    },
+    {
+      "id": "stu-004",
+      "courseId": "course-001",
+      "name": "Diego Martínez",
+      "email": "diego.mtz@gmail.com",
+      "image": null,
+      "enrolledAt": "2024-11-10",
+      "lastAccessAt": "2024-12-15",
+      "completedLessons": 4,
+      "totalLessons": 24,
+      "progress": 17
+    },
+    {
+      "id": "stu-005",
+      "courseId": "course-001",
+      "name": "Ana Paula Silva",
+      "email": "anapaula.silva@outlook.com",
+      "image": "/students/ana-silva.jpg",
+      "enrolledAt": "2024-07-05",
+      "lastAccessAt": "2024-12-27",
+      "completedLessons": 20,
+      "totalLessons": 24,
+      "progress": 83
+    },
+    {
+      "id": "stu-006",
+      "courseId": "course-003",
+      "name": "Roberto Acuña",
+      "email": "roberto.acuna@gmail.com",
+      "image": null,
+      "enrolledAt": "2024-11-20",
+      "lastAccessAt": "2024-12-30",
+      "completedLessons": 12,
+      "totalLessons": 12,
+      "progress": 100
+    },
+    {
+      "id": "stu-007",
+      "courseId": "course-003",
+      "name": "Valeria Torres",
+      "email": "vale.torres@yahoo.com",
+      "image": "/students/valeria-t.jpg",
+      "enrolledAt": "2024-12-01",
+      "lastAccessAt": "2024-12-28",
+      "completedLessons": 6,
+      "totalLessons": 12,
+      "progress": 50
+    }
+  ],
+  "emailTemplates": [
+    {
+      "id": "tpl-001",
+      "name": "Bienvenida al curso",
+      "subject": "¡Bienvenido/a a {{curso}}!",
+      "body": "Hola {{nombre}},\n\n¡Felicitaciones por inscribirte en {{curso}}!\n\nEstoy muy contenta de tenerte en este viaje de aprendizaje. En las próximas semanas descubrirás el fascinante mundo del vino.\n\nPara comenzar, te recomiendo:\n1. Ver la primera lección de introducción\n2. Descargar los materiales de apoyo\n3. Unirte a nuestra comunidad de estudiantes\n\n¡Nos vemos en clase!\n\nGabriela Zimmer\nTinta Academy",
+      "variables": ["nombre", "curso"],
+      "createdAt": "2024-06-01",
+      "usageCount": 127
+    },
+    {
+      "id": "tpl-002",
+      "name": "Recordatorio de progreso",
+      "subject": "{{nombre}}, te extrañamos en {{curso}}",
+      "body": "Hola {{nombre}},\n\nNoté que hace un tiempo no accedes a {{curso}}. ¿Está todo bien?\n\nRecuerda que puedes retomar el curso cuando quieras, desde donde lo dejaste. El contenido siempre estará disponible para ti.\n\nSi tienes alguna duda o necesitas ayuda, no dudes en escribirme.\n\n¡Te espero de vuelta!\n\nGabriela",
+      "variables": ["nombre", "curso"],
+      "createdAt": "2024-07-15",
+      "usageCount": 34
+    },
+    {
+      "id": "tpl-003",
+      "name": "Nuevo contenido disponible",
+      "subject": "Nuevo módulo disponible en {{curso}}",
+      "body": "Hola {{nombre}},\n\n¡Tengo excelentes noticias! Acabo de publicar nuevo contenido en {{curso}}.\n\nEn este módulo aprenderás:\n- [Descripción del contenido]\n\nAccede ahora a tu panel de estudiante para comenzar.\n\n¡Disfruta el aprendizaje!\n\nGabriela",
+      "variables": ["nombre", "curso"],
+      "createdAt": "2024-08-20",
+      "usageCount": 12
+    },
+    {
+      "id": "tpl-004",
+      "name": "Felicitación por completar",
+      "subject": "¡Felicitaciones {{nombre}}! Completaste {{curso}}",
+      "body": "¡Hola {{nombre}}!\n\n¡Lo lograste! Has completado exitosamente {{curso}}.\n\nQuiero felicitarte por tu dedicación y compromiso con tu educación vinícola. Espero que el conocimiento adquirido te acompañe en cada copa que degustes.\n\nSi te interesa seguir aprendiendo, te invito a explorar nuestros otros cursos.\n\n¡Salud!\n\nGabriela Zimmer",
+      "variables": ["nombre", "curso"],
+      "createdAt": "2024-09-01",
+      "usageCount": 45
+    }
+  ],
+  "emailCampaigns": [
+    {
+      "id": "camp-001",
+      "templateId": "tpl-001",
+      "templateName": "Bienvenida al curso",
+      "courseId": "course-001",
+      "courseName": "WSET Nivel 2 en Vinos",
+      "subject": "¡Bienvenido/a a WSET Nivel 2 en Vinos!",
+      "status": "sent",
+      "recipientCount": 45,
+      "sentCount": 45,
+      "openRate": 89,
+      "scheduledAt": null,
+      "sentAt": "2024-12-01T10:00:00Z"
+    },
+    {
+      "id": "camp-002",
+      "templateId": "tpl-002",
+      "templateName": "Recordatorio de progreso",
+      "courseId": "course-001",
+      "courseName": "WSET Nivel 2 en Vinos",
+      "subject": "Te extrañamos en WSET Nivel 2 en Vinos",
+      "status": "sent",
+      "recipientCount": 8,
+      "sentCount": 8,
+      "openRate": 62,
+      "scheduledAt": null,
+      "sentAt": "2024-12-15T14:30:00Z"
+    },
+    {
+      "id": "camp-003",
+      "templateId": "tpl-003",
+      "templateName": "Nuevo contenido disponible",
+      "courseId": "course-003",
+      "courseName": "Taller de Cata: Desarrolla tu Paladar",
+      "subject": "Nuevo módulo disponible en Taller de Cata",
+      "status": "scheduled",
+      "recipientCount": 45,
+      "sentCount": 0,
+      "openRate": null,
+      "scheduledAt": "2025-01-05T09:00:00Z",
+      "sentAt": null
+    },
+    {
+      "id": "camp-004",
+      "templateId": "tpl-004",
+      "templateName": "Felicitación por completar",
+      "courseId": "course-003",
+      "courseName": "Taller de Cata: Desarrolla tu Paladar",
+      "subject": "¡Felicitaciones! Completaste el Taller de Cata",
+      "status": "draft",
+      "recipientCount": 22,
+      "sentCount": 0,
+      "openRate": null,
+      "scheduledAt": null,
+      "sentAt": null
+    }
+  ]
+}

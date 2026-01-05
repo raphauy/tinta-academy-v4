@@ -1,0 +1,324 @@
+{
+  "_meta": {
+    "models": {
+      "student": "Perfil del alumno con sus datos personales, de contacto y preferencias.",
+      "enrolledCourses": "Cursos en los que el alumno está inscrito, con su progreso y acceso a materiales.",
+      "orders": "Historial de compras y pagos realizados por el alumno."
+    },
+    "relationships": [
+      "El Student tiene múltiples EnrolledCourses (sus inscripciones activas y pasadas)",
+      "Cada EnrolledCourse contiene Resources (materiales descargables)",
+      "Cada EnrolledCourse de tipo online tiene Modules con Lessons y su Progress",
+      "El Student tiene múltiples Orders (su historial de compras)"
+    ]
+  },
+  "student": {
+    "id": "stu-001",
+    "email": "carolina.mendez@gmail.com",
+    "firstName": "Carolina",
+    "lastName": "Méndez",
+    "birthDate": "1990-03-15",
+    "avatarUrl": "/avatars/carolina.jpg",
+    "phone": "+598 99 123 456",
+    "address": "Av. Brasil 2845, Apto 302",
+    "city": "Montevideo",
+    "postalCode": "11300",
+    "country": "Uruguay",
+    "billingName": "Carolina Méndez Rodríguez",
+    "billingTaxId": "1.234.567-8",
+    "billingAddress": "Av. Brasil 2845, Apto 302, Montevideo",
+    "notificationPreferences": {
+      "emailNewCourses": true,
+      "emailPromotions": false,
+      "emailCourseUpdates": true
+    }
+  },
+  "enrolledCourses": [
+    {
+      "id": "enr-001",
+      "courseId": "course-001",
+      "courseType": "online",
+      "courseCategory": "wset",
+      "title": "WSET Nivel 2 en Vinos",
+      "slug": "wset-nivel-2-vinos",
+      "thumbnail": "/courses/wset-2.jpg",
+      "educatorName": "Gabriela Zimmer",
+      "enrolledAt": "2024-09-15",
+      "status": "in_progress",
+      "progress": {
+        "completedLessons": 8,
+        "totalLessons": 24,
+        "percentage": 33,
+        "lastAccessedAt": "2024-12-28",
+        "currentLessonId": "lesson-009"
+      },
+      "modules": [
+        {
+          "id": "mod-001",
+          "title": "Introducción al Vino",
+          "order": 1,
+          "lessons": [
+            { "id": "lesson-001", "title": "Cómo catar vino sistemáticamente", "duration": 845, "completed": true },
+            { "id": "lesson-002", "title": "Factores ambientales", "duration": 1230, "completed": true },
+            { "id": "lesson-003", "title": "Viticultura y vinificación", "duration": 1456, "completed": true }
+          ]
+        },
+        {
+          "id": "mod-002",
+          "title": "Variedades de Uva Blanca",
+          "order": 2,
+          "lessons": [
+            { "id": "lesson-004", "title": "Chardonnay", "duration": 1120, "completed": true },
+            { "id": "lesson-005", "title": "Sauvignon Blanc", "duration": 980, "completed": true },
+            { "id": "lesson-006", "title": "Riesling", "duration": 1050, "completed": true },
+            { "id": "lesson-007", "title": "Pinot Grigio y otras", "duration": 890, "completed": true },
+            { "id": "lesson-008", "title": "Gewürztraminer y aromáticas", "duration": 920, "completed": true }
+          ]
+        },
+        {
+          "id": "mod-003",
+          "title": "Variedades de Uva Tinta",
+          "order": 3,
+          "lessons": [
+            { "id": "lesson-009", "title": "Cabernet Sauvignon", "duration": 1340, "completed": false },
+            { "id": "lesson-010", "title": "Merlot", "duration": 1100, "completed": false },
+            { "id": "lesson-011", "title": "Pinot Noir", "duration": 1280, "completed": false },
+            { "id": "lesson-012", "title": "Syrah / Shiraz", "duration": 1150, "completed": false }
+          ]
+        },
+        {
+          "id": "mod-004",
+          "title": "Regiones Vitivinícolas",
+          "order": 4,
+          "lessons": [
+            { "id": "lesson-013", "title": "Francia: Bordeaux y Borgoña", "duration": 1560, "completed": false },
+            { "id": "lesson-014", "title": "Francia: Ródano y Alsacia", "duration": 1320, "completed": false },
+            { "id": "lesson-015", "title": "Italia", "duration": 1450, "completed": false },
+            { "id": "lesson-016", "title": "España", "duration": 1280, "completed": false },
+            { "id": "lesson-017", "title": "Nuevo Mundo: Argentina y Chile", "duration": 1180, "completed": false },
+            { "id": "lesson-018", "title": "Nuevo Mundo: USA y Australia", "duration": 1220, "completed": false }
+          ]
+        },
+        {
+          "id": "mod-005",
+          "title": "Vinos Espumosos y Fortificados",
+          "order": 5,
+          "lessons": [
+            { "id": "lesson-019", "title": "Champagne y método tradicional", "duration": 1380, "completed": false },
+            { "id": "lesson-020", "title": "Prosecco y otros espumosos", "duration": 980, "completed": false },
+            { "id": "lesson-021", "title": "Jerez", "duration": 1150, "completed": false },
+            { "id": "lesson-022", "title": "Oporto", "duration": 1080, "completed": false }
+          ]
+        },
+        {
+          "id": "mod-006",
+          "title": "Maridaje y Servicio",
+          "order": 6,
+          "lessons": [
+            { "id": "lesson-023", "title": "Principios de maridaje", "duration": 1240, "completed": false },
+            { "id": "lesson-024", "title": "Servicio y almacenamiento", "duration": 980, "completed": false }
+          ]
+        }
+      ],
+      "resources": [
+        { "id": "res-001", "title": "Manual WSET Nivel 2", "type": "pdf", "url": "/resources/wset-2-manual.pdf", "size": 15200000 },
+        { "id": "res-002", "title": "Mapa de regiones vitivinícolas", "type": "pdf", "url": "/resources/wine-regions-map.pdf", "size": 4500000 },
+        { "id": "res-003", "title": "Fichas de cata", "type": "pdf", "url": "/resources/tasting-sheets.pdf", "size": 1200000 }
+      ]
+    },
+    {
+      "id": "enr-002",
+      "courseId": "course-002",
+      "courseType": "in_person",
+      "courseCategory": "wset",
+      "title": "WSET Nivel 1 en Vinos",
+      "slug": "wset-nivel-1-vinos",
+      "thumbnail": "/courses/wset-1.jpg",
+      "educatorName": "Gabriela Zimmer",
+      "enrolledAt": "2024-06-01",
+      "status": "completed",
+      "eventInfo": {
+        "location": "Tinta Academy - Pocitos",
+        "address": "Av. Brasil 2847, Montevideo",
+        "dates": ["2024-06-15", "2024-06-22"],
+        "schedule": "Sábados 10:00 - 14:00",
+        "examDate": "2024-06-22",
+        "examResult": "passed",
+        "certificateUrl": "/certificates/wset-1-carolina-mendez.pdf"
+      },
+      "resources": [
+        { "id": "res-004", "title": "Manual WSET Nivel 1", "type": "pdf", "url": "/resources/wset-1-manual.pdf", "size": 8500000 },
+        { "id": "res-005", "title": "Certificado WSET Nivel 1", "type": "pdf", "url": "/certificates/wset-1-carolina-mendez.pdf", "size": 450000 }
+      ]
+    },
+    {
+      "id": "enr-003",
+      "courseId": "course-003",
+      "courseType": "in_person",
+      "courseCategory": "tasting",
+      "title": "Cata de Vinos del Valle del Ródano",
+      "slug": "cata-vinos-rodano",
+      "thumbnail": "/courses/rhone-tasting.jpg",
+      "educatorName": "Martín Delgado",
+      "enrolledAt": "2024-11-20",
+      "status": "upcoming",
+      "eventInfo": {
+        "location": "Bodega Bouza",
+        "address": "Camino de la Redención 7658, Montevideo",
+        "dates": ["2025-01-18"],
+        "schedule": "Sábado 18:00 - 21:00"
+      },
+      "resources": []
+    },
+    {
+      "id": "enr-004",
+      "courseId": "course-004",
+      "courseType": "online",
+      "courseCategory": "workshop",
+      "title": "Taller de Cata: Desarrolla tu Paladar",
+      "slug": "taller-cata-desarrolla-paladar",
+      "thumbnail": "/courses/palate-workshop.jpg",
+      "educatorName": "Gabriela Zimmer",
+      "enrolledAt": "2024-08-10",
+      "status": "completed",
+      "progress": {
+        "completedLessons": 6,
+        "totalLessons": 6,
+        "percentage": 100,
+        "lastAccessedAt": "2024-09-01",
+        "currentLessonId": null
+      },
+      "modules": [
+        {
+          "id": "mod-010",
+          "title": "Fundamentos de la Cata",
+          "order": 1,
+          "lessons": [
+            { "id": "lesson-050", "title": "Los sentidos en la cata", "duration": 720, "completed": true },
+            { "id": "lesson-051", "title": "Fase visual", "duration": 540, "completed": true },
+            { "id": "lesson-052", "title": "Fase olfativa", "duration": 890, "completed": true },
+            { "id": "lesson-053", "title": "Fase gustativa", "duration": 780, "completed": true },
+            { "id": "lesson-054", "title": "Describir lo que percibimos", "duration": 650, "completed": true },
+            { "id": "lesson-055", "title": "Práctica guiada", "duration": 1200, "completed": true }
+          ]
+        }
+      ],
+      "resources": [
+        { "id": "res-010", "title": "Rueda de aromas", "type": "pdf", "url": "/resources/aroma-wheel.pdf", "size": 2100000 },
+        { "id": "res-011", "title": "Guía de descriptores", "type": "pdf", "url": "/resources/descriptors-guide.pdf", "size": 1800000 }
+      ]
+    },
+    {
+      "id": "enr-005",
+      "courseId": "course-005",
+      "courseType": "online",
+      "courseCategory": "course",
+      "title": "Vinos de Uruguay: Del Tannat al Mundo",
+      "slug": "vinos-uruguay-tannat",
+      "thumbnail": "/courses/uruguay-wines.jpg",
+      "educatorName": "Martín Delgado",
+      "enrolledAt": "2024-12-01",
+      "status": "in_progress",
+      "progress": {
+        "completedLessons": 2,
+        "totalLessons": 10,
+        "percentage": 20,
+        "lastAccessedAt": "2024-12-20",
+        "currentLessonId": "lesson-063"
+      },
+      "modules": [
+        {
+          "id": "mod-020",
+          "title": "Historia y Terroir",
+          "order": 1,
+          "lessons": [
+            { "id": "lesson-060", "title": "Orígenes de la viticultura uruguaya", "duration": 920, "completed": true },
+            { "id": "lesson-061", "title": "Regiones vitivinícolas de Uruguay", "duration": 1150, "completed": true },
+            { "id": "lesson-062", "title": "Clima y suelos", "duration": 880, "completed": false }
+          ]
+        },
+        {
+          "id": "mod-021",
+          "title": "Variedades Emblemáticas",
+          "order": 2,
+          "lessons": [
+            { "id": "lesson-063", "title": "Tannat: la estrella uruguaya", "duration": 1340, "completed": false },
+            { "id": "lesson-064", "title": "Albariño y blancos", "duration": 980, "completed": false },
+            { "id": "lesson-065", "title": "Otras variedades", "duration": 850, "completed": false }
+          ]
+        },
+        {
+          "id": "mod-022",
+          "title": "Bodegas y Productores",
+          "order": 3,
+          "lessons": [
+            { "id": "lesson-066", "title": "Grandes bodegas", "duration": 1120, "completed": false },
+            { "id": "lesson-067", "title": "Bodegas boutique", "duration": 980, "completed": false },
+            { "id": "lesson-068", "title": "Nuevos proyectos", "duration": 750, "completed": false },
+            { "id": "lesson-069", "title": "Enoturismo en Uruguay", "duration": 890, "completed": false }
+          ]
+        }
+      ],
+      "resources": [
+        { "id": "res-020", "title": "Mapa vitivinícola de Uruguay", "type": "pdf", "url": "/resources/uruguay-wine-map.pdf", "size": 3200000 }
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord-001",
+      "orderNumber": "TA-2024-0892",
+      "courseId": "course-001",
+      "courseTitle": "WSET Nivel 2 en Vinos",
+      "createdAt": "2024-09-14",
+      "amount": 450.00,
+      "currency": "USD",
+      "paymentMethod": "mercadopago",
+      "status": "paid"
+    },
+    {
+      "id": "ord-002",
+      "orderNumber": "TA-2024-0654",
+      "courseId": "course-002",
+      "courseTitle": "WSET Nivel 1 en Vinos",
+      "createdAt": "2024-05-28",
+      "amount": 8500.00,
+      "currency": "UYU",
+      "paymentMethod": "transfer",
+      "status": "paid"
+    },
+    {
+      "id": "ord-003",
+      "orderNumber": "TA-2024-1023",
+      "courseId": "course-003",
+      "courseTitle": "Cata de Vinos del Valle del Ródano",
+      "createdAt": "2024-11-19",
+      "amount": 2800.00,
+      "currency": "UYU",
+      "paymentMethod": "mercadopago",
+      "status": "paid"
+    },
+    {
+      "id": "ord-004",
+      "orderNumber": "TA-2024-0745",
+      "courseId": "course-004",
+      "courseTitle": "Taller de Cata: Desarrolla tu Paladar",
+      "createdAt": "2024-08-09",
+      "amount": 0,
+      "currency": "USD",
+      "paymentMethod": "free",
+      "status": "paid"
+    },
+    {
+      "id": "ord-005",
+      "orderNumber": "TA-2024-1156",
+      "courseId": "course-005",
+      "courseTitle": "Vinos de Uruguay: Del Tannat al Mundo",
+      "createdAt": "2024-11-30",
+      "amount": 75.00,
+      "currency": "USD",
+      "paymentMethod": "mercadopago",
+      "status": "paid"
+    }
+  ]
+}
