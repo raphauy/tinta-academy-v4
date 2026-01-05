@@ -2,6 +2,9 @@
   "name": "tinta-academy-v4",
   "version": "0.1.0",
   "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": ["@prisma/engines", "prisma", "esbuild"]
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
