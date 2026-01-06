@@ -17,7 +17,12 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: 'Tinta Academy',
-  description: 'Educación en vinos',
+  description: 'Centro de formación especializado en la educación sobre vinos donde vas a descubrir, enriquecer y elevar tu conocimiento sobre la cultura del vino con una perspectiva global.',
+  openGraph: {
+    title: 'Tinta Academy',
+    description: 'Centro de formación especializado en la educación sobre vinos donde vas a descubrir, enriquecer y elevar tu conocimiento sobre la cultura del vino con una perspectiva global.',
+    images: ['/og.jpg'],
+  },
 }
 
 export default function RootLayout({

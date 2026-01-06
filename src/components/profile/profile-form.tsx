@@ -87,7 +87,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             onChange={handleImageChange}
             onError={handleImageError}
             aspectRatio="square"
-            className="rounded-full overflow-hidden"
+            className="rounded-full"
           />
         </div>
         <p className="text-sm text-muted-foreground">

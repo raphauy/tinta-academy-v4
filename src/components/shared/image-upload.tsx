@@ -141,19 +141,21 @@ export function ImageUpload({
       />
 
       {value ? (
-        <div
-          className={cn(
-            'relative overflow-hidden border',
-            isCircular ? 'rounded-full' : 'rounded-lg',
-            aspectRatioClasses[aspectRatio]
-          )}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={value}
-            alt="Uploaded image"
-            className="size-full object-cover"
-          />
+        <div className="relative">
+          <div
+            className={cn(
+              'overflow-hidden border',
+              isCircular ? 'rounded-full' : 'rounded-lg',
+              aspectRatioClasses[aspectRatio]
+            )}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={value}
+              alt="Uploaded image"
+              className="size-full object-cover"
+            />
+          </div>
           {!disabled && (
             <Button
               type="button"
@@ -161,7 +163,7 @@ export function ImageUpload({
               size="icon"
               className={cn(
                 'absolute size-8',
-                isCircular ? 'right-0 top-0' : 'right-2 top-2'
+                isCircular ? '-right-1 -top-1' : 'right-2 top-2'
               )}
               onClick={handleRemove}
             >

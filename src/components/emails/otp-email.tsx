@@ -43,7 +43,7 @@ export default function OtpEmail({ otp }: OtpEmailProps) {
 
           <Section style={styles.footer}>
             <Text style={styles.footerText}>
-              Tinta Academy - Educación en vinos
+              Tinta Academy - Centro de formación especializado en la educación sobre vinos
             </Text>
           </Section>
         </Container>
