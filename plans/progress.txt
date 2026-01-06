@@ -142,3 +142,28 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Wire landing page interactions (filters, scroll, navigation) - PRD 2.12
 
 ---
+
+## 2026-01-06 - Landing Page Interactions
+
+**Completed (PRD item 2.12):**
+- Created LandingClientWrapper component to handle client-side interactions
+- Implemented URL search params support for filtering (?modality=online&type=wset&tagIds=id1,id2)
+- Wired onFilter callback to update URL params when user changes filters
+- onHeroCTA already scrolls to catalog section (implemented in LandingCatalogo)
+- onNavigate callback wired to use Next.js router for navigation
+- onViewCourse callback navigates to /cursos/[slug]
+- Added Suspense boundary with loading fallback for the landing page
+
+**Technical Notes:**
+- Used useMemo for memoizing currentFilters from searchParams to avoid unnecessary re-renders
+- Used useMemo for filtered courses arrays (filteredUpcoming, filteredPast)
+- Refactored page.tsx to separate data fetching (LandingData async component) from rendering
+- LandingClientWrapper reads filters from URL and applies them client-side
+- CourseCatalog now accepts onFilter callback and calls updateFilters for all filter changes
+- Added id="catalog" to catalog section for potential direct linking
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Implement newsletter subscription flow - PRD 2.13
+
+---

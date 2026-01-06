@@ -193,7 +193,7 @@
       "Run pnpm build",
       "Test all interactions in browser"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "2.13",
@@ -213,19 +213,32 @@
   },
   {
     "id": "2.14",
-    "category": "feature",
-    "description": "Implement course detail navigation with placeholder page",
+    "category": "page",
+    "description": "Implement full course detail page with modern design",
     "steps": [
-      "Wire onViewCourse callback in CourseCard/CourseCatalog",
-      "Navigate to /cursos/[slug] on card click",
-      "Create src/app/(public)/cursos/[slug]/page.tsx placeholder page",
-      "Fetch course by slug using course-service (add getCourseBySlug if needed)",
-      "Show course title and basic info on detail page",
-      "Add 'Volver' link to return to catalog",
+      "Add getCourseBySlug function to course-service.ts (include educator relation)",
+      "Create src/app/(public)/cursos/[slug]/page.tsx as RSC",
+      "Add generateMetadata for SEO (title, description, og:image)",
+      "Create src/components/course-detail/CourseDetailPage.tsx with sections:",
+      "  - Hero section: title, subtitle (formatted date like 'junio 2025'), course image or gradient background",
+      "  - Description Card: course description text",
+      "  - Two-column grid: '¿Qué vas a aprender?' + 'Este curso es para vos si' (for WSET courses, use predefined content)",
+      "  - Modalidad Card: duration, location, max capacity, exam info (icons: Clock, MapPin, Users, GraduationCap)",
+      "  - Fechas Card: startDate, endDate formatted, registration deadline if applicable",
+      "  - Inversión Card: priceUSD with 'IVA incluido', list of what's included",
+      "  - Educator Card: photo (rounded), name, title, bio",
+      "  - CTA Button: 'Inscribite ahora' linking to /cursos/inscripcion/[id] (only if status=enrolling)",
+      "  - Requisitos Card: enrollment requirements (for WSET: age 18+, photo ID, no prerequisites)",
+      "  - Footer links: políticas de ajuste razonable, políticas generales",
+      "Use shadcn/ui Card, Button components - follow project design system (colors from tailwind config)",
+      "Use Lucide icons: CalendarDays, Clock, MapPin, Users, GraduationCap, CheckCircle",
+      "Make responsive: stack cards on mobile, side-by-side on desktop where appropriate",
+      "Wire navigation from CourseCard in catalog to this page",
+      "Add 'Volver al catálogo' link at top",
       "Run pnpm tsc --noEmit",
       "Run pnpm lint",
       "Run pnpm build",
-      "Test navigation in browser"
+      "Test with real course data at localhost:3000/cursos/[slug]"
     ],
     "passes": false
   },

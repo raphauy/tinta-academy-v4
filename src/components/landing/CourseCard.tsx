@@ -55,18 +55,18 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
     return colors[type] || 'bg-[#7F7F7F] text-white'
   }
 
-  const imageUrl = courseImages[course.type] || courseImages['curso']
+  const imageUrl = course.imageUrl || courseImages[course.type] || courseImages['curso']
 
   return (
     <article className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-[#E5E5E5] h-full flex flex-col">
-      {/* Image */}
+      {/* Image - using fill like v3 */}
       <div className="relative h-48 flex-shrink-0">
         <Image
           src={imageUrl}
           alt={course.title}
-          width={600}
-          height={192}
-          className="w-full h-full object-cover"
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          className="object-cover"
         />
         {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-2">
@@ -99,9 +99,23 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
         </h3>
 
         {/* Description */}
-        <p className="text-sm text-[#666] mb-4 line-clamp-2">
+        <p className="text-sm text-[#666] mb-3 line-clamp-2">
           {course.description}
         </p>
+
+        {/* Tags */}
+        {course.tags && course.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {course.tags.map((tag) => (
+              <span
+                key={tag.id}
+                className="px-2 py-0.5 bg-[#DDBBC0] text-[#2E2E2E] text-xs rounded-full font-medium"
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Meta */}
         <div className="flex flex-wrap gap-3 text-sm text-[#666] mb-4">

@@ -1,8 +1,12 @@
 import { getUpcomingCourses, getPastCourses } from '@/services/course-service'
 import { getTags } from '@/services/tag-service'
-import { LandingContent } from '@/components/landing'
-import type { HeroContent, FooterLinks, ContactInfo, Course, Tag } from '@/types/landing'
+import { LandingClientWrapper } from '@/components/landing'
+import type { HeroContent, FooterLinks, ContactInfo, Course, Tag, CourseFilters } from '@/types/landing'
 import type { Course as PrismaCourse, Tag as PrismaTag, Educator as PrismaEducator } from '@prisma/client'
+
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
 
 type PrismaCourseWithRelations = PrismaCourse & {
   educator: PrismaEducator
@@ -90,7 +94,19 @@ const contactInfo: ContactInfo = {
   address: "Montevideo, Uruguay"
 }
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: PageProps) {
+  // Await searchParams (Next.js 15+ requirement)
+  const params = await searchParams
+
+  // Parse initial filters from URL
+  const initialFilters: CourseFilters = {
+    modality: (params.modality as CourseFilters['modality']) || undefined,
+    type: (params.type as CourseFilters['type']) || undefined,
+    tagIds: params.tagIds
+      ? (typeof params.tagIds === 'string' ? params.tagIds.split(',') : params.tagIds).filter(Boolean)
+      : undefined,
+  }
+
   // Fetch real data from services
   const upcomingCoursesRaw = await getUpcomingCourses()
   const pastCoursesRaw = await getPastCourses()
@@ -102,14 +118,14 @@ export default async function HomePage() {
   const tags = tagsRaw.map(transformTag)
 
   return (
-    <LandingContent
+    <LandingClientWrapper
       heroContent={heroContent}
       tags={tags}
       upcomingCourses={upcomingCourses}
       pastCourses={pastCourses}
       footerLinks={footerLinks}
       contactInfo={contactInfo}
-      // Event handlers will be implemented in future PRD items
+      initialFilters={initialFilters}
     />
   )
 }

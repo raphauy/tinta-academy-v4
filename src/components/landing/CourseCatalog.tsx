@@ -10,6 +10,7 @@ interface CourseCatalogProps {
   pastCourses: Course[]
   tags: Tag[]
   onViewCourse?: (courseSlug: string) => void
+  onFilter?: (filters: CourseFilters) => void
 }
 
 /**
@@ -20,11 +21,17 @@ export function CourseCatalog({
   pastCourses,
   tags,
   onViewCourse,
+  onFilter,
 }: CourseCatalogProps) {
   const [filters, setFilters] = useState<CourseFilters>({})
   const [showFilters, setShowFilters] = useState(false)
   const [showPastCourses, setShowPastCourses] = useState(true)
 
+  // Update local filters and notify parent
+  const updateFilters = (newFilters: CourseFilters) => {
+    setFilters(newFilters)
+    onFilter?.(newFilters)
+  }
 
   const filterCourses = (courses: Course[]) => {
     return courses.filter((course) => {
@@ -46,14 +53,14 @@ export function CourseCatalog({
   const hasActiveFilters =
     filters.modality || filters.type || (filters.tagIds && filters.tagIds.length > 0)
 
-  const clearFilters = () => setFilters({})
+  const clearFilters = () => updateFilters({})
 
   const toggleTag = (tagId: string) => {
     const currentTags = filters.tagIds || []
     const newTags = currentTags.includes(tagId)
       ? currentTags.filter((id) => id !== tagId)
       : [...currentTags, tagId]
-    setFilters({ ...filters, tagIds: newTags.length > 0 ? newTags : undefined })
+    updateFilters({ ...filters, tagIds: newTags.length > 0 ? newTags : undefined })
   }
 
   return (
@@ -101,20 +108,20 @@ export function CourseCatalog({
                 <div className="flex flex-wrap gap-2">
                   <FilterButton
                     active={!filters.modality}
-                    onClick={() => setFilters({ ...filters, modality: undefined })}
+                    onClick={() => updateFilters({ ...filters, modality: undefined })}
                   >
                     Todas
                   </FilterButton>
                   <FilterButton
                     active={filters.modality === 'presencial'}
-                    onClick={() => setFilters({ ...filters, modality: 'presencial' })}
+                    onClick={() => updateFilters({ ...filters, modality: 'presencial' })}
                     icon={<MapPin size={14} />}
                   >
                     Presencial
                   </FilterButton>
                   <FilterButton
                     active={filters.modality === 'online'}
-                    onClick={() => setFilters({ ...filters, modality: 'online' })}
+                    onClick={() => updateFilters({ ...filters, modality: 'online' })}
                     icon={<Monitor size={14} />}
                   >
                     Online
@@ -130,27 +137,33 @@ export function CourseCatalog({
                 <div className="flex flex-wrap gap-2">
                   <FilterButton
                     active={!filters.type}
-                    onClick={() => setFilters({ ...filters, type: undefined })}
+                    onClick={() => updateFilters({ ...filters, type: undefined })}
                   >
                     Todos
                   </FilterButton>
                   <FilterButton
                     active={filters.type === 'wset'}
-                    onClick={() => setFilters({ ...filters, type: 'wset' })}
+                    onClick={() => updateFilters({ ...filters, type: 'wset' })}
                   >
                     WSET
                   </FilterButton>
                   <FilterButton
                     active={filters.type === 'taller'}
-                    onClick={() => setFilters({ ...filters, type: 'taller' })}
+                    onClick={() => updateFilters({ ...filters, type: 'taller' })}
                   >
                     Taller
                   </FilterButton>
                   <FilterButton
                     active={filters.type === 'cata'}
-                    onClick={() => setFilters({ ...filters, type: 'cata' })}
+                    onClick={() => updateFilters({ ...filters, type: 'cata' })}
                   >
                     Cata
+                  </FilterButton>
+                  <FilterButton
+                    active={filters.type === 'curso'}
+                    onClick={() => updateFilters({ ...filters, type: 'curso' })}
+                  >
+                    Curso
                   </FilterButton>
                 </div>
               </div>

@@ -81,6 +81,7 @@ export function LandingContent({
   onHeroCTA,
   onSubscribe,
   onNavigate,
+  onFilter,
 }: Omit<LandingCatalogoProps, 'educators' | 'onLogin' | 'onRegister'>) {
   const catalogRef = useRef<HTMLDivElement>(null)
 
@@ -98,12 +99,13 @@ export function LandingContent({
       />
 
       {/* Catalog */}
-      <div ref={catalogRef}>
+      <div ref={catalogRef} id="catalog">
         <CourseCatalog
           upcomingCourses={upcomingCourses}
           pastCourses={pastCourses}
           tags={tags}
           onViewCourse={onViewCourse}
+          onFilter={onFilter}
         />
       </div>
 
