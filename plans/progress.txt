@@ -41,3 +41,25 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** UI components (CourseCard, CourseCatalog, Hero, Footer)
 
 ---
+
+## 2026-01-06 - API Routes Refactor to Server Actions
+
+**Completed (PRD item 2.09b):**
+- Replaced API routes (/api/courses, /api/tags, /api/newsletter) with service layer architecture
+- Created course-service.ts with getCourses, getUpcomingCourses, getPastCourses functions
+- Created tag-service.ts with getTags function  
+- Created newsletter-service.ts with subscribe function
+- Added subscribeToNewsletter server action in src/app/(public)/actions.ts
+- Removed API route files and cleaned up empty directories
+
+**Technical Notes:**
+- Services use proper Prisma types (CourseWhereInput, CourseModality, CourseType enums)
+- Server action includes Zod validation for email input
+- Course filtering logic preserved with proper TypeScript typing
+- Architecture now follows Next.js App Router patterns: RSC → Services → Prisma
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** UI components implementation (CourseCard, CourseCatalog, Hero, Footer)
+
+---

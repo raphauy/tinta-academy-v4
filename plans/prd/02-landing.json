@@ -116,6 +116,22 @@
     "passes": true
   },
   {
+    "id": "2.09b",
+    "category": "refactor",
+    "description": "Replace API routes with Server Actions using service layer",
+    "steps": [
+      "Delete src/app/api/courses/route.ts",
+      "Delete src/app/api/tags/route.ts",
+      "Delete src/app/api/newsletter/route.ts",
+      "Create src/services/course-service.ts with getCourses, getUpcomingCourses, getPastCourses functions",
+      "Create src/services/tag-service.ts with getTags function",
+      "Create src/services/newsletter-service.ts with subscribe function",
+      "Create src/app/(public)/actions.ts with subscribeToNewsletter server action that calls newsletter-service",
+      "Verify with pnpm typecheck and pnpm build"
+    ],
+    "passes": true
+  },
+  {
     "id": "2.10",
     "category": "ui",
     "description": "Copy and adapt CourseCard component",
