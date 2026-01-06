@@ -4,6 +4,7 @@ import {
   Users,
   GraduationCap,
   UserCog,
+  UserX,
   ShoppingCart,
   Tag,
   Building,
@@ -36,6 +37,7 @@ export const adminNavItems: NavItem[] = [
     children: [
       { label: 'Estudiantes', href: '/admin/users/students', icon: GraduationCap },
       { label: 'Educadores', href: '/admin/users/educators', icon: UserCog },
+      { label: 'Visitantes', href: '/admin/users/visitors', icon: UserX },
     ],
   },
   { label: 'Pedidos', href: '/admin/orders', icon: ShoppingCart },
