@@ -63,3 +63,13 @@ export async function getPastCourses(filters: CourseFilters = {}) {
   const { pastCourses } = await getCourses(filters)
   return pastCourses
 }
+
+export async function getCourseBySlug(slug: string) {
+  return prisma.course.findUnique({
+    where: { slug },
+    include: {
+      educator: true,
+      tags: true,
+    },
+  })
+}

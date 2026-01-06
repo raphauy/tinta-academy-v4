@@ -1,7 +1,8 @@
 import { getUpcomingCourses, getPastCourses } from '@/services/course-service'
 import { getTags } from '@/services/tag-service'
 import { LandingClientWrapper } from '@/components/landing'
-import type { HeroContent, FooterLinks, ContactInfo, Course, Tag, CourseFilters } from '@/types/landing'
+import { footerLinks, contactInfo } from '@/config/footer'
+import type { HeroContent, Course, Tag, CourseFilters } from '@/types/landing'
 import type { Course as PrismaCourse, Tag as PrismaTag, Educator as PrismaEducator } from '@prisma/client'
 
 interface PageProps {
@@ -64,35 +65,6 @@ const heroContent: HeroContent = {
   videoUrl: "" // Using placeholder for now
 }
 
-// Configure footer links
-const footerLinks: FooterLinks = {
-  about: [
-    { label: "Sobre nosotros", href: "/about" },
-    { label: "Nuestro equipo", href: "/team" },
-    { label: "Blog", href: "/blog" }
-  ],
-  courses: [
-    { label: "Certificaciones WSET", href: "/cursos?type=wset" },
-    { label: "Talleres", href: "/cursos?type=taller" },
-    { label: "Catas", href: "/cursos?type=cata" }
-  ],
-  legal: [
-    { label: "Política de Ajustes Razonables", href: "/politicas/ajuste-razonable" },
-    { label: "Política de Conflicto de Intereses", href: "/politicas/conflicto-intereses" }
-  ],
-  social: [
-    { label: "Instagram", href: "https://instagram.com/tintaacademy" },
-    { label: "LinkedIn", href: "https://linkedin.com/company/tintaacademy" },
-    { label: "YouTube", href: "https://youtube.com/tintaacademy" }
-  ]
-}
-
-// Configure contact info
-const contactInfo: ContactInfo = {
-  email: "academy@tinta.wine",
-  phone: "59892043904",
-  address: "Montevideo, Uruguay"
-}
 
 export default async function HomePage({ searchParams }: PageProps) {
   // Await searchParams (Next.js 15+ requirement)

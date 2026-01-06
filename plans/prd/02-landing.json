@@ -240,7 +240,7 @@
       "Run pnpm build",
       "Test with real course data at localhost:3000/cursos/[slug]"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "2.15",
