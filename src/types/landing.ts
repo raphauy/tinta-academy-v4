@@ -82,6 +82,17 @@ export interface CourseFilters {
 }
 
 // =============================================================================
+// User Types
+// =============================================================================
+
+export interface LandingUser {
+  name: string | null
+  email?: string | null
+  image?: string | null
+  role?: string | null
+}
+
+// =============================================================================
 // Component Props
 // =============================================================================
 
@@ -100,6 +111,8 @@ export interface LandingCatalogoProps {
   footerLinks: FooterLinks
   /** Contact information for footer */
   contactInfo: ContactInfo
+  /** Current authenticated user */
+  user?: LandingUser | null
   /** Called when user clicks on a course card to view details */
   onViewCourse?: (courseSlug: string) => void
   /** Initial filters from URL */
@@ -112,8 +125,4 @@ export interface LandingCatalogoProps {
   onSubscribe?: (email: string) => Promise<{ success: boolean; error?: string }>
   /** Called when user clicks a navigation link */
   onNavigate?: (href: string) => void
-  /** Called when user clicks login button */
-  onLogin?: () => void
-  /** Called when user clicks register button */
-  onRegister?: () => void
 }

@@ -10,6 +10,7 @@ import { Footer } from '@/components/landing'
 import { footerLinks, contactInfo } from '@/config/footer'
 import { subscribeToNewsletter } from '@/app/(public)/actions'
 import { toast } from 'sonner'
+import { toLocalDate } from '@/lib/utils'
 import {
   CalendarDays,
   Clock,
@@ -35,7 +36,7 @@ function formatDate(date: Date | null): string {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(date)
+  }).format(toLocalDate(date))
 }
 
 function formatMonthYear(date: Date | null): string {
@@ -43,7 +44,7 @@ function formatMonthYear(date: Date | null): string {
   return new Intl.DateTimeFormat('es-AR', {
     month: 'long',
     year: 'numeric',
-  }).format(date)
+  }).format(toLocalDate(date))
 }
 
 function getCourseTypeName(type: Course['type'], wsetLevel?: number | null): string {

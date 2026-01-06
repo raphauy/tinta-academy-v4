@@ -48,18 +48,18 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
 
   const getTypeColor = (type: Course['type']) => {
     const colors: Record<string, string> = {
-      wset: 'bg-[#143F3B] text-white',
-      taller: 'bg-[#DDBBC0] text-[#2E2E2E]',
+      wset: 'bg-primary text-primary-foreground',
+      taller: 'bg-[#DDBBC0] text-foreground',
       cata: 'bg-[#AE8928] text-white',
-      curso: 'bg-[#7F7F7F] text-white',
+      curso: 'bg-muted-foreground text-white',
     }
-    return colors[type] || 'bg-[#7F7F7F] text-white'
+    return colors[type] || 'bg-muted-foreground text-white'
   }
 
   const imageUrl = course.imageUrl || courseImages[course.type] || courseImages['curso']
 
   return (
-    <article className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-[#E5E5E5] h-full flex flex-col">
+    <article className="bg-card rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-border h-full flex flex-col">
       {/* Image - using fill like v3 */}
       <div
         className="relative h-48 shrink-0 cursor-pointer"
@@ -82,7 +82,7 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
           </span>
         </div>
         <div className="absolute top-3 right-3">
-          <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/95 backdrop-blur-sm rounded-full text-xs font-medium text-[#2E2E2E]">
+          <span className="inline-flex items-center gap-1 px-3 py-1 bg-background/95 backdrop-blur-sm rounded-full text-xs font-medium text-foreground">
             {course.modality === 'online' ? (
               <>
                 <Monitor size={12} />
@@ -101,12 +101,12 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
       {/* Content */}
       <div className="p-5 flex flex-col flex-1">
         {/* Title */}
-        <h3 className="text-lg font-semibold text-[#2E2E2E] mb-2 line-clamp-2">
+        <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
           {course.title}
         </h3>
 
         {/* Description */}
-        <p className="text-sm text-[#666] mb-3 line-clamp-2">
+        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
           {course.description}
         </p>
 
@@ -116,7 +116,7 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
             {course.tags.map((tag) => (
               <span
                 key={tag.id}
-                className="px-2 py-0.5 bg-[#DDBBC0] text-[#2E2E2E] text-xs rounded-full font-medium"
+                className="px-2 py-0.5 bg-[#DDBBC0] text-foreground text-xs rounded-full font-medium"
               >
                 {tag.name}
               </span>
@@ -125,32 +125,32 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
         )}
 
         {/* Meta */}
-        <div className="flex flex-wrap gap-3 text-sm text-[#666] mb-4">
+        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
           {course.startDate ? (
             <span className="inline-flex items-center gap-1">
-              <Calendar size={14} className="text-[#143F3B]" />
+              <Calendar size={14} className="text-primary" />
               {formatDate(course.startDate)}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1">
-              <Monitor size={14} className="text-[#143F3B]" />
+              <Monitor size={14} className="text-primary" />
               Acceso inmediato
             </span>
           )}
           <span className="inline-flex items-center gap-1">
-            <Clock size={14} className="text-[#143F3B]" />
+            <Clock size={14} className="text-primary" />
             {course.duration}h
           </span>
           {course.maxCapacity && (
             <span className="inline-flex items-center gap-1">
-              <Users size={14} className="text-[#143F3B]" />
+              <Users size={14} className="text-primary" />
               Máx. {course.maxCapacity}
             </span>
           )}
         </div>
 
         {/* Footer - pushed to bottom */}
-        <div className="border-t border-[#E5E5E5] pt-4 mt-auto">
+        <div className="border-t border-border pt-4 mt-auto">
           <div className="flex items-center justify-between">
             {/* Educator */}
             {educator && (
@@ -164,20 +164,20 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
                     className="w-8 h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-[#143F3B] flex items-center justify-center text-white text-xs font-semibold">
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-semibold">
                     {educator.name.split(' ').map(n => n[0]).join('')}
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-[#2E2E2E]">{educator.name}</p>
-                  <p className="text-xs text-[#666]">{educator.title}</p>
+                  <p className="text-sm font-medium text-foreground">{educator.name}</p>
+                  <p className="text-xs text-muted-foreground">{educator.title}</p>
                 </div>
               </div>
             )}
 
             {/* Price */}
             <div className="text-right">
-              <p className="text-xl font-bold text-[#143F3B]">
+              <p className="text-xl font-bold text-primary">
                 {course.priceUSD === 0 ? 'Gratis' : `USD ${course.priceUSD}`}
               </p>
             </div>
@@ -187,7 +187,7 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
         {/* CTA */}
         <Button
           onClick={onView}
-          className="mt-4 w-full py-3 bg-[#143F3B] text-white font-medium rounded-xl hover:bg-[#1a524d]"
+          className="mt-4 w-full"
         >
           Ver detalles
         </Button>

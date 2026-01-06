@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { Course, Tag, CourseFilters } from '@/types/landing'
 import { CourseCard } from './CourseCard'
 import { Filter, X, ChevronDown, Monitor, MapPin } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface CourseCatalogProps {
   upcomingCourses: Course[]
@@ -66,45 +67,42 @@ export function CourseCatalog({
   }
 
   return (
-    <section className="py-16 bg-[#F5F5F5]">
+    <section className="py-16 bg-secondary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-[#2E2E2E] mb-1">
+            <h2 className="text-3xl font-bold text-foreground mb-1">
               Próximos Cursos
             </h2>
-            <p className="text-[#666]">
+            <p className="text-muted-foreground">
               {filteredUpcoming.length} cursos disponibles
             </p>
           </div>
 
           {/* Filter Toggle */}
-          <button
+          <Button
+            variant={showFilters || hasActiveFilters ? 'default' : 'outline'}
             onClick={() => setShowFilters(!showFilters)}
-            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-medium transition-colors ${
-              showFilters || hasActiveFilters
-                ? 'bg-[#143F3B] text-white'
-                : 'bg-white text-[#2E2E2E] border border-[#DDD] hover:border-[#143F3B]'
-            }`}
+            className="gap-2"
           >
             <Filter size={18} />
             Filtros
             {hasActiveFilters && (
-              <span className="w-5 h-5 bg-[#DDBBC0] text-[#2E2E2E] text-xs font-bold rounded-full flex items-center justify-center">
+              <span className="w-5 h-5 bg-[#DDBBC0] text-foreground text-xs font-bold rounded-full flex items-center justify-center">
                 {(filters.modality ? 1 : 0) + (filters.type ? 1 : 0) + (filters.tagIds?.length || 0)}
               </span>
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Filters Panel */}
         {showFilters && (
-          <div className="bg-white rounded-2xl p-6 mb-8 shadow-sm border border-[#E5E5E5]">
+          <div className="bg-card rounded-2xl p-6 mb-8 shadow-sm border border-border">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Modality */}
               <div>
-                <label className="block text-sm font-semibold text-[#2E2E2E] mb-3">
+                <label className="block text-sm font-semibold text-foreground mb-3">
                   Modalidad
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -133,7 +131,7 @@ export function CourseCatalog({
 
               {/* Type */}
               <div>
-                <label className="block text-sm font-semibold text-[#2E2E2E] mb-3">
+                <label className="block text-sm font-semibold text-foreground mb-3">
                   Tipo de curso
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -172,22 +170,20 @@ export function CourseCatalog({
 
               {/* Tags */}
               <div>
-                <label className="block text-sm font-semibold text-[#2E2E2E] mb-3">
+                <label className="block text-sm font-semibold text-foreground mb-3">
                   Temas
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag) => (
-                    <button
+                    <Button
                       key={tag.id}
+                      variant={filters.tagIds?.includes(tag.id) ? 'default' : 'secondary'}
+                      size="sm"
                       onClick={() => toggleTag(tag.id)}
-                      className={`px-3 py-1.5 rounded-full text-sm transition-colors ${
-                        filters.tagIds?.includes(tag.id)
-                          ? 'bg-[#DDBBC0] text-[#2E2E2E] font-medium'
-                          : 'bg-[#F5F5F5] text-[#666] hover:bg-[#E5E5E5]'
-                      }`}
+                      className={filters.tagIds?.includes(tag.id) ? 'bg-[#DDBBC0] text-foreground hover:bg-[#DDBBC0]/80' : ''}
                     >
                       {tag.name}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -195,14 +191,16 @@ export function CourseCatalog({
 
             {/* Clear Filters */}
             {hasActiveFilters && (
-              <div className="mt-6 pt-4 border-t border-[#E5E5E5]">
-                <button
+              <div className="mt-6 pt-4 border-t border-border">
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={clearFilters}
-                  className="inline-flex items-center gap-2 text-sm text-[#666] hover:text-[#143F3B]"
+                  className="gap-2 text-muted-foreground hover:text-primary"
                 >
                   <X size={16} />
                   Limpiar filtros
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -221,50 +219,48 @@ export function CourseCatalog({
             ))}
           </div>
         ) : upcomingCourses.length === 0 ? (
-          <div className="text-center py-16 mb-16 bg-white rounded-2xl border border-[#E5E5E5]">
+          <div className="text-center py-16 mb-16 bg-card rounded-2xl border border-border">
             <div className="text-6xl mb-4">🍷</div>
-            <h3 className="text-xl font-semibold text-[#2E2E2E] mb-2">
+            <h3 className="text-xl font-semibold text-foreground mb-2">
               No hay cursos programados
             </h3>
-            <p className="text-[#666] max-w-md mx-auto">
+            <p className="text-muted-foreground max-w-md mx-auto">
               Estamos preparando nuevos cursos. Suscribite al newsletter para enterarte cuando abramos inscripciones.
             </p>
           </div>
         ) : (
-          <div className="text-center py-16 mb-16 bg-white rounded-2xl border border-[#E5E5E5]">
+          <div className="text-center py-16 mb-16 bg-card rounded-2xl border border-border">
             <div className="text-5xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-[#2E2E2E] mb-2">
+            <h3 className="text-xl font-semibold text-foreground mb-2">
               No se encontraron cursos
             </h3>
-            <p className="text-[#666] mb-6">
+            <p className="text-muted-foreground mb-6">
               No hay cursos que coincidan con los filtros seleccionados.
             </p>
-            <button
-              onClick={clearFilters}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#143F3B] text-white rounded-full font-medium hover:bg-[#1a5550] transition-colors"
-            >
+            <Button onClick={clearFilters} className="gap-2">
               <X size={18} />
               Limpiar filtros
-            </button>
+            </Button>
           </div>
         )}
 
         {/* Past Courses */}
         {pastCourses.length > 0 && (
-          <div className="border-t border-[#DDD] pt-12">
-            <button
+          <div className="border-t border-border pt-12">
+            <Button
+              variant="ghost"
               onClick={() => setShowPastCourses(!showPastCourses)}
-              className="flex items-center gap-3 mb-8 group"
+              className="flex items-center gap-3 mb-8 group h-auto p-0 hover:bg-transparent"
             >
-              <h2 className="text-2xl font-bold text-[#999] group-hover:text-[#666] transition-colors">
+              <h2 className="text-2xl font-bold text-muted-foreground group-hover:text-foreground transition-colors">
                 Cursos Finalizados
               </h2>
               <ChevronDown
                 size={24}
-                className={`text-[#999] transition-transform ${showPastCourses ? 'rotate-180' : ''}`}
+                className={`text-muted-foreground transition-transform ${showPastCourses ? 'rotate-180' : ''}`}
               />
-              <span className="text-[#999]">({filteredPast.length})</span>
-            </button>
+              <span className="text-muted-foreground">({filteredPast.length})</span>
+            </Button>
 
             {showPastCourses && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-70">
@@ -294,16 +290,14 @@ interface FilterButtonProps {
 
 function FilterButton({ children, active, onClick, icon }: FilterButtonProps) {
   return (
-    <button
+    <Button
+      variant={active ? 'default' : 'secondary'}
+      size="sm"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-        active
-          ? 'bg-[#143F3B] text-white'
-          : 'bg-[#F5F5F5] text-[#2E2E2E] hover:bg-[#E5E5E5]'
-      }`}
+      className="gap-1.5"
     >
       {icon}
       {children}
-    </button>
+    </Button>
   )
 }

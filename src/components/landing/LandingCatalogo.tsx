@@ -17,12 +17,11 @@ export function LandingCatalogo({
   pastCourses,
   footerLinks,
   contactInfo,
+  user,
   onViewCourse,
   onHeroCTA,
   onSubscribe,
   onNavigate,
-  onLogin,
-  onRegister,
 }: LandingCatalogoProps) {
   const catalogRef = useRef<HTMLDivElement>(null)
 
@@ -32,13 +31,9 @@ export function LandingCatalogo({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <Header
-        onNavigate={onNavigate}
-        onLogin={onLogin}
-        onRegister={onRegister}
-      />
+      <Header user={user} />
 
       {/* Hero */}
       <Hero
@@ -92,7 +87,7 @@ export function LandingContent({
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Hero */}
       <Hero
         content={heroContent}

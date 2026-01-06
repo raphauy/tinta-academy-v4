@@ -1,4 +1,5 @@
 import type { HeroContent } from '@/types/landing'
+import { Button } from '@/components/ui/button'
 import { ChevronDown } from 'lucide-react'
 import Image from 'next/image'
 
@@ -41,13 +42,14 @@ export function Hero({ content, onCTA }: HeroProps) {
           </p>
 
           {/* CTA Button */}
-          <button
+          <Button
             onClick={onCTA}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-[#143F3B] font-semibold rounded-full hover:bg-[#DDBBC0] transition-colors shadow-lg"
+            size="lg"
+            className="rounded-full !px-12 py-6 bg-white text-[#143F3B] font-semibold hover:bg-[#DDBBC0] shadow-lg"
           >
             {content.ctaText}
             <ChevronDown size={20} />
-          </button>
+          </Button>
         </div>
       </div>
     </section>
