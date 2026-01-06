@@ -75,17 +75,17 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Educator routes - only educator can access
+  // Educator routes - educator and superadmin can access
   if (pathname.startsWith('/educator')) {
-    if (user.role !== 'educator') {
+    if (user.role !== 'educator' && user.role !== 'superadmin') {
       return NextResponse.redirect(new URL('/', request.url))
     }
     return NextResponse.next()
   }
 
-  // Student routes - only student can access
+  // Student routes - student and superadmin can access
   if (pathname.startsWith('/student')) {
-    if (user.role !== 'student') {
+    if (user.role !== 'student' && user.role !== 'superadmin') {
       return NextResponse.redirect(new URL('/', request.url))
     }
     return NextResponse.next()

@@ -13,7 +13,7 @@ export default async function EducatorLayout({
     redirect('/login')
   }
 
-  if (session.user.role !== 'educator') {
+  if (session.user.role !== 'educator' && session.user.role !== 'superadmin') {
     redirect('/')
   }
 

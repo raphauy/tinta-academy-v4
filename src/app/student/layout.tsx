@@ -13,7 +13,7 @@ export default async function StudentLayout({
     redirect('/login')
   }
 
-  if (session.user.role !== 'student') {
+  if (session.user.role !== 'student' && session.user.role !== 'superadmin') {
     redirect('/')
   }
 

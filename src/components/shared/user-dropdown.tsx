@@ -6,7 +6,6 @@ import Image from 'next/image'
 import { useTheme } from 'next-themes'
 import { signOut } from 'next-auth/react'
 import {
-  ChevronUp,
   LogOut,
   User,
   Moon,
@@ -15,23 +14,30 @@ import {
   LayoutDashboard,
   GraduationCap,
   Shield,
-  Home,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export interface UserMenuUser {
+export interface UserDropdownUser {
   name?: string | null
   email?: string | null
   image?: string | null
   role?: string | null
 }
 
-export interface UserMenuProps {
-  user: UserMenuUser
+interface UserDropdownProps {
+  user: UserDropdownUser
+  /** Style variant for avatar ring */
+  variant?: 'light' | 'dark'
+  /** Callback URL after logout */
+  logoutCallbackUrl?: string
 }
 
-export function UserMenu({ user }: UserMenuProps) {
-  const [open, setOpen] = useState(false)
+export function UserDropdown({
+  user,
+  variant = 'dark',
+  logoutCallbackUrl = '/',
+}: UserDropdownProps) {
+  const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
@@ -43,7 +49,7 @@ export function UserMenu({ user }: UserMenuProps) {
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpen(false)
+        setDropdownOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -66,48 +72,50 @@ export function UserMenu({ user }: UserMenuProps) {
   const roleLabel = roleLabels[user.role ?? ''] || 'Usuario'
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/' })
+    await signOut({ callbackUrl: logoutCallbackUrl })
   }
+
+  const ringClass =
+    variant === 'light'
+      ? 'ring-2 ring-white/30 hover:ring-white/60'
+      : ''
+
+  const avatarBgClass =
+    variant === 'light' ? 'bg-white/20' : 'bg-primary'
+
+  const avatarTextClass =
+    variant === 'light' ? 'text-white' : 'text-primary-foreground'
 
   return (
     <div className="relative" ref={dropdownRef}>
       <Button
         variant="ghost"
-        onClick={() => setOpen(!open)}
-        className="flex h-auto w-full items-center gap-3 p-2"
+        size="icon"
+        onClick={() => setDropdownOpen(!dropdownOpen)}
+        className="rounded-full p-0 h-8 w-8"
       >
         {user.image ? (
           <Image
             src={user.image}
             alt={displayName}
-            width={36}
-            height={36}
-            className="h-9 w-9 rounded-full object-cover"
+            width={32}
+            height={32}
+            className={`h-8 w-8 rounded-full object-cover transition-all ${ringClass}`}
             unoptimized
           />
         ) : (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary">
-            <span className="text-sm font-medium text-primary-foreground">
+          <div
+            className={`flex h-8 w-8 items-center justify-center rounded-full transition-all ${avatarBgClass} ${ringClass}`}
+          >
+            <span className={`text-xs font-medium ${avatarTextClass}`}>
               {initials}
             </span>
           </div>
         )}
-
-        <div className="flex-1 text-left">
-          <p className="text-sm font-medium text-foreground">{displayName}</p>
-          <p className="text-xs text-muted-foreground">{roleLabel}</p>
-        </div>
-
-        <ChevronUp
-          size={16}
-          className={`text-muted-foreground transition-transform ${
-            open ? '' : 'rotate-180'
-          }`}
-        />
       </Button>
 
-      {open && (
-        <div className="absolute bottom-full left-0 right-0 z-50 mb-2 rounded-lg border border-border bg-popover shadow-lg overflow-hidden">
+      {dropdownOpen && (
+        <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-border bg-popover shadow-lg overflow-hidden z-50">
           {/* User Info */}
           <div className="px-3 py-3 border-b border-border">
             <div className="flex items-center gap-3">
@@ -152,17 +160,7 @@ export function UserMenu({ user }: UserMenuProps) {
               className="w-full justify-start gap-2 px-3 text-sm"
               asChild
             >
-              <Link href="/" onClick={() => setOpen(false)}>
-                <Home size={14} className="text-muted-foreground" />
-                Ir a la Landing
-              </Link>
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-2 px-3 text-sm"
-              asChild
-            >
-              <Link href="/profile" onClick={() => setOpen(false)}>
+              <Link href="/profile" onClick={() => setDropdownOpen(false)}>
                 <User size={14} className="text-muted-foreground" />
                 Mi Perfil
               </Link>
@@ -176,7 +174,7 @@ export function UserMenu({ user }: UserMenuProps) {
                   className="w-full justify-start gap-2 px-3 text-sm"
                   asChild
                 >
-                  <Link href="/admin" onClick={() => setOpen(false)}>
+                  <Link href="/admin" onClick={() => setDropdownOpen(false)}>
                     <Shield size={14} className="text-muted-foreground" />
                     Panel Admin
                   </Link>
@@ -186,7 +184,7 @@ export function UserMenu({ user }: UserMenuProps) {
                   className="w-full justify-start gap-2 px-3 text-sm"
                   asChild
                 >
-                  <Link href="/educator" onClick={() => setOpen(false)}>
+                  <Link href="/educator" onClick={() => setDropdownOpen(false)}>
                     <LayoutDashboard size={14} className="text-muted-foreground" />
                     Panel Educador
                   </Link>
@@ -196,7 +194,7 @@ export function UserMenu({ user }: UserMenuProps) {
                   className="w-full justify-start gap-2 px-3 text-sm"
                   asChild
                 >
-                  <Link href="/student" onClick={() => setOpen(false)}>
+                  <Link href="/student" onClick={() => setDropdownOpen(false)}>
                     <GraduationCap size={14} className="text-muted-foreground" />
                     Panel Alumno
                   </Link>
@@ -210,7 +208,7 @@ export function UserMenu({ user }: UserMenuProps) {
                 className="w-full justify-start gap-2 px-3 text-sm"
                 asChild
               >
-                <Link href="/educator" onClick={() => setOpen(false)}>
+                <Link href="/educator" onClick={() => setDropdownOpen(false)}>
                   <LayoutDashboard size={14} className="text-muted-foreground" />
                   Mi Panel
                 </Link>
@@ -223,7 +221,7 @@ export function UserMenu({ user }: UserMenuProps) {
                 className="w-full justify-start gap-2 px-3 text-sm"
                 asChild
               >
-                <Link href="/student" onClick={() => setOpen(false)}>
+                <Link href="/student" onClick={() => setDropdownOpen(false)}>
                   <GraduationCap size={14} className="text-muted-foreground" />
                   Mi Panel
                 </Link>

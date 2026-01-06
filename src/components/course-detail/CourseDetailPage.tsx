@@ -196,9 +196,9 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
               {course.title}
             </h1>
             {course.startDate && (
-              <p className="text-xl opacity-90 capitalize">
+              <h2 className="text-xl opacity-90 capitalize">
                 {formatMonthYear(course.startDate)}
-              </p>
+              </h2>
             )}
             <div className="mt-4">
               <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-sm">
