@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { signOut } from 'next-auth/react'
 import { ChevronUp, LogOut, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -47,10 +48,13 @@ export function UserMenu({ user }: UserMenuProps) {
         className="flex h-auto w-full items-center gap-3 p-2"
       >
         {user.image ? (
-          <img
+          <Image
             src={user.image}
             alt={displayName}
+            width={36}
+            height={36}
             className="h-9 w-9 rounded-full object-cover"
+            unoptimized
           />
         ) : (
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary">

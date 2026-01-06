@@ -25,7 +25,7 @@ export async function sendOtpEmail(input: SendOtpEmailInput): Promise<void> {
     return
   }
 
-  const fromEmail = process.env.EMAIL_FROM || 'noreply@tinta.academy'
+  const fromEmail = process.env.EMAIL_FROM || 'academy@tinta.wine'
 
   await resend.emails.send({
     from: fromEmail,

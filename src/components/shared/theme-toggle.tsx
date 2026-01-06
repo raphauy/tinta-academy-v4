@@ -10,7 +10,7 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    setMounted(true) // eslint-disable-line react-hooks/set-state-in-effect -- Standard hydration pattern
   }, [])
 
   if (!mounted) {

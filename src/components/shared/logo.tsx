@@ -10,7 +10,7 @@ export function Logo() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    setMounted(true) // eslint-disable-line react-hooks/set-state-in-effect -- Standard hydration pattern
   }, [])
 
   // Avoid hydration mismatch by showing nothing until mounted
