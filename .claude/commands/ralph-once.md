@@ -42,7 +42,12 @@ Lee estos archivos para entender el contexto:
 7. **Documenta en progress.txt**:
    - Agrega una entrada con fecha, item completado, decisiones técnicas, y sugerencia para el siguiente paso
 
-8. **Haz git commit**:
+8. **Detente y solicita verificación manual**:
+   - Informa al usuario qué se implementó y cómo probarlo
+   - Indica claramente: "Por favor prueba la funcionalidad y responde 'ok' para hacer el commit"
+   - **NO continúes hasta que el usuario responda**
+
+9. **Haz git commit** (solo después de la confirmación del usuario):
    - Mensaje descriptivo del cambio realizado
    - Incluye el ID del item (ej: "feat(2.10): copy landing UI components")
 

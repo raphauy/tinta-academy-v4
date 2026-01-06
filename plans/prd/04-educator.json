@@ -1,0 +1,289 @@
+[
+  {
+    "id": "4.01",
+    "category": "schema",
+    "description": "Add 'draft' status to CourseStatus enum",
+    "steps": [
+      "Add 'draft' to CourseStatus enum in prisma/schema.prisma (before 'announced')",
+      "Run prisma generate",
+      "Run prisma migrate dev --name add_draft_status",
+      "Verify with pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.02",
+    "category": "schema",
+    "description": "Create Enrollment model for student-course relationship",
+    "steps": [
+      "Create Enrollment model in prisma/schema.prisma with fields:",
+      "  - id: String @id @default(cuid())",
+      "  - studentId: String (relation to Student)",
+      "  - courseId: String (relation to Course)",
+      "  - enrolledAt: DateTime @default(now())",
+      "  - status: EnrollmentStatus (pending, confirmed, cancelled)",
+      "  - createdAt, updatedAt timestamps",
+      "Create EnrollmentStatus enum: pending, confirmed, cancelled",
+      "Add enrollments relation to Student model",
+      "Add enrollments relation to Course model",
+      "Add @@unique([studentId, courseId]) constraint",
+      "Run prisma generate and prisma migrate dev --name add_enrollment",
+      "Verify with pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.02b",
+    "category": "data",
+    "description": "Migrate students from v3 database",
+    "steps": [
+      "Ensure V3_DATABASE_URL is in .env.local (from previous migration)",
+      "Create scripts/migration/migrate-students.ts",
+      "Connect to v3 DB, fetch all Students with their User relation",
+      "For each v3 Student:",
+      "  - Check if User with same email exists in v4, if not create User with role=student",
+      "  - Create Student record linked to User",
+      "  - Map fields: firstName, lastName, dateOfBirth, phone, address, city, zip, country",
+      "Store mapping of v3 studentId → v4 studentId for enrollment migration",
+      "Handle duplicates gracefully (skip if email already exists)",
+      "Run script: pnpm tsx scripts/migration/migrate-students.ts",
+      "Verify migrated students in Prisma Studio",
+      "Run pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.02c",
+    "category": "data",
+    "description": "Migrate enrollments from v3 Orders",
+    "steps": [
+      "Create scripts/migration/migrate-enrollments.ts",
+      "Connect to v3 DB, fetch all Orders with student and course relations",
+      "Load v3→v4 ID mappings for students and courses (from previous migrations)",
+      "For each v3 Order:",
+      "  - Skip if studentId or courseId not found in mappings",
+      "  - Map OrderStatus to EnrollmentStatus:",
+      "    - Paid → confirmed",
+      "    - Created, Pending, PaymentSent → pending",
+      "    - Rejected, Refunded, Cancelled → cancelled",
+      "  - Use Order.createdAt as enrolledAt",
+      "  - Create Enrollment with mapped studentId, courseId, status",
+      "Handle duplicates (same student+course) by keeping most recent/confirmed",
+      "Run script: pnpm tsx scripts/migration/migrate-enrollments.ts",
+      "Verify migrated enrollments in Prisma Studio",
+      "Update Course.enrolledCount based on confirmed enrollments count",
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.03",
+    "category": "api",
+    "description": "Create educator-service for dashboard metrics and educator data",
+    "steps": [
+      "Create src/services/educator-service.ts",
+      "Implement getEducatorByUserId(userId: string) - fetch Educator with user relation",
+      "Implement getEducatorDashboardMetrics(educatorId: string) returning:",
+      "  - totalCourses: count of educator's courses",
+      "  - publishedCourses: count where status != 'draft'",
+      "  - totalEnrollments: sum of enrolledCount across courses",
+      "  - upcomingCourses: courses with startDate > now and status in [announced, enrolling]",
+      "Verify with pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.04",
+    "category": "api",
+    "description": "Extend course-service for educator-specific operations",
+    "steps": [
+      "Add getEducatorCourses(educatorId: string, filters?: { status?, type?, modality? }) to course-service.ts",
+      "Add createCourse(data: CreateCourseInput) - only for presencial modality initially",
+      "Add updateCourse(id: string, data: UpdateCourseInput)",
+      "Add publishCourse(id: string) - change status from 'draft' to 'announced'",
+      "Add unpublishCourse(id: string) - change status back to 'draft'",
+      "Add deleteCourse(id: string) - soft delete or hard delete if no enrollments",
+      "Verify with pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.05",
+    "category": "api",
+    "description": "Create enrollment-service for managing course enrollments",
+    "steps": [
+      "Create src/services/enrollment-service.ts",
+      "Implement getEnrollmentsByCourse(courseId: string) - returns enrollments with student data",
+      "Implement getEnrollmentsByStudent(studentId: string) - returns enrollments with course data",
+      "Implement createEnrollment(studentId: string, courseId: string)",
+      "Implement updateEnrollmentStatus(id: string, status: EnrollmentStatus)",
+      "Implement cancelEnrollment(id: string)",
+      "Verify with pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.06",
+    "category": "actions",
+    "description": "Create server actions for educator course management",
+    "steps": [
+      "Create src/app/educator/actions.ts",
+      "Implement createCourseAction(formData) - validate with Zod, call course-service",
+      "Implement updateCourseAction(id, formData) - validate, update course",
+      "Implement publishCourseAction(id) - publish a draft course",
+      "Implement unpublishCourseAction(id) - unpublish back to draft",
+      "Implement deleteCourseAction(id) - delete course",
+      "All actions must verify educator owns the course",
+      "Use revalidatePath after mutations",
+      "Verify with pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.07",
+    "category": "ui",
+    "description": "Create educator dashboard page with metrics",
+    "steps": [
+      "Update src/app/educator/page.tsx as RSC",
+      "Fetch educator data using getEducatorByUserId from session",
+      "Fetch dashboard metrics using getEducatorDashboardMetrics",
+      "Create src/components/educator/EducatorDashboard.tsx with:",
+      "  - Welcome message with educator name",
+      "  - MetricCard components: Total Cursos, Cursos Publicados, Total Inscripciones, Pr\u00f3ximos Cursos",
+      "  - Quick action buttons: 'Crear Curso', 'Ver Cursos', 'Ver Estudiantes'",
+      "  - List of upcoming courses (max 3) with links",
+      "Use shadcn/ui Card, Button components following landing page style",
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.08",
+    "category": "ui",
+    "description": "Create educator course list page with filters",
+    "steps": [
+      "Update src/app/educator/courses/page.tsx as RSC",
+      "Fetch educator's courses using getEducatorCourses",
+      "Support URL query params for filters: ?status=draft&type=wset",
+      "Create src/components/educator/CourseList.tsx with:",
+      "  - Filter bar: status (todos, borrador, publicado, finalizado), type chips",
+      "  - Empty state: 'A\u00fan no has creado ning\u00fan curso' with CTA",
+      "  - Grid/list of EducatorCourseCard components",
+      "  - 'Crear nuevo curso' button",
+      "Create src/components/educator/EducatorCourseCard.tsx:",
+      "  - Course image or placeholder gradient",
+      "  - Title, type badge, status badge (Borrador, Publicado, etc.)",
+      "  - Date, location (for presencial), enrolledCount/maxCapacity",
+      "  - Actions: Editar, Publicar/Despublicar, Eliminar (dropdown menu)",
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.09",
+    "category": "ui",
+    "description": "Create presencial course editor form",
+    "steps": [
+      "Update src/app/educator/courses/create/page.tsx as RSC",
+      "Create src/app/educator/courses/[id]/edit/page.tsx for editing",
+      "Create src/components/educator/PresencialCourseForm.tsx with sections:",
+      "  - Informaci\u00f3n B\u00e1sica: title, slug (auto-generated), description (textarea), type (select: wset, taller, cata, curso)",
+      "  - Para WSET: wsetLevel selector (1, 2, 3)",
+      "  - Imagen: imageUrl input (URL manual por ahora)",
+      "  - Fechas: startDate, endDate (date pickers)",
+      "  - Ubicaci\u00f3n: location, address inputs",
+      "  - Capacidad: maxCapacity (number input)",
+      "  - Precio: priceUSD (number input)",
+      "  - duration: text input (ej: '8 horas', '2 d\u00edas')",
+      "Use shadcn/ui form components: Input, Textarea, Select, Button",
+      "Use react-hook-form with Zod validation",
+      "Form calls createCourseAction or updateCourseAction on submit",
+      "Redirect to /educator/courses on success",
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.10",
+    "category": "feature",
+    "description": "Wire course list actions (publish, unpublish, delete)",
+    "steps": [
+      "Wire 'Publicar' button in EducatorCourseCard to publishCourseAction",
+      "Wire 'Despublicar' button to unpublishCourseAction",
+      "Wire 'Eliminar' to deleteCourseAction with confirmation dialog (AlertDialog)",
+      "Show toast on success/error using sonner",
+      "Handle loading states during mutations",
+      "Verify actions refresh the list correctly",
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build",
+      "Test all actions in browser"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.11",
+    "category": "ui",
+    "description": "Create students list page for a course",
+    "steps": [
+      "Update src/app/educator/students/page.tsx to show course selector",
+      "Create src/app/educator/courses/[id]/students/page.tsx for course-specific students",
+      "Create src/components/educator/StudentList.tsx with:",
+      "  - Course info header (title, dates, enrolled/capacity)",
+      "  - Empty state: 'A\u00fan no hay estudiantes inscritos en este curso'",
+      "  - Table with columns: Nombre, Email, Fecha inscripci\u00f3n, Estado",
+      "  - Status badge: Pendiente (yellow), Confirmado (green), Cancelado (gray)",
+      "  - Search input to filter by name/email",
+      "Create src/components/educator/StudentRow.tsx for table rows",
+      "Use shadcn/ui Table, Badge, Input components",
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.12",
+    "category": "data",
+    "description": "Verify migrated data and seed fallback if needed",
+    "steps": [
+      "Verify students and enrollments migrated correctly in Prisma Studio",
+      "Check enrolledCount matches actual confirmed enrollments per course",
+      "If migration failed or no data: update prisma/seed.ts to create sample enrollments",
+      "  - Create 2-3 test students with User role=student + Student record",
+      "  - Create enrollments linking students to courses",
+      "  - Mix of pending, confirmed, cancelled statuses",
+      "Test educator dashboard shows correct metrics",
+      "Test student list shows migrated/seeded students",
+      "Verify with pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.13",
+    "category": "polish",
+    "description": "Add empty states and loading skeletons to educator pages",
+    "steps": [
+      "Add Suspense boundaries around data-fetching sections",
+      "Create skeleton components for CourseList (grid of placeholder cards)",
+      "Create skeleton for StudentList (table rows placeholder)",
+      "Create skeleton for dashboard metrics",
+      "Verify empty states show correctly when no data",
+      "Test with DevTools network throttling",
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.14",
+    "category": "polish",
+    "description": "Ensure responsive design and mobile usability",
+    "steps": [
+      "Test all educator pages at 375px viewport width",
+      "Course grid should become single column on mobile",
+      "Student table should scroll horizontally or stack on mobile",
+      "Form inputs should be full width on mobile",
+      "Action buttons/dropdowns should be touch-friendly",
+      "Navigation sidebar should collapse properly (AppShell handles this)",
+      "Fix any overflow or spacing issues",
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+    ],
+    "passes": false
+  }
+]
