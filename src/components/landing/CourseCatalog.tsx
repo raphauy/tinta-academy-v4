@@ -23,7 +23,7 @@ export function CourseCatalog({
 }: CourseCatalogProps) {
   const [filters, setFilters] = useState<CourseFilters>({})
   const [showFilters, setShowFilters] = useState(false)
-  const [showPastCourses, setShowPastCourses] = useState(false)
+  const [showPastCourses, setShowPastCourses] = useState(true)
 
 
   const filterCourses = (courses: Course[]) => {
@@ -195,7 +195,7 @@ export function CourseCatalog({
 
         {/* Course Grid */}
         {filteredUpcoming.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
             {filteredUpcoming.map((course) => (
               <CourseCard
                 key={course.id}
@@ -237,7 +237,7 @@ export function CourseCatalog({
             </button>
 
             {showPastCourses && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 opacity-70">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-70">
                 {filteredPast.map((course) => (
                   <CourseCard
                     key={course.id}

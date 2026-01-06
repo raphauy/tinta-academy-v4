@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import type { FooterLinks, ContactInfo } from '@/types/landing'
 import { Mail, MapPin, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -210,13 +211,12 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
             <ul className="space-y-1">
               {links.legal.map((link) => (
                 <li key={link.href}>
-                  <Button
-                    variant="ghost"
-                    onClick={() => onNavigate?.(link.href)}
-                    className="h-auto p-1 text-white/70 hover:text-white hover:bg-transparent text-sm font-normal"
+                  <Link
+                    href={link.href}
+                    className="block p-1 text-white/70 hover:text-white text-sm"
                   >
                     {link.label}
-                  </Button>
+                  </Link>
                 </li>
               ))}
             </ul>

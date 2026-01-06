@@ -58,9 +58,9 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
   const imageUrl = courseImages[course.type] || courseImages['curso']
 
   return (
-    <article className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-[#E5E5E5]">
+    <article className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-[#E5E5E5] h-full flex flex-col">
       {/* Image */}
-      <div className="relative h-48">
+      <div className="relative h-48 flex-shrink-0">
         <Image
           src={imageUrl}
           alt={course.title}
@@ -92,7 +92,7 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
       </div>
 
       {/* Content */}
-      <div className="p-5">
+      <div className="p-5 flex flex-col flex-1">
         {/* Title */}
         <h3 className="text-lg font-semibold text-[#2E2E2E] mb-2 line-clamp-2">
           {course.title}
@@ -128,8 +128,8 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
           )}
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-[#E5E5E5] pt-4">
+        {/* Footer - pushed to bottom */}
+        <div className="border-t border-[#E5E5E5] pt-4 mt-auto">
           <div className="flex items-center justify-between">
             {/* Educator */}
             {educator && (
@@ -156,8 +156,7 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
 
             {/* Price */}
             <div className="text-right">
-              <p className="text-xl font-bold text-[#143F3B]">${course.priceUSD}</p>
-              <p className="text-xs text-[#666]">USD</p>
+              <p className="text-xl font-bold text-[#143F3B]">USD {course.priceUSD}</p>
             </div>
           </div>
         </div>
