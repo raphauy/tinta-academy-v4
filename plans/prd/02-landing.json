@@ -152,6 +152,32 @@
     "passes": true
   },
   {
+    "id": "2.11b",
+    "category": "data",
+    "description": "Migrate courses and educators from v3 database",
+    "steps": [
+      "Add V3_DATABASE_URL to .env.local (copy from /home/raphael/desarrollo/tinta-academy-v3/.env)",
+      "Create scripts/migration/migrate-educators.ts script",
+      "Connect to v3 DB, fetch all Educators",
+      "For each v3 Educator: create User (email: {slug}@educator.tinta.academy, role: educator) + Educator in v4",
+      "Store mapping of v3 educatorId → v4 educatorId for course migration",
+      "Create scripts/migration/migrate-courses.ts script",
+      "Connect to v3 DB, fetch all Courses with educator relation",
+      "Map CourseType: WSET_NIVEL_X → type=wset + wsetLevel=X, others → lowercase",
+      "Map CourseStatus: Anunciado→announced, Inscribiendo→enrolling, Finalizado→finished",
+      "Infer modality: default 'presencial' (v3 doesn't have this field)",
+      "Map dates: classDates[0]→startDate, classDates[last] or examDate→endDate",
+      "Create duration string from totalDuration (e.g., '8 horas')",
+      "Use educatorId mapping to set correct v4 educatorId",
+      "Run migrate-educators.ts first, then migrate-courses.ts",
+      "Verify migrated data in Prisma Studio",
+      "Run pnpm tsc --noEmit",
+      "Run pnpm lint",
+      "Run pnpm build"
+    ],
+    "passes": true
+  },
+  {
     "id": "2.12",
     "category": "feature",
     "description": "Wire landing page interactions (filters, scroll, navigation)",

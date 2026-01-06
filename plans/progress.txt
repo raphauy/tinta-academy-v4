@@ -114,3 +114,31 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Wire landing page interactions (filters, scroll, navigation) - PRD 2.12
 
 ---
+
+## 2026-01-06 - v3 Database Migration
+
+**Completed (PRD item 2.11b):**
+- Created migration scripts in scripts/migration/:
+  - migrate-educators.ts - Migrates educators from v3 to v4 (creates User + Educator)
+  - migrate-courses.ts - Migrates courses with type/status mapping
+- Added V3_DATABASE_URL to .env.local
+- Successfully migrated:
+  - 1 educator (Gabi Zimmer)
+  - 4 courses (WSET Nivel 1, Taller top, Cata top, Curso Test)
+  - 1 course skipped (already existed from seed)
+
+**Technical Notes:**
+- Used `pg` library directly instead of Prisma adapter (Neon serverless adapter requires WebSocket)
+- Scripts use DIRECT_DATABASE_URL to bypass connection pooler for better reliability
+- Type mapping: WSET_NIVEL_X → type=wset + wsetLevel=X
+- Status mapping: Anunciado→announced, Inscribiendo→enrolling, Finalizado→finished
+- Default modality 'presencial' (v3 doesn't have this field)
+- Dates: classDates[0]→startDate, examDate or last classDate→endDate
+- Duration string: "{totalDuration} horas"
+- Educator mapping saved to educator-mapping.json for course migration dependency
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Wire landing page interactions (filters, scroll, navigation) - PRD 2.12
+
+---
