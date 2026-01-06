@@ -79,9 +79,69 @@ model Educator {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courses Course[]
 
   @@index([userId])
+}
+
+// ============================================
+// COURSES & TAGS
+// ============================================
+
+model Tag {
+  id      String   @id @default(cuid())
+  name    String
+  slug    String   @unique
+  courses Course[]
+
+  @@index([slug])
+}
+
+model Course {
+  id             String          @id @default(cuid())
+  slug           String          @unique
+  title          String
+  type           CourseType
+  modality       CourseModality
+  description    String?
+  startDate      DateTime?
+  endDate        DateTime?
+  duration       String?
+  maxCapacity    Int?
+  enrolledCount  Int             @default(0)
+  priceUSD       Float
+  location       String?
+  address        String?
+  imageUrl       String?
+  status         CourseStatus
+  educatorId     String
+  wsetLevel      Int?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  educator Educator @relation(fields: [educatorId], references: [id])
+  tags     Tag[]
+
+  @@index([slug])
+  @@index([educatorId])
+  @@index([status])
+  @@index([type])
+  @@index([modality])
+}
+
+// ============================================
+// NEWSLETTER
+// ============================================
+
+model NewsletterSubscription {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  subscribedAt DateTime @default(now())
+  isActive     Boolean  @default(true)
+
+  @@index([email])
+  @@index([isActive])
 }
 
 // ============================================
@@ -92,4 +152,25 @@ enum Role {
   superadmin
   educator
   student
+}
+
+enum CourseType {
+  wset
+  taller
+  cata
+  curso
+}
+
+enum CourseModality {
+  presencial
+  online
+}
+
+enum CourseStatus {
+  announced
+  enrolling
+  full
+  in_progress
+  finished
+  available
 }

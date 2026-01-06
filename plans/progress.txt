@@ -1,0 +1,43 @@
+# Progress Log - Tinta Academy
+
+This file tracks progress across Ralph sessions. Each entry documents what was implemented, technical decisions, and suggestions for next steps.
+
+---
+
+## 2026-01-06 - Initial Setup
+
+Created Ralph Wiggum infrastructure:
+- plans/ralph-once.sh - Human-in-the-loop script
+- plans/AGENT.md - Build/test instructions
+- plans/progress.txt - This file
+- plans/prd/02-landing.json - Milestone 2 PRD
+
+Foundation (Milestone 1) was already implemented:
+- NextAuth with OTP login
+- App shells for all roles (public, student, educator, admin)
+- Basic Prisma schema (User, Student, Educator, OtpToken)
+- Routing structure with role-based protection
+
+Next: Start implementing Milestone 2 - Landing & Catalog
+
+---
+
+## 2026-01-06 - Database Schema & API Foundation
+
+**Completed (PRD items 2.01-2.09):**
+- Added Course, Tag, and NewsletterSubscription models to Prisma schema
+- Created CourseType, CourseModality, and CourseStatus enums  
+- Implemented many-to-many relationship between Course and Tag
+- Added wsetLevel field for WSET courses
+- Enhanced seed script with 3 educators, 6 tags, and 6 sample courses
+- Created API routes: /api/courses (with filtering), /api/tags, /api/newsletter
+
+**Technical Notes:**
+- Used Prisma migrations instead of db push for better version control
+- API routes support query parameters for filtering courses by modality, type, tagIds
+- Courses are automatically separated into upcoming vs past based on startDate and status
+- Newsletter API uses Zod validation and handles duplicate emails gracefully
+
+**Next Priority:** UI components (CourseCard, CourseCatalog, Hero, Footer)
+
+---
