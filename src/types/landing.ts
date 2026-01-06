@@ -107,7 +107,7 @@ export interface LandingCatalogoProps {
   /** Called when user clicks CTA in hero */
   onHeroCTA?: () => void
   /** Called when user subscribes to newsletter */
-  onSubscribe?: (email: string) => void
+  onSubscribe?: (email: string) => Promise<{ success: boolean; error?: string }>
   /** Called when user clicks a navigation link */
   onNavigate?: (href: string) => void
   /** Called when user clicks login button */

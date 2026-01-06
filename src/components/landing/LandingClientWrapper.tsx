@@ -2,8 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo } from 'react'
+import { toast } from 'sonner'
 import type { HeroContent, FooterLinks, ContactInfo, Course, Tag, CourseFilters } from '@/types/landing'
 import { LandingContent } from './LandingCatalogo'
+import { subscribeToNewsletter } from '@/app/(public)/actions'
 
 interface LandingClientWrapperProps {
   heroContent: HeroContent
@@ -57,6 +59,21 @@ export function LandingClientWrapper({
     router.push(`/cursos/${courseSlug}`)
   }, [router])
 
+  // Handle newsletter subscription
+  const handleSubscribe = useCallback(async (email: string) => {
+    const result = await subscribeToNewsletter(email)
+    if (result.success) {
+      toast.success('¡Gracias por suscribirte!', {
+        description: 'Te enviaremos noticias sobre nuestros cursos y eventos.'
+      })
+    } else {
+      toast.error('Error al suscribirse', {
+        description: result.error || 'Por favor, intenta nuevamente.'
+      })
+    }
+    return result
+  }, [])
+
   // Filter courses client-side based on current URL params
   const filteredUpcoming = useMemo(() => {
     return upcomingCourses.filter((course) => {
@@ -97,6 +114,7 @@ export function LandingClientWrapper({
       onViewCourse={handleViewCourse}
       onFilter={handleFilter}
       onNavigate={handleNavigate}
+      onSubscribe={handleSubscribe}
     />
   )
 }

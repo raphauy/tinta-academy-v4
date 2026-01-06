@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { FooterLinks, ContactInfo } from '@/types/landing'
-import { Mail, MapPin, Send } from 'lucide-react'
+import { Mail, MapPin, Send, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -12,7 +12,7 @@ interface FooterProps {
   links: FooterLinks
   contactInfo: ContactInfo
   onNavigate?: (href: string) => void
-  onSubscribe?: (email: string) => void
+  onSubscribe?: (email: string) => Promise<{ success: boolean; error?: string }>
 }
 
 /**
@@ -21,14 +21,22 @@ interface FooterProps {
  */
 export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterProps) {
   const [email, setEmail] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (email) {
-      onSubscribe?.(email)
-      setSubscribed(true)
-      setEmail('')
+    if (!email || !onSubscribe) return
+
+    setIsLoading(true)
+    try {
+      const result = await onSubscribe(email)
+      if (result.success) {
+        setSubscribed(true)
+        setEmail('')
+      }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -147,13 +155,15 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
                     placeholder="tu@email.com"
                     className="flex-1 h-11 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus-visible:border-[#DDBBC0] focus-visible:ring-[#DDBBC0]/20"
                     required
+                    disabled={isLoading}
                   />
                   <Button
                     type="submit"
                     className="h-11 px-6 bg-[#DDBBC0] text-[#143F3B] hover:bg-[#E2E369]"
+                    disabled={isLoading}
                   >
-                    <Send size={18} />
-                    <span className="hidden sm:inline">Suscribirse</span>
+                    {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+                    <span className="hidden sm:inline">{isLoading ? 'Enviando...' : 'Suscribirse'}</span>
                   </Button>
                 </form>
               )}

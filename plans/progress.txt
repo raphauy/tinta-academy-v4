@@ -167,3 +167,25 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Implement newsletter subscription flow - PRD 2.13
 
 ---
+
+## 2026-01-06 - Newsletter Subscription Flow
+
+**Completed (PRD item 2.13):**
+- Wired onSubscribe callback in LandingClientWrapper to call subscribeToNewsletter server action
+- Updated Footer component to support async onSubscribe with loading state
+- Added loading spinner and disabled state during submission
+- Integrated sonner toasts for success/error feedback
+- Updated LandingCatalogoProps type to reflect async onSubscribe signature
+
+**Technical Notes:**
+- Footer now shows a loading spinner and disables input during submission
+- Success toast: "¡Gracias por suscribirte!" with description about future updates
+- Error toast: "Error al suscribirse" with specific error message from server action
+- The existing subscribed state still shows the inline success message after successful subscription
+- Type signature changed from `(email: string) => void` to `(email: string) => Promise<{ success: boolean; error?: string }>`
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Implement full course detail page with modern design - PRD 2.14
+
+---
