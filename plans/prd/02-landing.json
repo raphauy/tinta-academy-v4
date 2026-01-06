@@ -6,7 +6,7 @@
     "steps": [
       "Add Tag model to prisma/schema.prisma with fields: id, name, slug (unique)",
       "Run prisma generate",
-      "Run prisma db push",
+      "Run prisma migrate dev --name add_tag",
       "Verify with pnpm tsc --noEmit"
     ],
     "passes": true
@@ -21,7 +21,7 @@
       "Create CourseType enum: wset, taller, cata, curso",
       "Create CourseModality enum: presencial, online",
       "Create CourseStatus enum: announced, enrolling, full, in_progress, finished, available",
-      "Run prisma generate and db push",
+      "Run prisma generate and prisma migrate dev --name add_course",
       "Verify with pnpm tsc --noEmit"
     ],
     "passes": true
@@ -34,7 +34,7 @@
       "Add tags relation to Course model (many-to-many with Tag)",
       "Add courses relation to Tag model",
       "Use implicit many-to-many or explicit join table",
-      "Run prisma generate and db push",
+      "Run prisma generate and prisma migrate dev --name add_course_tag_relation",
       "Verify with pnpm tsc --noEmit"
     ],
     "passes": true
@@ -46,7 +46,7 @@
     "steps": [
       "Add optional wsetLevel field to Course (Int, nullable)",
       "Only applicable when type is 'wset'",
-      "Run prisma generate and db push",
+      "Run prisma generate and prisma migrate dev --name add_wset_level",
       "Verify with pnpm tsc --noEmit"
     ],
     "passes": true
@@ -57,7 +57,7 @@
     "description": "Create NewsletterSubscription model",
     "steps": [
       "Add NewsletterSubscription model: id, email (unique), subscribedAt, isActive",
-      "Run prisma generate and db push",
+      "Run prisma generate and prisma migrate dev --name add_newsletter",
       "Verify with pnpm tsc --noEmit"
     ],
     "passes": true
@@ -79,254 +79,150 @@
   {
     "id": "2.07",
     "category": "api",
-    "description": "Create API route to fetch courses with filters",
+    "description": "Create course-service with filtering logic",
     "steps": [
-      "Create src/app/api/courses/route.ts",
-      "Implement GET handler that returns courses with educator and tags included",
-      "Support query params: modality, type, tagIds (comma-separated)",
+      "Create src/services/course-service.ts",
+      "Implement getCourses, getUpcomingCourses, getPastCourses functions",
+      "Support filters: modality, type, tagIds",
       "Separate upcoming (future startDate or status=available) from past courses",
-      "Return JSON with upcomingCourses and pastCourses arrays",
-      "Test with curl or browser"
+      "Verify with pnpm tsc --noEmit"
     ],
     "passes": true
   },
   {
     "id": "2.08",
     "category": "api",
-    "description": "Create API route to fetch tags",
+    "description": "Create tag-service",
     "steps": [
-      "Create src/app/api/tags/route.ts",
-      "Implement GET handler returning all tags",
-      "Test with curl or browser"
+      "Create src/services/tag-service.ts",
+      "Implement getTags function",
+      "Verify with pnpm tsc --noEmit"
     ],
     "passes": true
   },
   {
     "id": "2.09",
     "category": "api",
-    "description": "Create API route for newsletter subscription",
+    "description": "Create newsletter-service and server action",
     "steps": [
-      "Create src/app/api/newsletter/route.ts",
-      "Implement POST handler that accepts { email }",
-      "Validate email format with Zod",
-      "Create or update NewsletterSubscription record",
-      "Return success/error JSON response",
-      "Handle duplicate emails gracefully"
-    ],
-    "passes": true
-  },
-  {
-    "id": "2.09b",
-    "category": "refactor",
-    "description": "Replace API routes with Server Actions using service layer",
-    "steps": [
-      "Delete src/app/api/courses/route.ts",
-      "Delete src/app/api/tags/route.ts",
-      "Delete src/app/api/newsletter/route.ts",
-      "Create src/services/course-service.ts with getCourses, getUpcomingCourses, getPastCourses functions",
-      "Create src/services/tag-service.ts with getTags function",
       "Create src/services/newsletter-service.ts with subscribe function",
-      "Create src/app/(public)/actions.ts with subscribeToNewsletter server action that calls newsletter-service",
-      "Verify with pnpm typecheck and pnpm build"
+      "Create src/app/(public)/actions.ts with subscribeToNewsletter server action",
+      "Validate email format with Zod in server action",
+      "Handle duplicate emails gracefully",
+      "Verify with pnpm tsc --noEmit"
     ],
     "passes": true
   },
   {
     "id": "2.10",
     "category": "ui",
-    "description": "Copy and adapt CourseCard component",
+    "description": "Copy and adapt all landing UI components from product-plan",
     "steps": [
-      "Copy CourseCard.tsx from product-plan/sections/landing-and-cat-logo/components/",
-      "Place in src/components/landing/CourseCard.tsx",
-      "Adapt imports to use project's UI components",
-      "Verify it compiles with pnpm tsc --noEmit"
+      "Create src/types/landing.ts - copy types from product-plan/sections/landing-and-cat-logo/types.ts, adapt to work with Prisma types",
+      "Create src/components/landing/ directory",
+      "Copy and adapt CourseCard.tsx - update imports to use project's UI components",
+      "Copy and adapt CourseCatalog.tsx - ensure it uses local CourseCard",
+      "Copy and adapt Hero.tsx - use placeholder image/gradient instead of video for now",
+      "Copy and adapt Footer.tsx - update imports",
+      "Copy and adapt LandingCatalogo.tsx - update imports to use local components",
+      "Create src/components/landing/index.ts barrel export for all components",
+      "Run pnpm tsc --noEmit to verify all components compile",
+      "Run pnpm lint to check for errors",
+      "Run pnpm build to verify production build"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "2.11",
-    "category": "ui",
-    "description": "Copy and adapt CourseCatalog component",
-    "steps": [
-      "Copy CourseCatalog.tsx from product-plan/sections/landing-and-cat-logo/components/",
-      "Place in src/components/landing/CourseCatalog.tsx",
-      "Adapt imports and ensure it uses local CourseCard",
-      "Verify it compiles with pnpm tsc --noEmit"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.12",
-    "category": "ui",
-    "description": "Copy and adapt Hero component",
-    "steps": [
-      "Copy Hero.tsx from product-plan/sections/landing-and-cat-logo/components/",
-      "Place in src/components/landing/Hero.tsx",
-      "Adapt imports to use project's UI components",
-      "For now, use a placeholder image/gradient instead of video",
-      "Verify it compiles with pnpm tsc --noEmit"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.13",
-    "category": "ui",
-    "description": "Copy and adapt Footer component",
-    "steps": [
-      "Copy Footer.tsx from product-plan/sections/landing-and-cat-logo/components/",
-      "Place in src/components/landing/Footer.tsx",
-      "Adapt imports to use project's UI components",
-      "Verify it compiles with pnpm tsc --noEmit"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.14",
-    "category": "ui",
-    "description": "Create landing page types file",
-    "steps": [
-      "Create src/types/landing.ts",
-      "Copy types from product-plan/sections/landing-and-cat-logo/types.ts",
-      "Adapt to work with Prisma-generated types where applicable",
-      "Export all types needed by landing components"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.15",
-    "category": "ui",
-    "description": "Copy and adapt LandingCatalogo orchestrator component",
-    "steps": [
-      "Copy LandingCatalogo.tsx from product-plan/sections/landing-and-cat-logo/components/",
-      "Place in src/components/landing/LandingCatalogo.tsx",
-      "Update imports to use local components (Hero, CourseCatalog, Footer)",
-      "Verify it compiles with pnpm tsc --noEmit"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.16",
-    "category": "ui",
-    "description": "Create landing components barrel export",
-    "steps": [
-      "Create src/components/landing/index.ts",
-      "Export all landing components",
-      "Verify imports work correctly"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.17",
     "category": "page",
-    "description": "Implement landing page with real data",
+    "description": "Implement landing page with real data from services",
     "steps": [
       "Update src/app/(public)/page.tsx",
-      "Fetch courses, tags from database using Prisma",
-      "Transform Prisma data to component props format",
+      "Import and call getUpcomingCourses, getPastCourses from course-service",
+      "Import and call getTags from tag-service",
+      "Transform Prisma data to component props format if needed",
       "Render LandingCatalogo with real data",
-      "Configure hero content and footer links",
+      "Configure hero content (title, subtitle, CTA text)",
+      "Configure footer links",
+      "Run pnpm tsc --noEmit",
+      "Run pnpm lint",
+      "Run pnpm build",
       "Test in browser at localhost:3000"
     ],
     "passes": false
   },
   {
-    "id": "2.18",
+    "id": "2.12",
     "category": "feature",
-    "description": "Implement course filtering functionality",
+    "description": "Wire landing page interactions (filters, scroll, navigation)",
     "steps": [
-      "Add URL search params support to landing page",
-      "Read filters from URL: ?modality=online&type=wset",
-      "Pass filters to data fetching",
-      "Update onFilter callback to update URL params",
-      "Verify filters work in browser"
+      "Add URL search params support for filtering (?modality=online&type=wset)",
+      "Read filters from URL and pass to data fetching",
+      "Wire onFilter callback to update URL params",
+      "Wire onHeroCTA to scroll smoothly to catalog section (add id to section)",
+      "Wire onLogin callback to navigate to /login",
+      "Wire onRegister callback to navigate to /login (same flow for now)",
+      "Run pnpm tsc --noEmit",
+      "Run pnpm lint",
+      "Run pnpm build",
+      "Test all interactions in browser"
     ],
     "passes": false
   },
   {
-    "id": "2.19",
+    "id": "2.13",
     "category": "feature",
-    "description": "Implement newsletter subscription",
+    "description": "Implement newsletter subscription flow",
     "steps": [
-      "Wire onSubscribe callback in LandingCatalogo",
-      "Call newsletter API on form submit",
-      "Show success toast on successful subscription",
-      "Show error toast on failure",
+      "Wire onSubscribe callback in Footer or LandingCatalogo",
+      "Call subscribeToNewsletter server action on form submit",
+      "Show success toast on successful subscription (use sonner or similar)",
+      "Show error toast on failure with user-friendly message",
+      "Run pnpm tsc --noEmit",
+      "Run pnpm lint",
+      "Run pnpm build",
       "Test subscription flow in browser"
     ],
     "passes": false
   },
   {
-    "id": "2.20",
+    "id": "2.14",
     "category": "feature",
-    "description": "Implement course card navigation",
+    "description": "Implement course detail navigation with placeholder page",
     "steps": [
-      "Wire onViewCourse callback",
+      "Wire onViewCourse callback in CourseCard/CourseCatalog",
       "Navigate to /cursos/[slug] on card click",
-      "Create placeholder page at src/app/(public)/cursos/[slug]/page.tsx",
-      "Show course title on detail page (full implementation in later milestone)",
+      "Create src/app/(public)/cursos/[slug]/page.tsx placeholder page",
+      "Fetch course by slug using course-service (add getCourseBySlug if needed)",
+      "Show course title and basic info on detail page",
+      "Add 'Volver' link to return to catalog",
+      "Run pnpm tsc --noEmit",
+      "Run pnpm lint",
+      "Run pnpm build",
       "Test navigation in browser"
     ],
     "passes": false
   },
   {
-    "id": "2.21",
-    "category": "feature",
-    "description": "Implement hero CTA scroll behavior",
-    "steps": [
-      "Wire onHeroCTA callback",
-      "Scroll smoothly to catalog section on CTA click",
-      "Add id to catalog section for scroll target",
-      "Test scroll behavior in browser"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.22",
-    "category": "feature",
-    "description": "Wire header login/register buttons",
-    "steps": [
-      "Wire onLogin callback to navigate to /login",
-      "Wire onRegister callback to navigate to /login (same flow for now)",
-      "Verify navigation works in browser"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.23",
+    "id": "2.15",
     "category": "polish",
-    "description": "Implement empty states for catalog",
+    "description": "Polish landing page (empty states, responsive, loading)",
     "steps": [
-      "Show 'No hay cursos programados' when upcomingCourses is empty",
-      "Show 'No se encontraron cursos' when filters return no results",
-      "Include 'Limpiar filtros' button in no-results state",
+      "Implement empty states: 'No hay cursos programados' when upcomingCourses is empty",
+      "Show 'No se encontraron cursos' when filters return no results with 'Limpiar filtros' button",
       "Hide past courses section entirely if empty",
-      "Test empty states by filtering or clearing database"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.24",
-    "category": "polish",
-    "description": "Ensure responsive layout on mobile",
-    "steps": [
-      "Test landing page on mobile viewport (375px width)",
-      "Verify course grid becomes single column",
-      "Verify hero text is readable",
+      "Test responsive layout on mobile viewport (375px width)",
+      "Verify course grid becomes single column on mobile",
+      "Verify hero text is readable on mobile",
       "Verify filter chips wrap properly",
-      "Verify footer stacks vertically",
-      "Fix any overflow or spacing issues"
-    ],
-    "passes": false
-  },
-  {
-    "id": "2.25",
-    "category": "polish",
-    "description": "Add loading states to landing page",
-    "steps": [
+      "Verify footer stacks vertically on mobile",
+      "Fix any overflow or spacing issues",
       "Add Suspense boundary around course catalog",
-      "Create skeleton loader for course cards",
-      "Show loading state while data fetches",
-      "Test loading state with slow network (DevTools throttling)"
+      "Create skeleton loader component for course cards",
+      "Run pnpm tsc --noEmit",
+      "Run pnpm lint",
+      "Run pnpm build",
+      "Test loading state with DevTools network throttling"
     ],
     "passes": false
   }

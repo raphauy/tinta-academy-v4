@@ -63,3 +63,30 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** UI components implementation (CourseCard, CourseCatalog, Hero, Footer)
 
 ---
+
+## 2026-01-06 - Landing UI Components Implementation
+
+**Completed (PRD item 2.10):**
+- Created src/types/landing.ts - adapted types from product-plan to work with Prisma Course model
+- Implemented all landing components in src/components/landing/:
+  - CourseCard.tsx - with Next.js Image optimization and proper Prisma type integration
+  - CourseCatalog.tsx - course filtering and catalog display
+  - Hero.tsx - cinematic hero section with background image
+  - Header.tsx - responsive navigation header
+  - Footer.tsx - full institutional footer with newsletter subscription
+  - LandingCatalogo.tsx - main landing page component orchestrating all sections
+- Created index.ts barrel export for clean imports
+- Fixed all ESLint warnings (Next.js Image usage, unused variables)
+
+**Technical Notes:**
+- Used Next.js Image component for optimized loading instead of regular img tags
+- Adapted original product-plan types to match Prisma model structure (Date types, relation structure)
+- Course cards display educator info from embedded relation, not separate lookup
+- Removed unused educator parameter passing through component tree
+- All components are client components due to React hooks usage ('use client' directive)
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Implement landing page with real data from services (PRD 2.11)
+
+---
