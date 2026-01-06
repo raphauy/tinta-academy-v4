@@ -102,6 +102,8 @@ export interface LandingCatalogoProps {
   contactInfo: ContactInfo
   /** Called when user clicks on a course card to view details */
   onViewCourse?: (courseSlug: string) => void
+  /** Initial filters from URL */
+  initialFilters?: CourseFilters
   /** Called when user applies filters */
   onFilter?: (filters: CourseFilters) => void
   /** Called when user clicks CTA in hero */

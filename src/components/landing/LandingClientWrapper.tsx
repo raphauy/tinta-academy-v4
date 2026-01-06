@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { toast } from 'sonner'
 import type { HeroContent, FooterLinks, ContactInfo, Course, Tag, CourseFilters } from '@/types/landing'
 import { LandingContent } from './LandingCatalogo'
@@ -28,10 +28,7 @@ export function LandingClientWrapper({
 }: LandingClientWrapperProps) {
   const router = useRouter()
 
-  // Use filters passed from server (avoids hydration issues with useSearchParams)
-  const currentFilters = initialFilters
-
-  // Update URL with new filters
+  // Update URL without navigation (just sync URL with current filters)
   const handleFilter = useCallback((filters: CourseFilters) => {
     const params = new URLSearchParams()
 
@@ -46,8 +43,11 @@ export function LandingClientWrapper({
     }
 
     const queryString = params.toString()
-    router.push(queryString ? `/?${queryString}` : '/', { scroll: false })
-  }, [router])
+    const newUrl = queryString ? `/?${queryString}` : '/'
+
+    // Update URL without causing navigation/reload
+    window.history.replaceState(null, '', newUrl)
+  }, [])
 
   // Handle navigation
   const handleNavigate = useCallback((href: string) => {
@@ -74,43 +74,15 @@ export function LandingClientWrapper({
     return result
   }, [])
 
-  // Filter courses client-side based on current URL params
-  const filteredUpcoming = useMemo(() => {
-    return upcomingCourses.filter((course) => {
-      if (currentFilters.modality && course.modality !== currentFilters.modality) return false
-      if (currentFilters.type && course.type !== currentFilters.type) return false
-      if (currentFilters.tagIds && currentFilters.tagIds.length > 0) {
-        const hasMatchingTag = currentFilters.tagIds.some((tagId) =>
-          course.tags.some(tag => tag.id === tagId)
-        )
-        if (!hasMatchingTag) return false
-      }
-      return true
-    })
-  }, [upcomingCourses, currentFilters])
-
-  const filteredPast = useMemo(() => {
-    return pastCourses.filter((course) => {
-      if (currentFilters.modality && course.modality !== currentFilters.modality) return false
-      if (currentFilters.type && course.type !== currentFilters.type) return false
-      if (currentFilters.tagIds && currentFilters.tagIds.length > 0) {
-        const hasMatchingTag = currentFilters.tagIds.some((tagId) =>
-          course.tags.some(tag => tag.id === tagId)
-        )
-        if (!hasMatchingTag) return false
-      }
-      return true
-    })
-  }, [pastCourses, currentFilters])
-
   return (
     <LandingContent
       heroContent={heroContent}
       tags={tags}
-      upcomingCourses={filteredUpcoming}
-      pastCourses={filteredPast}
+      upcomingCourses={upcomingCourses}
+      pastCourses={pastCourses}
       footerLinks={footerLinks}
       contactInfo={contactInfo}
+      initialFilters={initialFilters}
       onViewCourse={handleViewCourse}
       onFilter={handleFilter}
       onNavigate={handleNavigate}

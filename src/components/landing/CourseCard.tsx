@@ -62,7 +62,7 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
     <article className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-[#E5E5E5] h-full flex flex-col">
       {/* Image - using fill like v3 */}
       <div
-        className="relative h-48 flex-shrink-0 cursor-pointer"
+        className="relative h-48 shrink-0 cursor-pointer"
         onClick={onView}
         role="button"
         tabIndex={0}

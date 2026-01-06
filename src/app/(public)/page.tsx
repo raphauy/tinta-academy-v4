@@ -1,6 +1,7 @@
+import { Suspense } from 'react'
 import { getUpcomingCourses, getPastCourses } from '@/services/course-service'
 import { getTags } from '@/services/tag-service'
-import { LandingClientWrapper } from '@/components/landing'
+import { LandingClientWrapper, CourseCatalogSkeleton } from '@/components/landing'
 import { footerLinks, contactInfo } from '@/config/footer'
 import type { HeroContent, Course, Tag, CourseFilters } from '@/types/landing'
 import type { Course as PrismaCourse, Tag as PrismaTag, Educator as PrismaEducator } from '@prisma/client'
@@ -90,14 +91,27 @@ export default async function HomePage({ searchParams }: PageProps) {
   const tags = tagsRaw.map(transformTag)
 
   return (
-    <LandingClientWrapper
-      heroContent={heroContent}
-      tags={tags}
-      upcomingCourses={upcomingCourses}
-      pastCourses={pastCourses}
-      footerLinks={footerLinks}
-      contactInfo={contactInfo}
-      initialFilters={initialFilters}
-    />
+    <Suspense fallback={<LandingFallback />}>
+      <LandingClientWrapper
+        heroContent={heroContent}
+        tags={tags}
+        upcomingCourses={upcomingCourses}
+        pastCourses={pastCourses}
+        footerLinks={footerLinks}
+        contactInfo={contactInfo}
+        initialFilters={initialFilters}
+      />
+    </Suspense>
+  )
+}
+
+function LandingFallback() {
+  return (
+    <div className="min-h-screen">
+      {/* Hero Skeleton */}
+      <div className="relative h-[60vh] min-h-[500px] bg-[#143F3B] animate-pulse" />
+      {/* Catalog Skeleton */}
+      <CourseCatalogSkeleton />
+    </div>
   )
 }

@@ -263,6 +263,6 @@
       "Run pnpm build",
       "Test loading state with DevTools network throttling"
     ],
-    "passes": false
+    "passes": true
   }
 ]

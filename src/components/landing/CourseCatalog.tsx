@@ -9,6 +9,7 @@ interface CourseCatalogProps {
   upcomingCourses: Course[]
   pastCourses: Course[]
   tags: Tag[]
+  initialFilters?: CourseFilters
   onViewCourse?: (courseSlug: string) => void
   onFilter?: (filters: CourseFilters) => void
 }
@@ -20,14 +21,15 @@ export function CourseCatalog({
   upcomingCourses,
   pastCourses,
   tags,
+  initialFilters,
   onViewCourse,
   onFilter,
 }: CourseCatalogProps) {
-  const [filters, setFilters] = useState<CourseFilters>({})
+  const [filters, setFilters] = useState<CourseFilters>(initialFilters || {})
   const [showFilters, setShowFilters] = useState(false)
   const [showPastCourses, setShowPastCourses] = useState(true)
 
-  // Update local filters and notify parent
+  // Update local filters and notify parent (for URL sync)
   const updateFilters = (newFilters: CourseFilters) => {
     setFilters(newFilters)
     onFilter?.(newFilters)
@@ -218,16 +220,31 @@ export function CourseCatalog({
               />
             ))}
           </div>
+        ) : upcomingCourses.length === 0 ? (
+          <div className="text-center py-16 mb-16 bg-white rounded-2xl border border-[#E5E5E5]">
+            <div className="text-6xl mb-4">🍷</div>
+            <h3 className="text-xl font-semibold text-[#2E2E2E] mb-2">
+              No hay cursos programados
+            </h3>
+            <p className="text-[#666] max-w-md mx-auto">
+              Estamos preparando nuevos cursos. Suscribite al newsletter para enterarte cuando abramos inscripciones.
+            </p>
+          </div>
         ) : (
-          <div className="text-center py-16 mb-16">
-            <p className="text-[#666] text-lg mb-4">
-              No hay cursos que coincidan con los filtros.
+          <div className="text-center py-16 mb-16 bg-white rounded-2xl border border-[#E5E5E5]">
+            <div className="text-5xl mb-4">🔍</div>
+            <h3 className="text-xl font-semibold text-[#2E2E2E] mb-2">
+              No se encontraron cursos
+            </h3>
+            <p className="text-[#666] mb-6">
+              No hay cursos que coincidan con los filtros seleccionados.
             </p>
             <button
               onClick={clearFilters}
-              className="text-[#143F3B] font-medium hover:underline"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#143F3B] text-white rounded-full font-medium hover:bg-[#1a5550] transition-colors"
             >
-              Ver todos los cursos
+              <X size={18} />
+              Limpiar filtros
             </button>
           </div>
         )}
