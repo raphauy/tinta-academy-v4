@@ -1,6 +1,9 @@
 import type { Course, Educator } from '@/types/landing'
 import { Calendar, Clock, Users, MapPin, Monitor } from 'lucide-react'
 import Image from 'next/image'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { toLocalDate } from '@/lib/utils'
 
 interface CourseCardProps {
   course: Course
@@ -22,11 +25,11 @@ const courseImages: Record<string, string> = {
 export function CourseCard({ course, educator, onView }: CourseCardProps) {
   const formatDate = (date?: Date | null) => {
     if (!date) return ''
-    return date.toLocaleDateString('es-UY', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    })
+    try {
+      return format(toLocalDate(date), 'd MMM. yyyy', { locale: es })
+    } catch {
+      return ''
+    }
   }
 
   const getTypeLabel = (type: Course['type'], wsetLevel?: number | null) => {

@@ -90,3 +90,27 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Implement landing page with real data from services (PRD 2.11)
 
 ---
+
+## 2026-01-06 - Landing Page Implementation
+
+**Completed (PRD item 2.11):**
+- Implemented landing page with real data from services in src/app/(public)/page.tsx
+- Added data transformation functions to convert Prisma types to landing page component types
+- Configured hero content, footer links, and contact information for the landing page
+- Integrated getUpcomingCourses, getPastCourses from course-service
+- Integrated getTags from tag-service
+- Transformed Prisma Course model data to match expected landing page types
+- Set up LandingCatalogo component with real course and tag data
+
+**Technical Notes:**
+- Created transformation functions (transformCourse, transformTag) to bridge Prisma nullable fields with component non-nullable requirements
+- Landing page now displays actual seeded courses and tags from database
+- Hero section configured with wine education messaging
+- Footer configured with realistic institutional links and contact information
+- Placeholder handlers added for future features (navigation, subscriptions, course details)
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Wire landing page interactions (filters, scroll, navigation) - PRD 2.12
+
+---

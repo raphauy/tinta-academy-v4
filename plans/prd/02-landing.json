@@ -149,7 +149,7 @@
       "Run pnpm build",
       "Test in browser at localhost:3000"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "2.12",

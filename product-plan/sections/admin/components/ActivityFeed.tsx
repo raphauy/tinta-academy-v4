@@ -1,3 +1,4 @@
+import React from 'react'
 import {
   UserPlus,
   CreditCard,
@@ -114,7 +115,7 @@ export function ActivityFeed({ activities, maxItems = 8 }: ActivityFeedProps) {
               <div className="flex items-start gap-3">
                 {/* Icon */}
                 <div
-                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${colors.bg}`}
+                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${colors.bg}`}
                 >
                   <span className={colors.text}>
                     {getActivityIcon(activity.type)}

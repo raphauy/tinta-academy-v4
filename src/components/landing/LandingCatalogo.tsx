@@ -66,3 +66,54 @@ export function LandingCatalogo({
     </div>
   )
 }
+
+/**
+ * LandingContent - Landing page content without header (for use with AppShell)
+ */
+export function LandingContent({
+  heroContent,
+  tags,
+  upcomingCourses,
+  pastCourses,
+  footerLinks,
+  contactInfo,
+  onViewCourse,
+  onHeroCTA,
+  onSubscribe,
+  onNavigate,
+}: Omit<LandingCatalogoProps, 'educators' | 'onLogin' | 'onRegister'>) {
+  const catalogRef = useRef<HTMLDivElement>(null)
+
+  const handleHeroCTA = () => {
+    onHeroCTA?.()
+    catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Hero */}
+      <Hero
+        content={heroContent}
+        onCTA={handleHeroCTA}
+      />
+
+      {/* Catalog */}
+      <div ref={catalogRef}>
+        <CourseCatalog
+          upcomingCourses={upcomingCourses}
+          pastCourses={pastCourses}
+          tags={tags}
+          onViewCourse={onViewCourse}
+        />
+      </div>
+
+      {/* Footer */}
+      <Footer
+        links={footerLinks}
+        contactInfo={contactInfo}
+        onNavigate={onNavigate}
+        onSubscribe={onSubscribe}
+      />
+    </div>
+  )
+}

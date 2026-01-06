@@ -181,6 +181,40 @@ export async function subscribeToNewsletter(email: string) {
 **DO NOT** use API routes for internal app operations.
 
 ### UI Components
+
+**ALWAYS use shadcn/ui components, NOT native HTML elements:**
+
+| DON'T use | USE instead | Import from |
+|-----------|-------------|-------------|
+| `<button>` | `<Button>` | `@/components/ui/button` |
+| `<input>` | `<Input>` | `@/components/ui/input` |
+| `<select>` | `<Select>` | `@/components/ui/select` |
+| `<textarea>` | `<Textarea>` | `@/components/ui/textarea` |
+| `<checkbox>` | `<Checkbox>` | `@/components/ui/checkbox` |
+| `<dialog>` | `<Dialog>` | `@/components/ui/dialog` |
+| `<table>` | `<Table>` | `@/components/ui/table` |
+
+Example:
+```typescript
+// WRONG - native HTML
+<button onClick={handleClick}>Submit</button>
+<select onChange={handleChange}>...</select>
+
+// CORRECT - shadcn/ui
+import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+<Button onClick={handleClick}>Submit</Button>
+<Select onValueChange={handleChange}>
+  <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+  <SelectContent>
+    <SelectItem value="option1">Option 1</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+Available components in `src/components/ui/`: Check the directory for all available components.
+
 Copy pre-built components from `product-plan/sections/*/components/` and integrate with real data.
 
 ## Database Models Status
