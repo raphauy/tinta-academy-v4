@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { toLocalDate } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 interface CourseCardProps {
   course: Course
@@ -60,7 +61,13 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
   return (
     <article className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow border border-[#E5E5E5] h-full flex flex-col">
       {/* Image - using fill like v3 */}
-      <div className="relative h-48 flex-shrink-0">
+      <div
+        className="relative h-48 flex-shrink-0 cursor-pointer"
+        onClick={onView}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && onView?.()}
+      >
         <Image
           src={imageUrl}
           alt={course.title}
@@ -170,18 +177,20 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
 
             {/* Price */}
             <div className="text-right">
-              <p className="text-xl font-bold text-[#143F3B]">USD {course.priceUSD}</p>
+              <p className="text-xl font-bold text-[#143F3B]">
+                {course.priceUSD === 0 ? 'Gratis' : `USD ${course.priceUSD}`}
+              </p>
             </div>
           </div>
         </div>
 
         {/* CTA */}
-        <button
+        <Button
           onClick={onView}
-          className="mt-4 w-full py-3 bg-[#143F3B] text-white font-medium rounded-xl hover:bg-[#1a524d] transition-colors"
+          className="mt-4 w-full py-3 bg-[#143F3B] text-white font-medium rounded-xl hover:bg-[#1a524d]"
         >
           Ver detalles
-        </button>
+        </Button>
       </div>
     </article>
   )

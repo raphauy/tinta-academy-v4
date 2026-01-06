@@ -164,11 +164,13 @@ async function migrateCourses(
     // Format duration
     const duration = `${v3Course.totalDuration} horas`
 
-    // Default modality to presencial (v3 doesn't have this field)
-    const modality = 'presencial'
+    // Infer modality from location (v3 doesn't have this field)
+    const location = v3Course.location?.toLowerCase() || ''
+    const modality = location.includes('online') || location.includes('virtual') ? 'online' : 'presencial'
 
     console.log(`   Type: ${v3Course.type} → ${type}${wsetLevel ? ` (level ${wsetLevel})` : ''}`)
     console.log(`   Status: ${v3Course.status} → ${status}`)
+    console.log(`   Modality: ${modality} (inferred from location: "${v3Course.location || ''}")`)
     console.log(`   Educator: ${v3Course.educatorName} (v4 ID: ${v4EducatorId})`)
 
     // Create course in v4
