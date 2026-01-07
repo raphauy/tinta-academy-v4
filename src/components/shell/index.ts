@@ -1,6 +1,8 @@
 export { AppShell } from './app-shell'
 export type { AppShellProps, ShellVariant } from './app-shell'
 
+export { LandingShell, useLandingShell } from './landing-shell'
+
 export { MainNav } from './main-nav'
 export type { MainNavProps, NavItem } from './main-nav'
 

@@ -2,8 +2,10 @@
 
 import { useRef } from 'react'
 import type { LandingCatalogoProps } from '@/types/landing'
+import { useLandingShell } from '@/components/shell'
 import { Header } from './Header'
 import { Hero } from './Hero'
+import { WSETSection } from './wset-section'
 import { CourseCatalog } from './CourseCatalog'
 import { Footer } from './Footer'
 
@@ -25,21 +27,28 @@ export function LandingCatalogo({
 }: LandingCatalogoProps) {
   const catalogRef = useRef<HTMLDivElement>(null)
 
+  const scrollToCatalog = () => {
+    catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   const handleHeroCTA = () => {
     onHeroCTA?.()
-    catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    scrollToCatalog()
   }
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <Header user={user} />
+      <Header user={user} onScrollToCatalog={scrollToCatalog} />
 
       {/* Hero */}
       <Hero
         content={heroContent}
         onCTA={handleHeroCTA}
       />
+
+      {/* WSET Section */}
+      <WSETSection onCTA={scrollToCatalog} />
 
       {/* Catalog */}
       <div ref={catalogRef}>
@@ -63,7 +72,7 @@ export function LandingCatalogo({
 }
 
 /**
- * LandingContent - Landing page content without header (for use with AppShell)
+ * LandingContent - Landing page content with transparent header over hero
  */
 export function LandingContent({
   heroContent,
@@ -80,19 +89,30 @@ export function LandingContent({
   onFilter,
 }: Omit<LandingCatalogoProps, 'educators' | 'onLogin' | 'onRegister'>) {
   const catalogRef = useRef<HTMLDivElement>(null)
+  const { user } = useLandingShell()
+
+  const scrollToCatalog = () => {
+    catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const handleHeroCTA = () => {
     onHeroCTA?.()
-    catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    scrollToCatalog()
   }
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header - Transparent over hero */}
+      <Header user={user} onScrollToCatalog={scrollToCatalog} />
+
       {/* Hero */}
       <Hero
         content={heroContent}
         onCTA={handleHeroCTA}
       />
+
+      {/* WSET Section */}
+      <WSETSection onCTA={scrollToCatalog} />
 
       {/* Catalog */}
       <div ref={catalogRef} id="catalog">

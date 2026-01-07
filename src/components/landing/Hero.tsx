@@ -18,7 +18,7 @@ export function Hero({ content, onCTA }: HeroProps) {
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=1920&q=80"
+          src="/hero.jpg"
           alt="Wine tasting"
           fill
           className="object-cover"
@@ -37,8 +37,13 @@ export function Hero({ content, onCTA }: HeroProps) {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-8 max-w-xl lg:max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-6 max-w-xl lg:max-w-2xl mx-auto">
             {content.subheadline}
+          </p>
+
+          {/* Secondary text */}
+          <p className="text-base md:text-lg text-white/70 leading-relaxed mb-8 max-w-xl lg:max-w-2xl mx-auto">
+            Creemos en el poder transformador del conocimiento y ofrecemos una educación de excelencia que combina teoría, práctica y experiencia, permitiéndote vivir y apreciar la cultura del vino de una manera significativa.
           </p>
 
           {/* CTA Button */}
