@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X } from 'lucide-react'
+import Image from 'next/image'
+import { Menu, X, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MainNav } from './main-nav'
 import { UserMenu, type UserMenuUser } from './user-menu'
@@ -38,21 +39,65 @@ export function AppShell({ children, variant, user }: AppShellProps) {
   if (variant === 'public') {
     return (
       <div className="min-h-screen bg-secondary">
-        <header className="sticky top-0 z-50 border-b border-border bg-background">
+        <header className="sticky top-0 z-50 border-b border-border bg-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
-              <div className="flex-shrink-0">
-                <Logo />
-              </div>
+              {/* Logo */}
+              <Link href="/" className="hover:opacity-80 transition-opacity">
+                <Image
+                  src="/TintaAcademy_Logo_Negro.png"
+                  alt="Tinta Academy"
+                  width={160}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
+              </Link>
 
-              {/* User Avatar with Dropdown */}
-              {user ? (
-                <UserDropdown user={user} />
-              ) : (
-                <Button variant="ghost" asChild>
-                  <Link href="/login">Iniciar Sesión</Link>
+              {/* Center Navigation */}
+              <nav className="hidden md:flex items-center gap-2">
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="text-foreground hover:bg-muted text-sm font-medium"
+                >
+                  <Link href="/wset">WSET</Link>
                 </Button>
-              )}
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="text-foreground hover:bg-muted text-sm font-medium"
+                >
+                  <Link href="/#catalog">Cursos</Link>
+                </Button>
+              </nav>
+
+              {/* Right Section */}
+              <div className="flex items-center gap-2">
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="icon"
+                  className="text-foreground hover:bg-muted"
+                  title="Buscar cursos"
+                >
+                  <Link href="/#catalog">
+                    <Search size={18} />
+                  </Link>
+                </Button>
+
+                {user ? (
+                  <UserDropdown user={user} />
+                ) : (
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="text-foreground hover:bg-muted text-sm font-medium"
+                  >
+                    <Link href="/login">Entrar</Link>
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </header>

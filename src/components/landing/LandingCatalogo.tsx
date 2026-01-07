@@ -5,6 +5,7 @@ import type { LandingCatalogoProps } from '@/types/landing'
 import { useLandingShell } from '@/components/shell'
 import { Header } from './Header'
 import { Hero } from './Hero'
+import { EducationSection } from './education-section'
 import { WSETSection } from './wset-section'
 import { CourseCatalog } from './CourseCatalog'
 import { Footer } from './Footer'
@@ -46,6 +47,9 @@ export function LandingCatalogo({
         content={heroContent}
         onCTA={handleHeroCTA}
       />
+
+      {/* Education Section */}
+      <EducationSection onCTA={scrollToCatalog} />
 
       {/* WSET Section */}
       <WSETSection onCTA={scrollToCatalog} />
@@ -110,6 +114,9 @@ export function LandingContent({
         content={heroContent}
         onCTA={handleHeroCTA}
       />
+
+      {/* Education Section */}
+      <EducationSection onCTA={scrollToCatalog} />
 
       {/* WSET Section */}
       <WSETSection onCTA={scrollToCatalog} />

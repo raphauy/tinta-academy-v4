@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { ChevronDown } from 'lucide-react'
 
 interface WSETSectionProps {
   onCTA?: () => void
@@ -10,41 +9,53 @@ interface WSETSectionProps {
 
 /**
  * WSETSection - Promotional section about WSET certification
- * Design: Rounded image with centered text overlay
+ * Design: Two-column layout with text on left and image on right
  */
 export function WSETSection({ onCTA }: WSETSectionProps) {
   return (
-    <section className="w-full max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-16">
-      <div className="relative rounded-3xl overflow-hidden min-h-[400px] md:min-h-[500px] flex items-center justify-center">
-        {/* Background Image */}
-        <Image
-          src="/WSET.jpg"
-          alt="WSET Certification"
-          fill
-          className="object-cover"
-        />
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/40" />
+    <section className="w-full max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-24">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        {/* Left Column - Content */}
+        <div className="order-2 lg:order-1">
+          {/* WSET Title with Logo */}
+          <div className="flex items-center gap-4 mb-2">
+            <h2 className="text-4xl md:text-5xl font-bold text-[#143F3B]">WSET</h2>
+            <Image
+              src="/WSET_LANDSCAPE_APP_RGB.png"
+              alt="WSET Logo"
+              width={120}
+              height={40}
+              className="h-8 md:h-10 w-auto"
+            />
+          </div>
+          <p className="text-[#C4704B] italic text-xl md:text-2xl mb-8">en Uruguay</p>
 
-        {/* Content */}
-        <div className="relative z-10 text-center px-6 md:px-12 lg:px-24 max-w-4xl">
-          <p className="text-lg md:text-xl lg:text-2xl text-white leading-relaxed mb-8">
-            <span className="font-semibold">Wine & Spirit Education Trust (WSET)</span> es una de
-            las instituciones de educación en vinos más reconocidas
-            a nivel internacional. Sus certificaciones ofrecen un marco
-            claro y estructurado para aprender vino con lenguaje común,
-            criterio y estándares globales, y son hoy una referencia
-            para profesionales y entusiastas en todo el mundo.
+          {/* Description */}
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed mb-8">
+            Wine & Spirit Education Trust (WSET) es una de las instituciones de educación en vinos más reconocidas a nivel internacional. Sus certificaciones ofrecen un marco claro y estructurado para aprender vino con lenguaje común, criterio y estándares globales, y son hoy una referencia para profesionales y entusiastas en todo el mundo.
           </p>
 
+          {/* CTA Button */}
           <Button
             onClick={onCTA}
             size="lg"
-            className="rounded-full !px-12 py-6 bg-white text-[#143F3B] font-semibold hover:bg-[#DDBBC0] shadow-lg"
+            variant="outline"
+            className="rounded-full !px-8 py-6 border-[#143F3B] text-[#143F3B] font-semibold hover:bg-[#143F3B] hover:text-white"
           >
-            Encuentra tu curso
-            <ChevronDown size={20} />
+            Ver cursos
           </Button>
+        </div>
+
+        {/* Right Column - Image */}
+        <div className="order-1 lg:order-2">
+          <div className="relative rounded-3xl overflow-hidden aspect-[4/3]">
+            <Image
+              src="/WSET.jpg"
+              alt="WSET Certification"
+              fill
+              className="object-cover"
+            />
+          </div>
         </div>
       </div>
     </section>

@@ -25,25 +25,20 @@ export function Hero({ content, onCTA }: HeroProps) {
           priority
         />
         {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-[#143F3B]/70" />
+        <div className="absolute inset-0 bg-black/50" />
       </div>
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8">
         <div className="max-w-2xl lg:max-w-3xl mx-auto text-center">
           {/* Headline */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 whitespace-nowrap">
             {content.headline}
           </h1>
 
           {/* Subheadline */}
-          <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-6 max-w-xl lg:max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-white/80 leading-relaxed mb-8 max-w-xl lg:max-w-2xl mx-auto">
             {content.subheadline}
-          </p>
-
-          {/* Secondary text */}
-          <p className="text-base md:text-lg text-white/70 leading-relaxed mb-8 max-w-xl lg:max-w-2xl mx-auto">
-            Creemos en el poder transformador del conocimiento y ofrecemos una educación de excelencia que combina teoría, práctica y experiencia, permitiéndote vivir y apreciar la cultura del vino de una manera significativa.
           </p>
 
           {/* CTA Button */}
