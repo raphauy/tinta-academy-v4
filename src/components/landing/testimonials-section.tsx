@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import Autoplay from 'embla-carousel-autoplay'
-import { Quote, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -130,7 +130,7 @@ export function TestimonialsSection() {
 
         {/* Carousel */}
         <div className="relative -ml-6">
-          <div className="overflow-hidden" ref={emblaRef}>
+          <div className="overflow-hidden py-2" ref={emblaRef}>
             <div className="flex">
               {testimonials.map((testimonial, index) => (
                 <div
@@ -138,18 +138,22 @@ export function TestimonialsSection() {
                   className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-6"
                 >
                   <div className="h-full bg-white dark:bg-[#2a2a2a] rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col">
-                    {/* Quote Icon */}
-                    <Quote className="w-8 h-8 text-[#C4704B] mb-4 flex-shrink-0" />
+                    {/* Author */}
+                    <div className="mb-4">
+                      <p className="font-semibold text-[#143F3B] dark:text-white">{testimonial.name}</p>
+                      <p className="text-sm text-[#C4704B]">{testimonial.course}</p>
+                    </div>
 
                     {/* Comment */}
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-6 flex-grow">
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed flex-grow mb-4">
                       "{testimonial.comment}"
                     </p>
 
-                    {/* Author */}
-                    <div className="border-t border-gray-100 dark:border-gray-700 pt-4">
-                      <p className="font-semibold text-[#143F3B] dark:text-white">{testimonial.name}</p>
-                      <p className="text-sm text-[#C4704B]">{testimonial.course}</p>
+                    {/* Stars */}
+                    <div className="flex gap-1 justify-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 fill-[#C4704B] text-[#C4704B]" />
+                      ))}
                     </div>
                   </div>
                 </div>

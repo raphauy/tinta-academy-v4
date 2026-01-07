@@ -50,8 +50,8 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
   const getTypeColor = (type: Course['type']) => {
     const colors: Record<string, string> = {
       wset: 'bg-primary text-primary-foreground',
-      taller: 'bg-[#DDBBC0] text-foreground',
-      cata: 'bg-[#AE8928] text-white',
+      taller: 'bg-[#D4A84B] text-foreground',
+      cata: 'bg-[#D4A84B] text-white',
       curso: 'bg-muted-foreground text-white',
     }
     return colors[type] || 'bg-muted-foreground text-white'
@@ -117,7 +117,7 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
             {course.tags.map((tag) => (
               <span
                 key={tag.id}
-                className="px-2 py-0.5 bg-[#DDBBC0] text-foreground text-xs rounded-full font-medium"
+                className="px-2 py-0.5 bg-[#D4A84B] text-foreground text-xs rounded-full font-medium"
               >
                 {tag.name}
               </span>

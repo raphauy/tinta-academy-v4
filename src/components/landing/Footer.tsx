@@ -102,31 +102,31 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
               <Button
                 variant="ghost"
                 asChild
-                className="justify-start text-white/70 hover:text-[#DDBBC0] hover:bg-white/5 h-auto p-2"
+                className="justify-start text-white/70 hover:text-[#D4A84B] hover:bg-white/5 h-auto p-2"
               >
                 <a href={`mailto:${contactInfo.email}`}>
-                  <Mail size={20} className="text-[#DDBBC0]" />
+                  <Mail size={20} className="text-[#D4A84B]" />
                   <span>{contactInfo.email}</span>
                 </a>
               </Button>
               <Button
                 variant="ghost"
                 asChild
-                className="justify-start text-white/70 hover:text-[#DDBBC0] hover:bg-white/5 h-auto p-2"
+                className="justify-start text-white/70 hover:text-[#D4A84B] hover:bg-white/5 h-auto p-2"
               >
                 <a
                   href="https://api.whatsapp.com/send/?phone=59892043904&text=%C2%A1Hola%21+Me+gustar%C3%ADa+recibir+m%C3%A1s+informaci%C3%B3n&type=phone_number&app_absent=0"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-[#DDBBC0]">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-[#D4A84B]">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.893 3.488"/>
                   </svg>
                   <span>+{contactInfo.phone}</span>
                 </a>
               </Button>
               <div className="flex items-center gap-3 text-white/70 p-2 sm:col-span-2">
-                <MapPin size={20} className="text-[#DDBBC0] shrink-0" />
+                <MapPin size={20} className="text-[#D4A84B] shrink-0" />
                 <span>{contactInfo.address}</span>
               </div>
             </div>
@@ -135,7 +135,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
           {/* Newsletter */}
           <div className="flex flex-col h-full">
             <div className="bg-white/5 rounded-2xl p-10 h-full flex flex-col justify-center">
-              <h3 className="text-2xl font-bold text-[#DDBBC0] mb-4">
+              <h3 className="text-2xl font-bold text-[#D4A84B] mb-4">
                 Newsletter
               </h3>
               <p className="text-white/70 mb-6">
@@ -153,13 +153,13 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="tu@email.com"
-                    className="flex-1 h-11 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus-visible:border-[#DDBBC0] focus-visible:ring-[#DDBBC0]/20"
+                    className="flex-1 h-11 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus-visible:border-[#D4A84B] focus-visible:ring-[#D4A84B]/20"
                     required
                     disabled={isLoading}
                   />
                   <Button
                     type="submit"
-                    className="h-11 px-6 bg-[#DDBBC0] text-[#143F3B] hover:bg-[#E2E369]"
+                    className="h-11 px-6 bg-[#D4A84B] text-[#143F3B] hover:bg-[#E2E369]"
                     disabled={isLoading}
                   >
                     {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
@@ -175,7 +175,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {/* About Links */}
           <div>
-            <h4 className="font-semibold text-[#DDBBC0] mb-4">
+            <h4 className="font-semibold text-[#D4A84B] mb-4">
               Sobre Nosotros
             </h4>
             <ul className="space-y-1">
@@ -195,7 +195,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
 
           {/* Courses Links */}
           <div>
-            <h4 className="font-semibold text-[#DDBBC0] mb-4">
+            <h4 className="font-semibold text-[#D4A84B] mb-4">
               Cursos
             </h4>
             <ul className="space-y-1">
@@ -215,7 +215,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
 
           {/* Legal Links */}
           <div>
-            <h4 className="font-semibold text-[#DDBBC0] mb-4">
+            <h4 className="font-semibold text-[#D4A84B] mb-4">
               Legal
             </h4>
             <ul className="space-y-1">
@@ -234,7 +234,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
 
           {/* Social Links */}
           <div>
-            <h4 className="font-semibold text-[#DDBBC0] mb-4">
+            <h4 className="font-semibold text-[#D4A84B] mb-4">
               Síguenos
             </h4>
             <div className="flex gap-3">
@@ -245,7 +245,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={link.label}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-[#DDBBC0] hover:text-[#143F3B] transition-colors"
+                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-[#D4A84B] hover:text-[#143F3B] transition-colors"
                 >
                   {getSocialIcon(link.label)}
                 </a>
