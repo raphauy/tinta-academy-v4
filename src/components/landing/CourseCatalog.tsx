@@ -28,7 +28,7 @@ export function CourseCatalog({
 }: CourseCatalogProps) {
   const [filters, setFilters] = useState<CourseFilters>(initialFilters || {})
   const [showFilters, setShowFilters] = useState(false)
-  const [showPastCourses, setShowPastCourses] = useState(true)
+  const [showPastCourses, setShowPastCourses] = useState(false)
 
   // Update local filters and notify parent (for URL sync)
   const updateFilters = (newFilters: CourseFilters) => {
@@ -270,6 +270,7 @@ export function CourseCatalog({
                     course={course}
                     educator={course.educator}
                     onView={() => onViewCourse?.(course.slug)}
+                    isPast
                   />
                 ))}
               </div>

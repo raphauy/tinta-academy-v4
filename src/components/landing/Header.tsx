@@ -18,7 +18,7 @@ interface HeaderProps {
  */
 export function Header({ user, onScrollToCatalog }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-white">
+    <header className="sticky top-0 z-50 border-b border-border bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -28,7 +28,15 @@ export function Header({ user, onScrollToCatalog }: HeaderProps) {
               alt="Tinta Academy"
               width={160}
               height={40}
-              className="object-contain"
+              className="object-contain dark:hidden"
+              priority
+            />
+            <Image
+              src="/TintaAcademy_Logo_Blanco.png"
+              alt="Tinta Academy"
+              width={160}
+              height={40}
+              className="object-contain hidden dark:block"
               priority
             />
           </Link>
@@ -71,7 +79,7 @@ export function Header({ user, onScrollToCatalog }: HeaderProps) {
                 variant="ghost"
                 className="text-foreground hover:bg-muted text-sm font-medium"
               >
-                <Link href="/login">Entrar</Link>
+                <Link href="/login">Iniciar sesión</Link>
               </Button>
             )}
           </div>

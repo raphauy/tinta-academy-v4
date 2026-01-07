@@ -94,7 +94,7 @@ export function AppShell({ children, variant, user }: AppShellProps) {
                     variant="ghost"
                     className="text-foreground hover:bg-muted text-sm font-medium"
                   >
-                    <Link href="/login">Entrar</Link>
+                    <Link href="/login">Iniciar sesión</Link>
                   </Button>
                 )}
               </div>

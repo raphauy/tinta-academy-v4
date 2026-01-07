@@ -368,32 +368,34 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
               </CardContent>
             </Card>
 
-            {/* Investment Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Inversión</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-bold text-primary">
-                  USD {course.priceUSD.toLocaleString('es-AR')}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">IVA incluido</p>
+            {/* Investment Card - hidden for finished courses */}
+            {course.status !== 'finished' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Inversión</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-4xl font-bold text-primary">
+                    USD {course.priceUSD.toLocaleString('es-AR')}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">IVA incluido</p>
 
-                {isWset && (
-                  <div className="mt-4 pt-4 border-t">
-                    <p className="font-medium mb-2">Incluye:</p>
-                    <ul className="space-y-2">
-                      {WSET_INCLUDED.map((item, index) => (
-                        <li key={index} className="flex gap-2 text-sm text-muted-foreground">
-                          <CheckCircle className="size-4 text-primary flex-shrink-0 mt-0.5" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  {isWset && (
+                    <div className="mt-4 pt-4 border-t">
+                      <p className="font-medium mb-2">Incluye:</p>
+                      <ul className="space-y-2">
+                        {WSET_INCLUDED.map((item, index) => (
+                          <li key={index} className="flex gap-2 text-sm text-muted-foreground">
+                            <CheckCircle className="size-4 text-primary flex-shrink-0 mt-0.5" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* CTA Button */}
             {canEnroll && (

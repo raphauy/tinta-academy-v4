@@ -10,6 +10,7 @@ interface CourseCardProps {
   course: Course
   educator?: Educator
   onView?: () => void
+  isPast?: boolean
 }
 
 // Sample images for different course types
@@ -23,7 +24,7 @@ const courseImages: Record<string, string> = {
 /**
  * CourseCard - Clean course card with visible image
  */
-export function CourseCard({ course, educator, onView }: CourseCardProps) {
+export function CourseCard({ course, educator, onView, isPast }: CourseCardProps) {
   const formatDate = (date?: Date | null) => {
     if (!date) return ''
     try {
@@ -175,12 +176,14 @@ export function CourseCard({ course, educator, onView }: CourseCardProps) {
               </div>
             )}
 
-            {/* Price */}
-            <div className="text-right">
-              <p className="text-xl font-bold text-primary">
-                {course.priceUSD === 0 ? 'Gratis' : `USD ${course.priceUSD}`}
-              </p>
-            </div>
+            {/* Price - hidden for past courses */}
+            {!isPast && (
+              <div className="text-right">
+                <p className="text-xl font-bold text-primary">
+                  {course.priceUSD === 0 ? 'Gratis' : `USD ${course.priceUSD}`}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

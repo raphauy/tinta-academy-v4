@@ -8,6 +8,7 @@ import { Hero } from './Hero'
 import { EducationSection } from './education-section'
 import { WSETSection } from './wset-section'
 import { CourseCatalog } from './CourseCatalog'
+import { TestimonialsSection } from './testimonials-section'
 import { Footer } from './Footer'
 
 /**
@@ -63,6 +64,9 @@ export function LandingCatalogo({
           onViewCourse={onViewCourse}
         />
       </div>
+
+      {/* Testimonials */}
+      <TestimonialsSection />
 
       {/* Footer */}
       <Footer
@@ -132,6 +136,9 @@ export function LandingContent({
           onFilter={onFilter}
         />
       </div>
+
+      {/* Testimonials */}
+      <TestimonialsSection />
 
       {/* Footer */}
       <Footer
