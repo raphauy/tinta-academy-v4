@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { getCourseById } from '@/services/course-service'
 import { getMaterialsByCourse } from '@/services/material-service'
+import { getTags } from '@/services/tag-service'
 import {
   PresencialCourseForm,
   MaterialsSection,
@@ -56,8 +57,11 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
     redirect('/educator/courses')
   }
 
-  // Fetch materials for this course
-  const materials = await getMaterialsByCourse(id)
+  // Fetch materials and tags for this course
+  const [materials, tags] = await Promise.all([
+    getMaterialsByCourse(id),
+    getTags(),
+  ])
 
   return (
     <div className="space-y-6">
@@ -73,7 +77,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
         <CourseStatusActions courseId={course.id} status={course.status} />
       </div>
 
-      <PresencialCourseForm mode="edit" course={course} />
+      <PresencialCourseForm mode="edit" course={course} initialTags={tags} />
 
       {/* Materials section - only for existing courses */}
       <MaterialsSection courseId={course.id} materials={materials} />

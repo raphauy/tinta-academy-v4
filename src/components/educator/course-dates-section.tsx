@@ -238,29 +238,32 @@ export function CourseDatesSection({
           </p>
         )}
 
-        {/* Exam date (for WSET courses) */}
-        {showExamDate && (
-          <div className="space-y-2">
-            <Label>Fecha del Examen</Label>
-            <DatePicker
-              value={examDate}
-              onChange={handleExamDateChange}
-              placeholder="Seleccionar fecha del examen"
-            />
-          </div>
-        )}
+        {/* Exam date and Registration deadline */}
+        <div className={`grid gap-4 ${showExamDate ? 'sm:grid-cols-2' : ''}`}>
+          {/* Exam date (for WSET courses) */}
+          {showExamDate && (
+            <div className="space-y-2">
+              <Label>Fecha del Examen</Label>
+              <DatePicker
+                value={examDate}
+                onChange={handleExamDateChange}
+                placeholder="Seleccionar fecha del examen"
+              />
+            </div>
+          )}
 
-        {/* Registration deadline */}
-        <div className="space-y-2">
-          <Label>Fecha Limite de Inscripcion</Label>
-          <DatePicker
-            value={registrationDeadline}
-            onChange={handleRegistrationDeadlineChange}
-            placeholder="Seleccionar fecha limite"
-          />
-          <p className="text-xs text-muted-foreground">
-            Despues de esta fecha no se aceptaran nuevas inscripciones.
-          </p>
+          {/* Registration deadline */}
+          <div className="space-y-2">
+            <Label>Fecha Limite de Inscripcion</Label>
+            <DatePicker
+              value={registrationDeadline}
+              onChange={handleRegistrationDeadlineChange}
+              placeholder="Seleccionar fecha limite"
+            />
+            <p className="text-xs text-muted-foreground">
+              Despues de esta fecha no se aceptaran nuevas inscripciones.
+            </p>
+          </div>
         </div>
       </CardContent>
     </Card>

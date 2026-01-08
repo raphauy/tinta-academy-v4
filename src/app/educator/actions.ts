@@ -21,6 +21,7 @@ import {
   deleteMaterial,
   getMaterialById,
 } from '@/services/material-service'
+import { getTags, createTag } from '@/services/tag-service'
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -48,7 +49,7 @@ const createCourseSchema = z.object({
   registrationDeadline: z.coerce.date().optional(),
   // Other fields
   maxCapacity: z.coerce.number().int().positive().optional(),
-  priceUSD: z.coerce.number().positive('El precio debe ser mayor a 0'),
+  priceUSD: z.coerce.number().nonnegative('El precio no puede ser negativo'),
   location: z.string().optional(),
   address: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
@@ -132,6 +133,10 @@ export async function createCourseAction(
   const classDatesStr = formData.get('classDates') as string | null
   const classDates = classDatesStr ? JSON.parse(classDatesStr) : undefined
 
+  // Parse tagIds from JSON string
+  const tagIdsStr = formData.get('tagIds') as string | null
+  const tagIds = tagIdsStr ? JSON.parse(tagIdsStr) : undefined
+
   const rawData = {
     title: formData.get('title') as string,
     slug: formData.get('slug') as string,
@@ -169,6 +174,7 @@ export async function createCourseAction(
       ...validated.data,
       imageUrl: validated.data.imageUrl || undefined,
       educatorId: educator.id,
+      tagIds: tagIds as string[] | undefined,
     })
 
     revalidatePath('/educator/courses')
@@ -208,6 +214,10 @@ export async function updateCourseAction(
   // Parse classDates from JSON string
   const classDatesStr = formData.get('classDates') as string | null
   const classDates = classDatesStr ? JSON.parse(classDatesStr) : undefined
+
+  // Parse tagIds from JSON string
+  const tagIdsStr = formData.get('tagIds') as string | null
+  const tagIds = tagIdsStr ? JSON.parse(tagIdsStr) : undefined
 
   const rawData = {
     title: formData.get('title') || undefined,
@@ -250,6 +260,7 @@ export async function updateCourseAction(
     await updateCourse(courseId, {
       ...validated.data,
       imageUrl: validated.data.imageUrl || undefined,
+      tagIds: tagIds as string[] | undefined,
     })
 
     revalidatePath('/educator/courses')
@@ -574,6 +585,63 @@ export async function deleteMaterialAction(
     return {
       success: false,
       error: 'Error al eliminar el material',
+    }
+  }
+}
+
+// ============================================
+// TAG ACTIONS
+// ============================================
+
+export type TagData = {
+  id: string
+  name: string
+  slug: string
+}
+
+export async function getTagsAction(): Promise<ActionResult<TagData[]>> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  try {
+    const tags = await getTags()
+    return { success: true, data: tags }
+  } catch (error) {
+    console.error('Error fetching tags:', error)
+    return {
+      success: false,
+      error: 'Error al obtener los tags',
+    }
+  }
+}
+
+export async function createTagAction(
+  name: string
+): Promise<ActionResult<TagData>> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  if (!name || name.trim().length < 2) {
+    return {
+      success: false,
+      error: 'El nombre del tag debe tener al menos 2 caracteres',
+    }
+  }
+
+  try {
+    const tag = await createTag(name.trim())
+    return { success: true, data: tag }
+  } catch (error) {
+    console.error('Error creating tag:', error)
+    return {
+      success: false,
+      error: 'Error al crear el tag',
     }
   }
 }

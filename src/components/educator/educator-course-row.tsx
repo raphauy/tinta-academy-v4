@@ -130,52 +130,53 @@ export function EducatorCourseRow({
         </Link>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Badges row */}
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            {/* Type badge - same style as landing */}
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTypeColor(course.type)}`}>
-              {getTypeLabel(course.type, course.wsetLevel).toUpperCase()}
-            </span>
+        <div className="flex-1 min-w-0 flex flex-col">
+          {/* Top section: badges + title + description */}
+          <div>
+            {/* Badges row */}
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              {/* Type badge - same style as landing */}
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTypeColor(course.type)}`}>
+                {getTypeLabel(course.type, course.wsetLevel).toUpperCase()}
+              </span>
 
-            {/* Modality badge - same style as landing */}
-            <span className="inline-flex items-center gap-1 px-3 py-1 bg-background border border-border rounded-full text-xs font-medium text-foreground">
-              {course.modality === 'online' ? (
-                <>
-                  <Monitor size={12} className="text-primary" />
-                  Online
-                </>
-              ) : (
-                <>
-                  <MapPin size={12} className="text-primary" />
-                  Presencial
-                </>
-              )}
-            </span>
+              {/* Modality badge - same style as landing */}
+              <span className="inline-flex items-center gap-1 px-3 py-1 bg-background border border-border rounded-full text-xs font-medium text-foreground">
+                {course.modality === 'online' ? (
+                  <>
+                    <Monitor size={12} className="text-primary" />
+                    Online
+                  </>
+                ) : (
+                  <>
+                    <MapPin size={12} className="text-primary" />
+                    Presencial
+                  </>
+                )}
+              </span>
 
-            {/* Status badge */}
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusBadge.className}`}>
-              {statusBadge.label}
-            </span>
+              {/* Status badge */}
+              <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${statusBadge.className}`}>
+                {statusBadge.label}
+              </span>
+            </div>
+
+            {/* Title */}
+            <Link
+              href={`/educator/courses/${course.id}/edit`}
+              className="font-semibold text-foreground mb-1 line-clamp-1 hover:text-primary transition-colors block"
+            >
+              {course.title}
+            </Link>
+
+            {/* Description - always takes space even if empty */}
+            <p className="text-sm text-muted-foreground line-clamp-1 min-h-[1.25rem]">
+              {course.description || '\u00A0'}
+            </p>
           </div>
 
-          {/* Title */}
-          <Link
-            href={`/educator/courses/${course.id}/edit`}
-            className="font-semibold text-foreground mb-1 line-clamp-1 hover:text-primary transition-colors block"
-          >
-            {course.title}
-          </Link>
-
-          {/* Description */}
-          {course.description && (
-            <p className="text-sm text-muted-foreground mb-2 line-clamp-1">
-              {course.description}
-            </p>
-          )}
-
-          {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+          {/* Meta row - always at bottom */}
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-auto pt-2">
             <span className="inline-flex items-center gap-1">
               <Users size={14} />
               {enrollmentText}

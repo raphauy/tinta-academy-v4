@@ -22,13 +22,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImageUpload } from '@/components/shared/image-upload'
 import { CourseDatesSection } from '@/components/educator/course-dates-section'
+import { TagSelector } from '@/components/educator/tag-selector'
 import { generateSlug } from '@/lib/utils'
 import {
   createCourseAction,
   updateCourseAction,
   checkSlugAction,
+  type TagData,
 } from '@/app/educator/actions'
-import type { Course } from '@prisma/client'
+import type { Course, Tag } from '@prisma/client'
 
 const courseTypes = ['wset', 'taller', 'cata', 'curso'] as const
 
@@ -59,7 +61,7 @@ const courseFormSchema = z.object({
     .optional()
     .or(z.literal(''))
     .transform((val) => (val === '' ? undefined : val)),
-  priceUSD: z.coerce.number().positive('El precio debe ser mayor a 0'),
+  priceUSD: z.coerce.number().nonnegative('El precio no puede ser negativo'),
   imageUrl: z.string().optional(),
 })
 
@@ -74,14 +76,20 @@ interface CourseDatesData {
 type CourseFormInput = z.input<typeof courseFormSchema>
 type CourseFormOutput = z.output<typeof courseFormSchema>
 
+interface CourseWithTags extends Course {
+  tags?: Tag[]
+}
+
 interface PresencialCourseFormProps {
-  course?: Course
+  course?: CourseWithTags
   mode: 'create' | 'edit'
+  initialTags?: TagData[]
 }
 
 export function PresencialCourseForm({
   course,
   mode,
+  initialTags = [],
 }: PresencialCourseFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -100,6 +108,9 @@ export function PresencialCourseForm({
       ? new Date(course.registrationDeadline)
       : undefined,
   })
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
+    course?.tags?.map((t) => t.id) ?? []
+  )
 
   const {
     register,
@@ -235,6 +246,11 @@ export function PresencialCourseForm({
           'registrationDeadline',
           courseDates.registrationDeadline.toISOString()
         )
+      }
+
+      // Tags
+      if (selectedTagIds.length > 0) {
+        formData.append('tagIds', JSON.stringify(selectedTagIds))
       }
 
       let result
@@ -403,6 +419,24 @@ export function PresencialCourseForm({
               />
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Tags */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Tags</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TagSelector
+            selectedTagIds={selectedTagIds}
+            onChange={setSelectedTagIds}
+            initialTags={initialTags}
+          />
+          <p className="mt-2 text-sm text-muted-foreground">
+            Los tags ayudan a los estudiantes a encontrar tu curso. Puedes
+            seleccionar tags existentes o crear nuevos.
+          </p>
         </CardContent>
       </Card>
 

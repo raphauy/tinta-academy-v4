@@ -42,11 +42,8 @@ function LandingUserMenu({ user }: { user: UserDropdownUser }) {
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  // Using suppressHydrationWarning on theme buttons instead of mounted state
+  // to avoid lint error about setState in useEffect
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -227,35 +224,34 @@ function LandingUserMenu({ user }: { user: UserDropdownUser }) {
           <div className="border-t border-border">
             <div className="flex items-center justify-between px-3 py-2">
               <span className="text-sm text-foreground">Tema</span>
-              <div className="flex items-center gap-0.5">
-                {mounted && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setTheme('system')}
-                      className={`h-7 w-7 ${theme === 'system' ? 'text-foreground' : 'text-muted-foreground'}`}
-                    >
-                      <Monitor size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setTheme('light')}
-                      className={`h-7 w-7 ${theme === 'light' ? 'text-foreground' : 'text-muted-foreground'}`}
-                    >
-                      <Sun size={14} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setTheme('dark')}
-                      className={`h-7 w-7 ${theme === 'dark' ? 'text-foreground' : 'text-muted-foreground'}`}
-                    >
-                      <Moon size={14} />
-                    </Button>
-                  </>
-                )}
+              <div className="flex items-center gap-0.5" suppressHydrationWarning>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme('system')}
+                  className={`h-7 w-7 ${theme === 'system' ? 'text-foreground' : 'text-muted-foreground'}`}
+                  suppressHydrationWarning
+                >
+                  <Monitor size={14} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme('light')}
+                  className={`h-7 w-7 ${theme === 'light' ? 'text-foreground' : 'text-muted-foreground'}`}
+                  suppressHydrationWarning
+                >
+                  <Sun size={14} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setTheme('dark')}
+                  className={`h-7 w-7 ${theme === 'dark' ? 'text-foreground' : 'text-muted-foreground'}`}
+                  suppressHydrationWarning
+                >
+                  <Moon size={14} />
+                </Button>
               </div>
             </div>
           </div>

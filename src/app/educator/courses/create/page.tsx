@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
+import { getTags } from '@/services/tag-service'
 import { PresencialCourseForm } from '@/components/educator'
 
 export const metadata = {
@@ -27,6 +28,8 @@ export default async function CreateCoursePage() {
     redirect('/')
   }
 
+  const tags = await getTags()
+
   return (
     <div className="space-y-6">
       <div>
@@ -39,7 +42,7 @@ export default async function CreateCoursePage() {
         </p>
       </div>
 
-      <PresencialCourseForm mode="create" />
+      <PresencialCourseForm mode="create" initialTags={tags} />
     </div>
   )
 }

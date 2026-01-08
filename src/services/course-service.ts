@@ -35,6 +35,8 @@ export interface CreateCourseInput {
   imageUrl?: string
   wsetLevel?: number
   educatorId: string
+  // Tags
+  tagIds?: string[]
 }
 
 export interface UpdateCourseInput {
@@ -58,6 +60,8 @@ export interface UpdateCourseInput {
   address?: string
   imageUrl?: string
   wsetLevel?: number
+  // Tags
+  tagIds?: string[]
 }
 
 // Status values that are considered "published" (visible to public)
@@ -223,6 +227,13 @@ export async function createCourse(data: CreateCourseInput) {
       wsetLevel: data.wsetLevel,
       status: 'draft', // New courses start as draft
       educatorId: data.educatorId,
+      // Connect tags if provided
+      ...(data.tagIds &&
+        data.tagIds.length > 0 && {
+          tags: {
+            connect: data.tagIds.map((id) => ({ id })),
+          },
+        }),
     },
     include: {
       educator: true,
@@ -255,6 +266,12 @@ export async function updateCourse(id: string, data: UpdateCourseInput) {
       ...(data.address !== undefined && { address: data.address }),
       ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
       ...(data.wsetLevel !== undefined && { wsetLevel: data.wsetLevel }),
+      // Replace tags if provided (disconnect all, then connect new ones)
+      ...(data.tagIds !== undefined && {
+        tags: {
+          set: data.tagIds.map((tagId) => ({ id: tagId })),
+        },
+      }),
     },
     include: {
       educator: true,

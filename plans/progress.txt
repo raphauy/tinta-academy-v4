@@ -732,3 +732,35 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Add tag selector/creator component to course editor (4.15)
 
 ---
+
+## 2026-01-08 - Tag Selector Component (4.15)
+
+**Completed (PRD item 4.15):**
+- Created TagSelector component with modern Combobox pattern (Command + Popover)
+- Updated tag-service.ts with createTag function and slug generation
+- Added server actions: getTagsAction, createTagAction
+- Updated course-service.ts to handle tagIds in createCourse and updateCourse
+- Integrated TagSelector into presencial-course-form.tsx
+- Updated create/edit course pages to pass initialTags
+- Fixed pre-existing lint error in public-header.tsx (replaced mounted state with suppressHydrationWarning)
+
+**TagSelector Features:**
+- Searchable/filterable list of existing tags
+- Selected tags shown as removable badges below input
+- "Crear tag" option appears when search doesn't match existing tags
+- Inline tag creation with auto-generated slug
+- Loading states for fetching and creating tags
+- Uses verde-uva-100/800 colors for badge styling
+
+**Technical Notes:**
+- Tags use Prisma `set` operation for updates (replaces all tags with new set)
+- Tags use `connect` operation for create (links existing tags by ID)
+- createTag returns existing tag if slug already exists (prevents duplicates)
+- Form sends tagIds as JSON string in formData, parsed server-side
+- TagSelector is fetches tags on mount if not provided via initialTags prop
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**MILESTONE 4 COMPLETE** - All PRD items pass.
+
+---
