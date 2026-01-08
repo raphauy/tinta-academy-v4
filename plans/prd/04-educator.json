@@ -50,7 +50,7 @@
       "Verify migrated students in Prisma Studio",
       "Run pnpm tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.02c",

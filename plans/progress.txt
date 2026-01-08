@@ -271,3 +271,23 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Migrate students from v3 database (4.02b)
 
 ---
+
+## 2026-01-08 - Student Migration (4.02b)
+
+**Completed (PRD item 4.02b):**
+- Created scripts/migration/migrate-students.ts
+- Migrated 226 students from v3 to v4 database
+- Saved mapping to student-mapping.json for enrollment migration
+
+**Technical Notes:**
+- v3 Student model has email directly on Student (not on User like originally assumed)
+- Script creates User with role=student + Student record for each v3 student
+- Uses transaction for atomicity (User + Student created together)
+- Handles duplicates by skipping if email already exists
+- Maps all fields: firstName, lastName, dateOfBirth, phone, address, city, zip, country
+
+**Verification:** typecheck ✓
+
+**Next Priority:** Migrate enrollments from v3 Orders (4.02c)
+
+---
