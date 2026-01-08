@@ -114,17 +114,17 @@ export function EducatorCourseRow({
 
   return (
     <div className="bg-card rounded-2xl border border-border p-4 hover:shadow-md transition-shadow">
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         {/* Image - clickable to edit */}
         <Link
           href={`/educator/courses/${course.id}/edit`}
-          className="shrink-0 relative w-28 h-28 rounded-xl overflow-hidden bg-muted hover:opacity-90 transition-opacity"
+          className="shrink-0 relative w-full sm:w-28 h-40 sm:h-28 rounded-xl overflow-hidden bg-muted hover:opacity-90 transition-opacity"
         >
           <Image
             src={imageUrl}
             alt={course.title}
             fill
-            sizes="112px"
+            sizes="(max-width: 640px) 100vw, 112px"
             className="object-cover"
           />
         </Link>
@@ -198,7 +198,7 @@ export function EducatorCourseRow({
         </div>
 
         {/* Right side: Price + Actions */}
-        <div className="shrink-0 flex flex-col items-end justify-between">
+        <div className="shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-between gap-2">
           {/* Price */}
           <span className="text-lg font-bold text-primary">
             {priceText}

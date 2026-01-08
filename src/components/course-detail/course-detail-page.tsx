@@ -186,7 +186,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
       {/* Back Navigation */}
       <div className="container mx-auto px-4 py-4">
         <Link
-          href="/"
+          href="/#catalog"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="size-4" />

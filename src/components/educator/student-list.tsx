@@ -194,13 +194,13 @@ export function StudentList({ course, enrollments }: StudentListProps) {
           </p>
         </div>
       ) : (
-        <div className="bg-card rounded-2xl border border-border overflow-hidden">
+        <div className="bg-card rounded-2xl border border-border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[300px]">Estudiante</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Fecha inscripción</TableHead>
+                <TableHead>Estudiante</TableHead>
+                <TableHead className="hidden md:table-cell">Email</TableHead>
+                <TableHead className="hidden lg:table-cell">Fecha inscripción</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
@@ -216,20 +216,23 @@ export function StudentList({ course, enrollments }: StudentListProps) {
                   <TableRow key={enrollment.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-full bg-verde-uva-100 flex items-center justify-center text-sm font-semibold text-verde-uva-700">
+                        <div className="hidden sm:flex size-10 rounded-full bg-verde-uva-100 items-center justify-center text-sm font-semibold text-verde-uva-700 shrink-0">
                           {initials}
                         </div>
-                        <span className="font-medium">{fullName}</span>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-medium truncate">{fullName}</span>
+                          <span className="md:hidden text-sm text-muted-foreground truncate">{student.user.email}</span>
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="hidden md:table-cell text-muted-foreground">
                       {student.user.email}
                     </TableCell>
-                    <TableCell className="text-muted-foreground">
+                    <TableCell className="hidden lg:table-cell text-muted-foreground">
                       {formatDate(enrollment.enrolledAt)}
                     </TableCell>
                     <TableCell>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge.className}`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${statusBadge.className}`}>
                         {statusBadge.label}
                       </span>
                     </TableCell>

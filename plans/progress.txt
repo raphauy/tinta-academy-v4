@@ -691,3 +691,44 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Ensure responsive design and mobile usability (4.14)
 
 ---
+
+## 2026-01-08 - Responsive Design for Educator Pages (4.14)
+
+**Completed (PRD item 4.14):**
+- Simplified course status workflow: publishCourse now goes directly to 'enrolling' (skipping 'announced')
+- Fixed educator-course-row.tsx for mobile stacking:
+  - Changed main flex to `flex-col sm:flex-row` for proper mobile layout
+  - Image now full width on mobile, fixed size on desktop
+  - Updated Image sizes attribute for responsive loading
+  - Price and actions row adapts to mobile (horizontal) vs desktop (vertical)
+- Fixed student-list.tsx table for mobile:
+  - Added `overflow-x-auto` to table container
+  - Hide Email column on mobile (`hidden md:table-cell`)
+  - Hide Date column on smaller screens (`hidden lg:table-cell`)
+  - Show email below name on mobile (like all-students-list.tsx pattern)
+  - Avatar hidden on very small screens (`hidden sm:flex`)
+  - Added `whitespace-nowrap` to status badge to prevent wrapping
+- Added mobile menu to PublicHeader (landing page) matching AppShell pattern:
+  - Logo on left, hamburger button on right (matching AppShell mobile header)
+  - Left-side sliding overlay menu (same style as authenticated panels)
+  - Menu includes: WSET, Cursos links in navigation section
+  - User section reuses UserDropdown component (same as desktop) for consistency
+  - Backdrop overlay closes menu on click
+  - All links close menu on navigation for better UX
+- Verified existing responsive patterns are correct:
+  - Dashboard metrics: `sm:grid-cols-2 lg:grid-cols-4` ✓
+  - Course form: `sm:grid-cols-2` for type/price fields ✓
+  - All-students-list: Already had good responsive design ✓
+
+**Technical Notes:**
+- Mobile breakpoints used consistently: sm (640px), md (768px), lg (1024px)
+- Pattern: stack vertically on mobile, horizontal on larger screens
+- Tables: hide columns progressively, show inline data on mobile
+- Images: use responsive sizes attribute for Next.js Image optimization
+- Mobile menu uses overlay pattern matching AppShell (left-side sidebar + backdrop)
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Add tag selector/creator component to course editor (4.15)
+
+---
