@@ -173,7 +173,7 @@ export function AppShell({ children, variant, user }: AppShellProps) {
 
         {/* Main Content */}
         <main
-          className="min-h-screen flex-1 lg:ml-[var(--sidebar-width)]"
+          className="min-h-screen flex-1 lg:ml-(--sidebar-width)"
           style={
             { '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties
           }
