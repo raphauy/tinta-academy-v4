@@ -388,3 +388,27 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create server actions for educator course management (4.06)
 
 ---
+
+## 2026-01-08 - Educator Server Actions (4.06)
+
+**Completed (PRD item 4.06):**
+- Created src/app/educator/actions.ts with all course management actions:
+  - createCourseAction(formData) - validates with Zod, creates course as draft
+  - updateCourseAction(courseId, formData) - validates and updates course fields
+  - publishCourseAction(courseId) - changes status from 'draft' to 'announced'
+  - unpublishCourseAction(courseId) - changes status back to 'draft'
+  - deleteCourseAction(courseId) - deletes course (if no enrollments)
+
+**Technical Notes:**
+- All actions verify authentication (session required) and authorization (role=educator)
+- All actions verify course ownership before mutation
+- Zod schemas validate course data with Spanish error messages
+- Uses explicit TypeScript return types for helper functions to ensure type narrowing
+- revalidatePath called for /educator/courses, /educator, and / (landing) after mutations
+- ActionResult generic type for consistent success/error responses
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create educator dashboard page with metrics (4.07)
+
+---
