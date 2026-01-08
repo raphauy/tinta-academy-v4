@@ -30,8 +30,8 @@ async function StudentsContent() {
     redirect('/')
   }
 
-  // Get all courses and enrollments for this educator
-  const [courses, enrollments] = await Promise.all([
+  // Get all courses and students for this educator
+  const [courses, students] = await Promise.all([
     getEducatorCourses(educator.id),
     getEducatorStudents(educator.id),
   ])
@@ -43,7 +43,7 @@ async function StudentsContent() {
     slug: c.slug,
   }))
 
-  return <AllStudentsList enrollments={enrollments} courses={courseOptions} />
+  return <AllStudentsList students={students} courses={courseOptions} />
 }
 
 export default function EducatorStudentsPage() {

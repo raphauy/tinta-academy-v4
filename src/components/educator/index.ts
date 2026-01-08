@@ -9,6 +9,7 @@ export { PresencialCourseForm } from './presencial-course-form'
 export { MaterialsSection } from './materials-section'
 export { CourseStatusActions } from './course-status-actions'
 export { StudentList } from './student-list'
+export { StudentTable, type StudentEnrollment } from './student-table'
 export { AllStudentsList } from './all-students-list'
 export { TagSelector } from './tag-selector'
 export {

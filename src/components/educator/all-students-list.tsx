@@ -2,11 +2,10 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
-import { Search, Mail, Check, ChevronsUpDown, X } from 'lucide-react'
+import { Search, Check, ChevronsUpDown, X, Mail } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import {
   Command,
   CommandEmpty,
@@ -28,30 +27,28 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn, toLocalDate } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import type { EnrollmentStatus } from '@prisma/client'
 
-// Type matching what getEducatorStudents returns
-type EnrollmentWithDetails = {
+// Type matching what getEducatorStudents returns (students with enrollments)
+type StudentWithEnrollments = {
   id: string
-  studentId: string
-  courseId: string
-  enrolledAt: Date
-  status: EnrollmentStatus
-  student: {
+  firstName: string | null
+  lastName: string | null
+  user: {
+    email: string
+    name: string | null
+  }
+  enrollments: {
     id: string
-    firstName: string | null
-    lastName: string | null
-    user: {
-      email: string
-      name: string | null
+    enrolledAt: Date
+    status: EnrollmentStatus
+    course: {
+      id: string
+      title: string
+      slug: string
     }
-  }
-  course: {
-    id: string
-    title: string
-    slug: string
-  }
+  }[]
 }
 
 type CourseOption = {
@@ -61,26 +58,8 @@ type CourseOption = {
 }
 
 interface AllStudentsListProps {
-  enrollments: EnrollmentWithDetails[]
+  students: StudentWithEnrollments[]
   courses: CourseOption[]
-}
-
-function formatDate(date: Date | null): string {
-  if (!date) return ''
-  try {
-    return format(toLocalDate(date), 'd MMM yyyy', { locale: es })
-  } catch {
-    return ''
-  }
-}
-
-function getStatusBadge(status: string): { label: string; className: string } {
-  const config: Record<string, { label: string; className: string }> = {
-    pending: { label: 'Pendiente', className: 'bg-amber-100 text-amber-800' },
-    confirmed: { label: 'Confirmado', className: 'bg-green-100 text-green-800' },
-    cancelled: { label: 'Cancelado', className: 'bg-gray-100 text-gray-600' },
-  }
-  return config[status] || { label: status, className: 'bg-gray-100 text-gray-600' }
 }
 
 function getInitials(firstName: string | null, lastName: string | null): string {
@@ -89,40 +68,37 @@ function getInitials(firstName: string | null, lastName: string | null): string 
   return first + last || '??'
 }
 
-export function AllStudentsList({ enrollments, courses }: AllStudentsListProps) {
+export function AllStudentsList({ students, courses }: AllStudentsListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
   const [courseFilterOpen, setCourseFilterOpen] = useState(false)
 
-  // Get unique students count
-  const uniqueStudentIds = useMemo(() => {
-    return new Set(enrollments.map((e) => e.studentId))
-  }, [enrollments])
-
   // Get selected course
   const selectedCourse = courses.find((c) => c.id === selectedCourseId)
 
-  // Filter enrollments
-  const filteredEnrollments = useMemo(() => {
-    let result = enrollments
+  // Filter students
+  const filteredStudents = useMemo(() => {
+    let result = students
 
     // Filter by course
     if (selectedCourseId) {
-      result = result.filter((e) => e.courseId === selectedCourseId)
+      result = result.filter((student) =>
+        student.enrollments.some((e) => e.course.id === selectedCourseId)
+      )
     }
 
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      result = result.filter((enrollment) => {
-        const fullName = `${enrollment.student.firstName || ''} ${enrollment.student.lastName || ''}`.toLowerCase()
-        const email = enrollment.student.user.email?.toLowerCase() || ''
+      result = result.filter((student) => {
+        const fullName = `${student.firstName || ''} ${student.lastName || ''}`.toLowerCase()
+        const email = student.user.email.toLowerCase()
         return fullName.includes(query) || email.includes(query)
       })
     }
 
     return result
-  }, [enrollments, selectedCourseId, searchQuery])
+  }, [students, selectedCourseId, searchQuery])
 
   return (
     <div className="space-y-6 min-w-0">
@@ -130,7 +106,7 @@ export function AllStudentsList({ enrollments, courses }: AllStudentsListProps) 
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Estudiantes</h1>
         <p className="text-muted-foreground">
-          {uniqueStudentIds.size} estudiante{uniqueStudentIds.size !== 1 ? 's' : ''} en {courses.length} curso{courses.length !== 1 ? 's' : ''}
+          {students.length} estudiante{students.length !== 1 ? 's' : ''} en {courses.length} curso{courses.length !== 1 ? 's' : ''}
         </p>
       </div>
 
@@ -143,7 +119,7 @@ export function AllStudentsList({ enrollments, courses }: AllStudentsListProps) 
             placeholder="Buscar por nombre o email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-card"
+            className="pl-10 bg-background"
           />
         </div>
 
@@ -154,7 +130,7 @@ export function AllStudentsList({ enrollments, courses }: AllStudentsListProps) 
               variant="outline"
               role="combobox"
               aria-expanded={courseFilterOpen}
-              className="w-full xl:flex-1 min-w-0 justify-between"
+              className="w-full xl:flex-1 min-w-0 justify-between bg-background"
             >
               {selectedCourse ? (
                 <span className="truncate">{selectedCourse.title}</span>
@@ -231,12 +207,12 @@ export function AllStudentsList({ enrollments, courses }: AllStudentsListProps) 
 
       {/* Count */}
       <p className="text-sm text-muted-foreground">
-        {filteredEnrollments.length} inscripci{filteredEnrollments.length !== 1 ? 'ones' : 'ón'}
+        {filteredStudents.length} estudiante{filteredStudents.length !== 1 ? 's' : ''}
         {selectedCourse && ` en "${selectedCourse.title}"`}
       </p>
 
       {/* Student List */}
-      {enrollments.length === 0 ? (
+      {students.length === 0 ? (
         <div className="text-center py-16 bg-card rounded-2xl border border-border">
           <div className="text-6xl mb-4">👥</div>
           <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -246,7 +222,7 @@ export function AllStudentsList({ enrollments, courses }: AllStudentsListProps) 
             Cuando los estudiantes se inscriban en tus cursos, aparecerán aquí.
           </p>
         </div>
-      ) : filteredEnrollments.length === 0 ? (
+      ) : filteredStudents.length === 0 ? (
         <div className="text-center py-16 bg-card rounded-2xl border border-border">
           <div className="text-5xl mb-4">🔍</div>
           <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -257,26 +233,22 @@ export function AllStudentsList({ enrollments, courses }: AllStudentsListProps) 
           </p>
         </div>
       ) : (
-        <div className="bg-card rounded-2xl border border-border overflow-x-auto">
+        <div className="bg-card rounded-2xl border border-border overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead>Estudiante</TableHead>
-                <TableHead className="hidden xl:table-cell">Curso</TableHead>
-                <TableHead className="hidden 2xl:table-cell">Inscripción</TableHead>
-                <TableHead>Estado</TableHead>
+                <TableHead>Cursos</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredEnrollments.map((enrollment) => {
-                const student = enrollment.student
+              {filteredStudents.map((student) => {
                 const fullName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'Sin nombre'
                 const initials = getInitials(student.firstName, student.lastName)
-                const statusBadge = getStatusBadge(enrollment.status)
 
                 return (
-                  <TableRow key={enrollment.id}>
+                  <TableRow key={student.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="hidden sm:flex size-10 rounded-full bg-verde-uva-100 items-center justify-center text-sm font-semibold text-verde-uva-700 shrink-0">
@@ -284,31 +256,28 @@ export function AllStudentsList({ enrollments, courses }: AllStudentsListProps) 
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="font-medium truncate">{fullName}</span>
-                          <span className="text-sm text-muted-foreground truncate">{student.user.email}</span>
-                          <Link
-                            href={`/educator/courses/${enrollment.course.id}/students`}
-                            className="xl:hidden text-xs text-primary hover:underline truncate"
-                          >
-                            {enrollment.course.title}
-                          </Link>
+                          <span className="text-sm text-muted-foreground truncate">
+                            {student.user.email}
+                          </span>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden xl:table-cell">
-                      <Link
-                        href={`/educator/courses/${enrollment.course.id}/students`}
-                        className="text-primary hover:underline line-clamp-2"
-                      >
-                        {enrollment.course.title}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="hidden 2xl:table-cell text-muted-foreground">
-                      {formatDate(enrollment.enrolledAt)}
-                    </TableCell>
                     <TableCell>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusBadge.className}`}>
-                        {statusBadge.label}
-                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {student.enrollments.map((enrollment) => (
+                          <Link
+                            key={enrollment.id}
+                            href={`/educator/courses/${enrollment.course.id}/students`}
+                          >
+                            <Badge
+                              variant="secondary"
+                              className="cursor-pointer hover:bg-verde-uva-200 transition-colors text-xs rounded-md"
+                            >
+                              {enrollment.course.slug}
+                            </Badge>
+                          </Link>
+                        ))}
+                      </div>
                     </TableCell>
                     <TableCell>
                       <a

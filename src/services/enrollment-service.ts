@@ -207,39 +207,51 @@ export async function getCourseEnrollmentStats(courseId: string) {
 
 /**
  * Get all students enrolled in any course of an educator
- * Returns unique students with their enrollment info
+ * Returns students with their enrollments in educator's courses
  */
 export async function getEducatorStudents(educatorId: string) {
-  const enrollments = await prisma.enrollment.findMany({
+  const students = await prisma.student.findMany({
     where: {
-      course: {
-        educatorId,
-      },
-    },
-    include: {
-      student: {
-        include: {
-          user: {
-            select: {
-              email: true,
-              name: true,
-            },
+      enrollments: {
+        some: {
+          course: {
+            educatorId,
           },
         },
       },
-      course: {
+    },
+    include: {
+      user: {
         select: {
-          id: true,
-          title: true,
-          slug: true,
+          email: true,
+          name: true,
+        },
+      },
+      enrollments: {
+        where: {
+          course: {
+            educatorId,
+          },
+        },
+        include: {
+          course: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+            },
+          },
+        },
+        orderBy: {
+          enrolledAt: 'desc',
         },
       },
     },
     orderBy: [
-      { student: { firstName: 'asc' } },
-      { student: { lastName: 'asc' } },
+      { firstName: 'asc' },
+      { lastName: 'asc' },
     ],
   })
 
-  return enrollments
+  return students
 }
