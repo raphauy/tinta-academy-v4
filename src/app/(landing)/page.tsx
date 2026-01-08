@@ -109,7 +109,7 @@ function LandingFallback() {
   return (
     <div className="min-h-screen">
       {/* Hero Skeleton */}
-      <div className="relative h-[60vh] min-h-[500px] bg-[#143F3B] animate-pulse" />
+      <div className="relative h-[60vh] min-h-[500px] bg-verde-uva-700 animate-pulse" />
       {/* Catalog Skeleton */}
       <CourseCatalogSkeleton />
     </div>

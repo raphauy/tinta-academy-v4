@@ -51,7 +51,7 @@
   --color-verde-uva-200: #b3d9d4;
   --color-verde-uva-300: #8dc6be;
   --color-verde-uva-400: #4a8f86;
-  --color-verde-uva-500: #2d6b63;
+  --color-verde-uva-500: #37635E;
   --color-verde-uva-600: #1e5048;
   --color-verde-uva-700: #143f3b;
   --color-verde-uva-800: #0f2f2c;
@@ -62,7 +62,7 @@
   --color-paper-200: #f3f3f3;
   --color-paper-300: #ebebeb;
   --color-paper-400: #e0e0e0;
-  --color-paper-500: #d4d4d4;
+  --color-paper-500: #DBDBDB;
   --color-paper-600: #bdbdbd;
   --color-paper-700: #9e9e9e;
   --color-paper-800: #757575;
@@ -72,12 +72,16 @@
   --color-gris-tinta-100: #e5e5e5;
   --color-gris-tinta-200: #cccccc;
   --color-gris-tinta-300: #b3b3b3;
-  --color-gris-tinta-400: #808080;
+  --color-gris-tinta-400: #7F7F7F;
   --color-gris-tinta-500: #666666;
   --color-gris-tinta-600: #4d4d4d;
   --color-gris-tinta-700: #333333;
   --color-gris-tinta-800: #2e2e2e;
   --color-gris-tinta-900: #1a1a1a;
+
+  /* Amarillo Alegría - Color especial para estrellas */
+  --color-amarillo-alegria: #E2E369;
+  --color-amarillo-alegria-dark: #A09D4A;
 
   /* Layout tokens */
   --sidebar-width: 240px;
@@ -108,7 +112,7 @@
   --destructive: #dc2626;
   --border: #e5e5e5;
   --input: #e5e5e5;
-  --ring: #2d6b63;
+  --ring: #37635E;
   --chart-1: #143f3b;
   --chart-2: #1e5048;
   --chart-3: #2d6b63;

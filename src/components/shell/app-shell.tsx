@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Menu, X, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MainNav } from './main-nav'
@@ -39,19 +38,12 @@ export function AppShell({ children, variant, user }: AppShellProps) {
   if (variant === 'public') {
     return (
       <div className="min-h-screen bg-secondary">
-        <header className="sticky top-0 z-50 border-b border-border bg-white">
+        <header className="sticky top-0 z-50 border-b border-border bg-background">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
               {/* Logo */}
               <Link href="/" className="hover:opacity-80 transition-opacity">
-                <Image
-                  src="/TintaAcademy_Logo_Negro.png"
-                  alt="Tinta Academy"
-                  width={160}
-                  height={40}
-                  className="object-contain"
-                  priority
-                />
+                <Logo />
               </Link>
 
               {/* Center Navigation */}

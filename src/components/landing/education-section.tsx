@@ -34,7 +34,7 @@ export function EducationSection({ onCTA }: EducationSectionProps) {
           <Button
             onClick={onCTA}
             size="lg"
-            className="rounded-full !px-12 py-6 bg-[#C4704B] text-white font-semibold hover:bg-[#B3603B] shadow-lg"
+            className="rounded-full !px-12 py-6 bg-verde-uva-500 text-white font-semibold hover:bg-verde-uva-700 shadow-lg"
           >
             Explorar cursos
           </Button>

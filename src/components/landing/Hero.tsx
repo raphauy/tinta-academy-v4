@@ -45,7 +45,7 @@ export function Hero({ content, onCTA }: HeroProps) {
           <Button
             onClick={onCTA}
             size="lg"
-            className="rounded-full !px-12 py-6 bg-white text-[#143F3B] font-semibold hover:bg-[#D4A84B] shadow-lg"
+            className="rounded-full !px-12 py-6 bg-white text-verde-uva-700 font-semibold hover:bg-verde-uva-300 shadow-lg"
           >
             {content.ctaText}
             <ChevronDown size={20} />

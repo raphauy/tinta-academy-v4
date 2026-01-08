@@ -116,11 +116,11 @@ export function TestimonialsSection() {
   }, [emblaApi, onInit, onSelect])
 
   return (
-    <section className="w-full py-16 lg:py-24 bg-[#F9F7F4] dark:bg-[#1a1a1a]">
+    <section className="w-full py-16 lg:py-24 bg-paper-300 dark:bg-gris-tinta-900">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#143F3B] dark:text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-verde-uva-700 dark:text-white mb-4">
             Lo que dicen nuestros estudiantes
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -137,22 +137,22 @@ export function TestimonialsSection() {
                   key={index}
                   className="flex-[0_0_100%] min-w-0 md:flex-[0_0_50%] lg:flex-[0_0_33.333%] pl-6"
                 >
-                  <div className="h-full bg-white dark:bg-[#2a2a2a] rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col">
+                  <div className="h-full bg-white dark:bg-card rounded-2xl p-6 md:p-8 shadow-sm border border-border flex flex-col">
                     {/* Author */}
                     <div className="mb-4">
-                      <p className="font-semibold text-[#143F3B] dark:text-white">{testimonial.name}</p>
-                      <p className="text-sm text-[#C4704B]">{testimonial.course}</p>
+                      <p className="font-semibold text-verde-uva-700 dark:text-white">{testimonial.name}</p>
+                      <p className="text-sm text-verde-uva-500">{testimonial.course}</p>
                     </div>
 
                     {/* Comment */}
-                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed flex-grow mb-4">
+                    <p className="text-foreground leading-relaxed flex-grow mb-4">
                       "{testimonial.comment}"
                     </p>
 
                     {/* Stars */}
                     <div className="flex gap-1 justify-center">
                       {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-[#C4704B] text-[#C4704B]" />
+                        <Star key={i} className="w-4 h-4 fill-amarillo-alegria text-amarillo-alegria" />
                       ))}
                     </div>
                   </div>
@@ -165,7 +165,7 @@ export function TestimonialsSection() {
           <Button
             variant="outline"
             size="icon"
-            className="absolute left-6 top-1/2 -translate-y-1/2 -translate-x-4 hidden lg:flex rounded-full bg-white dark:bg-[#143F3B] shadow-md border-gray-200 dark:border-[#143F3B] hover:bg-gray-50 dark:hover:bg-[#1a524d] text-gray-700 dark:text-white"
+            className="absolute left-6 top-1/2 -translate-y-1/2 -translate-x-4 hidden lg:flex rounded-full bg-white dark:bg-verde-uva-700 shadow-md border-border hover:bg-muted dark:hover:bg-verde-uva-600 text-foreground"
             onClick={scrollPrev}
             disabled={!canScrollPrev}
           >
@@ -174,7 +174,7 @@ export function TestimonialsSection() {
           <Button
             variant="outline"
             size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 hidden lg:flex rounded-full bg-white dark:bg-[#143F3B] shadow-md border-gray-200 dark:border-[#143F3B] hover:bg-gray-50 dark:hover:bg-[#1a524d] text-gray-700 dark:text-white"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 hidden lg:flex rounded-full bg-white dark:bg-verde-uva-700 shadow-md border-border hover:bg-muted dark:hover:bg-verde-uva-600 text-foreground"
             onClick={scrollNext}
             disabled={!canScrollNext}
           >
@@ -191,8 +191,8 @@ export function TestimonialsSection() {
               className={cn(
                 'w-2 h-2 rounded-full transition-all duration-300',
                 selectedIndex === index
-                  ? 'bg-[#143F3B] dark:bg-white w-6'
-                  : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
+                  ? 'bg-verde-uva-700 dark:bg-white w-6'
+                  : 'bg-gris-tinta-300 dark:bg-gris-tinta-600 hover:bg-gris-tinta-400 dark:hover:bg-gris-tinta-500'
               )}
               aria-label={`Go to slide ${index + 1}`}
             />

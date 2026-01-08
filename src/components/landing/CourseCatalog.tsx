@@ -89,7 +89,7 @@ export function CourseCatalog({
             <Filter size={18} />
             Filtros
             {hasActiveFilters && (
-              <span className="w-5 h-5 bg-[#D4A84B] text-foreground text-xs font-bold rounded-full flex items-center justify-center">
+              <span className="w-5 h-5 bg-verde-uva-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 {(filters.modality ? 1 : 0) + (filters.type ? 1 : 0) + (filters.tagIds?.length || 0)}
               </span>
             )}
@@ -180,7 +180,7 @@ export function CourseCatalog({
                       variant={filters.tagIds?.includes(tag.id) ? 'default' : 'secondary'}
                       size="sm"
                       onClick={() => toggleTag(tag.id)}
-                      className={filters.tagIds?.includes(tag.id) ? 'bg-[#D4A84B] text-foreground hover:bg-[#D4A84B]/80' : ''}
+                      className={filters.tagIds?.includes(tag.id) ? 'bg-verde-uva-500 text-white hover:bg-verde-uva-500/80' : ''}
                     >
                       {tag.name}
                     </Button>
