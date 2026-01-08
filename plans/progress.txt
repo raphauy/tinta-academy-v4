@@ -230,3 +230,22 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **MILESTONE 2 COMPLETE** - All PRD items pass. Next milestone: 03-enrollment or 04-educator
 
 ---
+
+## 2026-01-08 - Educator Milestone Start (4.01)
+
+**Completed (PRD item 4.01):**
+- Added 'draft' status to CourseStatus enum in Prisma schema
+- Created migration: 20260108125218_add_draft_status
+- Updated src/types/landing.ts to include 'draft' in Course status type
+
+**Technical Notes:**
+- Draft status placed before 'announced' in enum order (represents workflow: draft → announced → enrolling → ...)
+- Draft courses will be used by educators to create courses before publishing
+- Updated landing.ts type to match Prisma enum (required for type compatibility)
+- Pre-existing lint errors in testimonials-section.tsx and user-dropdown.tsx not addressed (unrelated to this change)
+
+**Verification:** typecheck ✓, build ✓ (lint has pre-existing errors unrelated to this change)
+
+**Next Priority:** Create Enrollment model (4.02)
+
+---

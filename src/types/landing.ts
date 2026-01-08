@@ -41,8 +41,8 @@ export interface Course {
   imageUrl: string
   educator: Educator
   tags: Tag[]
-  /** Status - online courses are always 'available' */
-  status: 'announced' | 'enrolling' | 'full' | 'in_progress' | 'finished' | 'available'
+  /** Status - online courses are always 'available', draft courses are not visible to public */
+  status: 'draft' | 'announced' | 'enrolling' | 'full' | 'in_progress' | 'finished' | 'available'
 }
 
 export interface HeroContent {

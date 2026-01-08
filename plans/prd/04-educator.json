@@ -9,7 +9,7 @@
       "Run prisma migrate dev --name add_draft_status",
       "Verify with pnpm tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.02",
