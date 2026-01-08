@@ -336,3 +336,29 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Extend course-service for educator operations (4.04)
 
 ---
+
+## 2026-01-08 - Course Service Educator Operations (4.04)
+
+**Completed (PRD item 4.04):**
+- Extended src/services/course-service.ts with educator-specific operations:
+  - getEducatorCourses(educatorId, filters?) - fetches courses with status/type/modality filters
+  - getCourseById(id) - fetches single course with relations
+  - createCourse(data) - creates new presencial course with 'draft' status
+  - updateCourse(id, data) - updates course fields selectively
+  - publishCourse(id) - changes status from 'draft' to 'announced'
+  - unpublishCourse(id) - changes status back to 'draft'
+  - deleteCourse(id) - hard delete only if no enrollments
+
+**Technical Notes:**
+- CreateCourseInput and UpdateCourseInput interfaces exported for use in server actions
+- getEducatorCourses includes enrollment count via _count relation
+- updateCourse uses conditional spread to only update provided fields
+- deleteCourse checks enrollment count and throws descriptive error if course has students
+- New courses default to modality='presencial' (online support planned for later)
+- Courses ordered by status (drafts first) then by startDate descending
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create enrollment-service for managing course enrollments (4.05)
+
+---
