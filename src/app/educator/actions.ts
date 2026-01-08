@@ -68,7 +68,7 @@ async function getAuthenticatedEducator(): Promise<
     return { error: 'No autenticado' }
   }
 
-  if (session.user.role !== 'educator') {
+  if (session.user.role !== 'educator' && session.user.role !== 'superadmin') {
     return { error: 'No autorizado - solo educadores' }
   }
 

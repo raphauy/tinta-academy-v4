@@ -412,3 +412,22 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create educator dashboard page with metrics (4.07)
 
 ---
+
+## 2026-01-08 - Superadmin Course Access (4.06b)
+
+**Completed (PRD item 4.06b):**
+- Updated getAuthenticatedEducator() in src/app/educator/actions.ts
+- Changed role check from `role !== 'educator'` to `role !== 'educator' && role !== 'superadmin'`
+- Superadmins can now create and manage their own courses via educator panel
+
+**Technical Notes:**
+- This aligns actions.ts with middleware (proxy.ts) and layout.tsx which already allowed superadmin access
+- Superadmin still needs an Educator record to associate courses (can be created via Prisma Studio or migration)
+- No schema changes required - Prisma already supports User with any role having an Educator record
+- Single line change with maximum impact
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create educator dashboard page with metrics (4.07)
+
+---

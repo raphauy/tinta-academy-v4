@@ -140,6 +140,19 @@
     "passes": true
   },
   {
+    "id": "4.06b",
+    "category": "api",
+    "description": "Allow superadmins to create and manage their own courses",
+    "steps": [
+      "Update getAuthenticatedEducator() in src/app/educator/actions.ts to allow superadmin role",
+      "Change role check from 'educator' only to 'educator' OR 'superadmin'",
+      "Ensure superadmin user has an Educator record to associate courses",
+      "Verify with pnpm tsc --noEmit, pnpm lint, pnpm build in sequence",
+      "Test: login as superadmin, create course, publish, verify on landing"
+    ],
+    "passes": true
+  },
+  {
     "id": "4.07",
     "category": "ui",
     "description": "Create educator dashboard page with metrics",
