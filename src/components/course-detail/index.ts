@@ -1,1 +1,1 @@
-export { CourseDetailPage } from './CourseDetailPage'
+export { CourseDetailPage } from './course-detail-page'

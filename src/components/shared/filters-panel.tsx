@@ -2,7 +2,7 @@
 
 import { X, Monitor, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { FilterButton } from './FilterButton'
+import { FilterButton } from './filter-button'
 
 export interface FiltersPanelConfig {
   // Status filter (for educator)

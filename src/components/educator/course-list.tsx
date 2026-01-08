@@ -6,8 +6,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Plus, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { SearchFilterBar } from '@/components/shared/SearchFilterBar'
-import { FiltersPanel } from '@/components/shared/FiltersPanel'
+import { SearchFilterBar } from '@/components/shared/search-filter-bar'
+import { FiltersPanel } from '@/components/shared/filters-panel'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { EducatorCourseRow } from './EducatorCourseRow'
+import { EducatorCourseRow } from './educator-course-row'
 import {
   publishCourseAction,
   unpublishCourseAction,

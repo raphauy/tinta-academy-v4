@@ -4,12 +4,12 @@ import { useRef } from 'react'
 import type { LandingCatalogoProps } from '@/types/landing'
 import { useLandingShell } from '@/components/shell'
 import { PublicHeader } from '@/components/shared/public-header'
-import { Hero } from './Hero'
+import { Hero } from './hero'
 import { EducationSection } from './education-section'
 import { WSETSection } from './wset-section'
-import { CourseCatalog } from './CourseCatalog'
+import { CourseCatalog } from './course-catalog'
 import { TestimonialsSection } from './testimonials-section'
-import { Footer } from './Footer'
+import { Footer } from './footer'
 
 /**
  * LandingCatalogo - Complete landing page with header, hero, catalog, and footer

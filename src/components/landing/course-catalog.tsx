@@ -2,11 +2,11 @@
 
 import { useState, useMemo } from 'react'
 import type { Course, Tag, CourseFilters } from '@/types/landing'
-import { CourseCard } from './CourseCard'
+import { CourseCard } from './course-card'
 import { X, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { SearchFilterBar } from '@/components/shared/SearchFilterBar'
-import { FiltersPanel } from '@/components/shared/FiltersPanel'
+import { SearchFilterBar } from '@/components/shared/search-filter-bar'
+import { FiltersPanel } from '@/components/shared/filters-panel'
 
 interface CourseCatalogProps {
   upcomingCourses: Course[]
