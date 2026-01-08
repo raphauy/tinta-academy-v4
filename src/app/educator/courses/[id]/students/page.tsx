@@ -1,9 +1,10 @@
+import { Suspense } from 'react'
 import { redirect, notFound } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { getCourseById } from '@/services/course-service'
 import { getEnrollmentsByCourse } from '@/services/enrollment-service'
-import { StudentList } from '@/components/educator/student-list'
+import { StudentList, StudentListSkeleton } from '@/components/educator'
 
 interface CourseStudentsPageProps {
   params: Promise<{ id: string }>
@@ -20,10 +21,7 @@ export async function generateMetadata({ params }: CourseStudentsPageProps) {
   }
 }
 
-export default async function CourseStudentsPage({
-  params,
-}: CourseStudentsPageProps) {
-  const { id } = await params
+async function CourseStudentsContent({ id }: { id: string }) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -58,4 +56,16 @@ export default async function CourseStudentsPage({
   const enrollments = await getEnrollmentsByCourse(id)
 
   return <StudentList course={course} enrollments={enrollments} />
+}
+
+export default async function CourseStudentsPage({
+  params,
+}: CourseStudentsPageProps) {
+  const { id } = await params
+
+  return (
+    <Suspense fallback={<StudentListSkeleton />}>
+      <CourseStudentsContent id={id} />
+    </Suspense>
+  )
 }

@@ -1,11 +1,12 @@
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { getEducatorCourses } from '@/services/course-service'
 import { getTags } from '@/services/tag-service'
-import { CourseList } from '@/components/educator'
+import { CourseList, CourseListSkeleton } from '@/components/educator'
 
-export default async function EducatorCoursesPage() {
+async function CoursesContent() {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -24,4 +25,12 @@ export default async function EducatorCoursesPage() {
   ])
 
   return <CourseList courses={courses} tags={tags} />
+}
+
+export default function EducatorCoursesPage() {
+  return (
+    <Suspense fallback={<CourseListSkeleton />}>
+      <CoursesContent />
+    </Suspense>
+  )
 }

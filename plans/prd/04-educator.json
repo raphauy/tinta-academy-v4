@@ -267,7 +267,7 @@
       "Test student list shows migrated/seeded students",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.13",
@@ -282,7 +282,7 @@
       "Test with DevTools network throttling",
       "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.14",

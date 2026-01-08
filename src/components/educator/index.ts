@@ -10,3 +10,9 @@ export { MaterialsSection } from './materials-section'
 export { CourseStatusActions } from './course-status-actions'
 export { StudentList } from './student-list'
 export { AllStudentsList } from './all-students-list'
+export {
+  DashboardSkeleton,
+  CourseListSkeleton,
+  StudentListSkeleton,
+  AllStudentsListSkeleton,
+} from './skeletons'

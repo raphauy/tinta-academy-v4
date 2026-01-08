@@ -267,7 +267,7 @@ export async function publishCourse(id: string) {
   return prisma.course.update({
     where: { id },
     data: {
-      status: 'announced',
+      status: 'enrolling',
     },
   })
 }

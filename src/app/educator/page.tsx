@@ -1,9 +1,10 @@
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId, getEducatorDashboardMetrics } from '@/services/educator-service'
-import { EducatorDashboard } from '@/components/educator'
+import { EducatorDashboard, DashboardSkeleton } from '@/components/educator'
 
-export default async function EducatorDashboardPage() {
+async function DashboardContent() {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -28,5 +29,13 @@ export default async function EducatorDashboardPage() {
       educatorName={educatorName}
       metrics={metrics}
     />
+  )
+}
+
+export default function EducatorDashboardPage() {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardContent />
+    </Suspense>
   )
 }
