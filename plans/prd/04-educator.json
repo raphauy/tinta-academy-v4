@@ -250,7 +250,7 @@
       "Use shadcn/ui Table, Badge, Input components",
       "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.12",
@@ -297,6 +297,38 @@
       "Navigation sidebar should collapse properly (AppShell handles this)",
       "Fix any overflow or spacing issues",
       "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.15",
+    "category": "feature",
+    "description": "Add tag selector/creator component to course editor",
+    "steps": [
+      "Create src/components/educator/tag-selector.tsx with modern UI/UX:",
+      "  - Use Combobox pattern (shadcn/ui Command + Popover) for search + select",
+      "  - Show existing tags as searchable/filterable list",
+      "  - Display selected tags as removable badges/chips below the input",
+      "  - 'Crear tag' option appears when search doesn't match existing tags",
+      "  - Inline tag creation: user types name, hits Enter or clicks 'Crear', tag is created and selected",
+      "  - New tags auto-generate slug from name (kebab-case)",
+      "  - Loading state while fetching/creating tags",
+      "Add server actions in src/app/educator/actions.ts:",
+      "  - getTagsAction() - fetch all available tags",
+      "  - createTagAction(name: string) - create new tag, return created tag",
+      "Update tag-service.ts if needed:",
+      "  - Ensure createTag(name) generates slug and handles duplicates",
+      "Integrate TagSelector into presencial-course-form.tsx:",
+      "  - Add 'Tags' section after basic info",
+      "  - Pass selected tag IDs to createCourseAction/updateCourseAction",
+      "Update course-service createCourse/updateCourse to handle tagIds:",
+      "  - Connect tags relation when creating/updating course",
+      "Visual design:",
+      "  - Selected tags shown as colored badges (use tag colors if available)",
+      "  - Smooth animations for adding/removing tags",
+      "  - Clear empty state: 'Busca o crea tags para categorizar tu curso'",
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence",
+      "Test: create course with existing tags, create course with new tag, edit course tags"
     ],
     "passes": false
   }

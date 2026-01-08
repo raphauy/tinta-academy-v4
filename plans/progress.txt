@@ -604,3 +604,38 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create students list page for a course (4.11)
 
 ---
+
+## 2026-01-08 - Student List Page (4.11)
+
+**Completed (PRD item 4.11):**
+- Updated src/app/educator/students/page.tsx to show course selector:
+  - Lists all educator's courses with enrollment count
+  - Each course links to /educator/courses/[id]/students
+  - Empty state for educators with no courses
+- Created src/app/educator/courses/[id]/students/page.tsx:
+  - RSC with auth verification and course ownership check
+  - Fetches enrollments using getEnrollmentsByCourse
+  - Dynamic metadata with course title
+- Created src/components/educator/student-list.tsx with:
+  - Header with course title and description
+  - 4 metric cards: Total inscritos, Confirmados, Pendientes, Cancelados
+  - Search input to filter by name/email
+  - Table with columns: Estudiante (avatar+name), Email, Fecha inscripcion, Estado
+  - Status badges: Pendiente (yellow), Confirmado (green), Cancelado (gray)
+  - Email action button for each student
+  - Empty states: no students enrolled / no search results
+- Added shadcn/ui Table component
+
+**Technical Notes:**
+- Visual design adapted from ProductPlan reference (StudentList.png) to project colors
+- Uses verde-uva-100/700 for avatars and accent colors
+- Metrics grid uses same card style as educator dashboard
+- Table uses shadcn/ui Table with hover states
+- StudentList component uses explicit type for EnrollmentWithStudent matching service return
+- No need for separate student-row.tsx - used inline table rows
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Verify migrated data and seed fallback if needed (4.12)
+
+---

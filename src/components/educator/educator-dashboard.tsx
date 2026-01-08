@@ -30,12 +30,13 @@ export function EducatorDashboard({
         : 0
 
   // Get recent/active courses for quick access (max 4)
-  // Prioritize active courses, but show finished ones if no active courses exist
+  // Prioritize active courses, then fill with finished ones if needed
   const activeCourses = metrics.courses.filter((c) => c.status !== 'finished')
-  const quickAccessCourses =
-    activeCourses.length > 0
-      ? activeCourses.slice(0, 4)
-      : metrics.courses.slice(0, 4)
+  const finishedCourses = metrics.courses.filter((c) => c.status === 'finished')
+  const quickAccessCourses = [
+    ...activeCourses.slice(0, 4),
+    ...finishedCourses.slice(0, Math.max(0, 4 - activeCourses.length))
+  ]
 
   return (
     <div className="space-y-6">

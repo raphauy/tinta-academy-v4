@@ -204,3 +204,42 @@ export async function getCourseEnrollmentStats(courseId: string) {
     total: stats.reduce((sum, s) => sum + s._count, 0),
   }
 }
+
+/**
+ * Get all students enrolled in any course of an educator
+ * Returns unique students with their enrollment info
+ */
+export async function getEducatorStudents(educatorId: string) {
+  const enrollments = await prisma.enrollment.findMany({
+    where: {
+      course: {
+        educatorId,
+      },
+    },
+    include: {
+      student: {
+        include: {
+          user: {
+            select: {
+              email: true,
+              name: true,
+            },
+          },
+        },
+      },
+      course: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: [
+      { student: { firstName: 'asc' } },
+      { student: { lastName: 'asc' } },
+    ],
+  })
+
+  return enrollments
+}

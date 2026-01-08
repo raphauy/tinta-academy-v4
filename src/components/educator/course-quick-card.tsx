@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Users, Clock, MapPin, Monitor, Calendar, ChevronRight, FileEdit } from 'lucide-react'
+import { Users, Clock, MapPin, Monitor, Calendar, ChevronRight, FileEdit, GraduationCap } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { EducatorCourseQuickAccess } from '@/services/educator-service'
@@ -203,7 +203,15 @@ export function CourseQuickCard({ course }: CourseQuickCardProps) {
         </Link>
         <div className="w-px bg-stone-100 dark:bg-stone-800" />
         <Link
-          href={`/educator/courses/${course.id}`}
+          href={`/educator/courses/${course.id}/students`}
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-stone-600 dark:text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors"
+        >
+          <GraduationCap className="w-3.5 h-3.5" />
+          {course.totalStudents || course.enrolledCount || 0} Estudiantes
+        </Link>
+        <div className="w-px bg-stone-100 dark:bg-stone-800" />
+        <Link
+          href={`/cursos/${course.slug}`}
           className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-stone-600 dark:text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors"
         >
           Ver detalles

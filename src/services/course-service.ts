@@ -67,6 +67,7 @@ const publicStatuses: CourseStatus[] = [
   'full',
   'in_progress',
   'available',
+  'finished',
 ]
 
 export async function getCourses(filters: CourseFilters = {}) {

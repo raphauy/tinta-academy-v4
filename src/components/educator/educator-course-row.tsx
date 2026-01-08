@@ -204,8 +204,19 @@ export function EducatorCourseRow({
             {priceText}
           </span>
 
-          {/* Actions dropdown */}
-          <DropdownMenu>
+          {/* Action buttons */}
+          <div className="flex items-center gap-2">
+            {/* Ver estudiantes button */}
+            <Button variant="outline" size="sm" asChild className="gap-2">
+              <Link href={`/educator/courses/${course.id}/students`}>
+                <GraduationCap className="size-4" />
+                <span className="hidden sm:inline">{course.enrolledCount} Estudiantes</span>
+                <span className="sm:hidden">{course.enrolledCount}</span>
+              </Link>
+            </Button>
+
+            {/* Actions dropdown */}
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <MoreVertical size={16} />
@@ -255,6 +266,7 @@ export function EducatorCourseRow({
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
       </div>
     </div>
