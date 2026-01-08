@@ -362,3 +362,29 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create enrollment-service for managing course enrollments (4.05)
 
 ---
+
+## 2026-01-08 - Enrollment Service (4.05)
+
+**Completed (PRD item 4.05):**
+- Created src/services/enrollment-service.ts with all enrollment operations:
+  - getEnrollmentsByCourse(courseId) - returns enrollments with student + user data
+  - getEnrollmentsByStudent(studentId) - returns enrollments with course + educator data
+  - getEnrollmentById(id) - fetches single enrollment with relations
+  - createEnrollment(studentId, courseId) - creates new pending enrollment
+  - updateEnrollmentStatus(id, status) - updates status with course count adjustment
+  - cancelEnrollment(id) - convenience wrapper for cancellation
+  - confirmEnrollment(id) - convenience wrapper for confirmation
+  - getCourseEnrollmentStats(courseId) - returns counts by status
+
+**Technical Notes:**
+- createEnrollment checks for existing enrollment and course capacity before creating
+- updateEnrollmentStatus uses transaction to atomically update enrollment and course.enrolledCount
+- Course enrolledCount increments when status changes TO 'confirmed', decrements when FROM 'confirmed'
+- All queries include relevant relations (student.user for email/name, course.educator for course queries)
+- Error messages in Spanish for user-facing errors
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create server actions for educator course management (4.06)
+
+---

@@ -120,7 +120,7 @@
       "Implement cancelEnrollment(id: string)",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.06",
