@@ -14,7 +14,7 @@ interface HeroProps {
  */
 export function Hero({ content, onCTA }: HeroProps) {
   return (
-    <section className="relative h-[70vh] min-h-[500px] max-h-[800px] flex items-center">
+    <section className="relative h-[70vh] min-h-[500px] max-h-[800px] flex items-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
@@ -32,7 +32,7 @@ export function Hero({ content, onCTA }: HeroProps) {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8">
         <div className="max-w-2xl lg:max-w-3xl mx-auto text-center">
           {/* Headline */}
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 whitespace-nowrap">
+          <h1 className="text-[1.35rem] sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6 whitespace-nowrap">
             {content.headline}
           </h1>
 
