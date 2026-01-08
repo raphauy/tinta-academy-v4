@@ -6,10 +6,8 @@ import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { UserDropdown, type UserDropdownUser } from '@/components/shared/user-dropdown'
 
-export interface HeaderUser extends UserDropdownUser {}
-
 interface HeaderProps {
-  user?: HeaderUser | null
+  user?: UserDropdownUser | null
   onScrollToCatalog?: () => void
 }
 
