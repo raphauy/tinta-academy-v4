@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { Course, Tag, CourseFilters } from '@/types/landing'
 import { CourseCard } from './CourseCard'
-import { Filter, X, ChevronDown, Monitor, MapPin } from 'lucide-react'
+import { X, ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { SearchFilterBar } from '@/components/shared/SearchFilterBar'
+import { FiltersPanel } from '@/components/shared/FiltersPanel'
 
 interface CourseCatalogProps {
   upcomingCourses: Course[]
@@ -29,6 +31,7 @@ export function CourseCatalog({
   const [filters, setFilters] = useState<CourseFilters>(initialFilters || {})
   const [showFilters, setShowFilters] = useState(false)
   const [showPastCourses, setShowPastCourses] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Update local filters and notify parent (for URL sync)
   const updateFilters = (newFilters: CourseFilters) => {
@@ -36,29 +39,54 @@ export function CourseCatalog({
     onFilter?.(newFilters)
   }
 
-  const filterCourses = (courses: Course[]) => {
-    return courses.filter((course) => {
-      if (filters.modality && course.modality !== filters.modality) return false
-      if (filters.type && course.type !== filters.type) return false
-      if (filters.tagIds && filters.tagIds.length > 0) {
-        const hasMatchingTag = filters.tagIds.some((tagId) =>
-          course.tags.some(tag => tag.id === tagId)
-        )
-        if (!hasMatchingTag) return false
-      }
-      return true
-    })
-  }
+  // Filter and search courses
+  const filterCourses = useMemo(() => {
+    return (courses: Course[]) => {
+      return courses.filter((course) => {
+        // Search filter
+        if (searchQuery) {
+          const query = searchQuery.toLowerCase()
+          const matchesTitle = course.title.toLowerCase().includes(query)
+          const matchesDescription = course.description?.toLowerCase().includes(query)
+          if (!matchesTitle && !matchesDescription) {
+            return false
+          }
+        }
+
+        if (filters.modality && course.modality !== filters.modality) return false
+        if (filters.type && course.type !== filters.type) return false
+        if (filters.tagIds && filters.tagIds.length > 0) {
+          const hasMatchingTag = filters.tagIds.some((tagId) =>
+            course.tags.some(tag => tag.id === tagId)
+          )
+          if (!hasMatchingTag) return false
+        }
+        return true
+      })
+    }
+  }, [filters, searchQuery])
 
   const filteredUpcoming = filterCourses(upcomingCourses)
   const filteredPast = filterCourses(pastCourses)
 
-  const hasActiveFilters =
-    filters.modality || filters.type || (filters.tagIds && filters.tagIds.length > 0)
+  const activeFiltersCount =
+    (filters.modality ? 1 : 0) + (filters.type ? 1 : 0) + (filters.tagIds?.length || 0)
+  const hasActiveFilters = activeFiltersCount > 0
 
-  const clearFilters = () => updateFilters({})
+  const clearFilters = () => {
+    updateFilters({})
+    setSearchQuery('')
+  }
 
-  const toggleTag = (tagId: string) => {
+  const handleModalityChange = (modality: string | undefined) => {
+    updateFilters({ ...filters, modality: modality as CourseFilters['modality'] })
+  }
+
+  const handleTypeChange = (type: string) => {
+    updateFilters({ ...filters, type: type === 'all' ? undefined : type as CourseFilters['type'] })
+  }
+
+  const handleTagToggle = (tagId: string) => {
     const currentTags = filters.tagIds || []
     const newTags = currentTags.includes(tagId)
       ? currentTags.filter((id) => id !== tagId)
@@ -70,7 +98,7 @@ export function CourseCatalog({
     <section className="py-16 bg-secondary">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-1">
               Próximos Cursos
@@ -79,130 +107,37 @@ export function CourseCatalog({
               {filteredUpcoming.length} cursos disponibles
             </p>
           </div>
+        </div>
 
-          {/* Filter Toggle */}
-          <Button
-            variant={showFilters || hasActiveFilters ? 'default' : 'outline'}
-            onClick={() => setShowFilters(!showFilters)}
-            className="gap-2"
-          >
-            <Filter size={18} />
-            Filtros
-            {hasActiveFilters && (
-              <span className="w-5 h-5 bg-verde-uva-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                {(filters.modality ? 1 : 0) + (filters.type ? 1 : 0) + (filters.tagIds?.length || 0)}
-              </span>
-            )}
-          </Button>
+        {/* Search and Filters */}
+        <div className="mb-6">
+          <SearchFilterBar
+            searchValue={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="Buscar cursos..."
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+            activeFiltersCount={activeFiltersCount}
+          />
         </div>
 
         {/* Filters Panel */}
         {showFilters && (
-          <div className="bg-card rounded-2xl p-6 mb-8 shadow-sm border border-border">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Modality */}
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-3">
-                  Modalidad
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  <FilterButton
-                    active={!filters.modality}
-                    onClick={() => updateFilters({ ...filters, modality: undefined })}
-                  >
-                    Todas
-                  </FilterButton>
-                  <FilterButton
-                    active={filters.modality === 'presencial'}
-                    onClick={() => updateFilters({ ...filters, modality: 'presencial' })}
-                    icon={<MapPin size={14} />}
-                  >
-                    Presencial
-                  </FilterButton>
-                  <FilterButton
-                    active={filters.modality === 'online'}
-                    onClick={() => updateFilters({ ...filters, modality: 'online' })}
-                    icon={<Monitor size={14} />}
-                  >
-                    Online
-                  </FilterButton>
-                </div>
-              </div>
-
-              {/* Type */}
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-3">
-                  Tipo de curso
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  <FilterButton
-                    active={!filters.type}
-                    onClick={() => updateFilters({ ...filters, type: undefined })}
-                  >
-                    Todos
-                  </FilterButton>
-                  <FilterButton
-                    active={filters.type === 'wset'}
-                    onClick={() => updateFilters({ ...filters, type: 'wset' })}
-                  >
-                    WSET
-                  </FilterButton>
-                  <FilterButton
-                    active={filters.type === 'taller'}
-                    onClick={() => updateFilters({ ...filters, type: 'taller' })}
-                  >
-                    Taller
-                  </FilterButton>
-                  <FilterButton
-                    active={filters.type === 'cata'}
-                    onClick={() => updateFilters({ ...filters, type: 'cata' })}
-                  >
-                    Cata
-                  </FilterButton>
-                  <FilterButton
-                    active={filters.type === 'curso'}
-                    onClick={() => updateFilters({ ...filters, type: 'curso' })}
-                  >
-                    Curso
-                  </FilterButton>
-                </div>
-              </div>
-
-              {/* Tags */}
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-3">
-                  Temas
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <Button
-                      key={tag.id}
-                      variant={filters.tagIds?.includes(tag.id) ? 'default' : 'secondary'}
-                      size="sm"
-                      onClick={() => toggleTag(tag.id)}
-                      className={filters.tagIds?.includes(tag.id) ? 'bg-verde-uva-500 text-white hover:bg-verde-uva-500/80' : ''}
-                    >
-                      {tag.name}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Clear Filters */}
-            {hasActiveFilters && (
-              <div className="mt-6 pt-4 border-t border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="gap-2 text-muted-foreground hover:text-primary"
-                >
-                  <X size={16} />
-                  Limpiar filtros
-                </Button>
-              </div>
-            )}
+          <div className="mb-8">
+            <FiltersPanel
+              showModality={true}
+              currentModality={filters.modality || undefined}
+              onModalityChange={handleModalityChange}
+              showType={true}
+              currentType={filters.type || 'all'}
+              onTypeChange={handleTypeChange}
+              showTags={tags.length > 0}
+              tags={tags}
+              selectedTagIds={filters.tagIds || []}
+              onTagToggle={handleTagToggle}
+              hasActiveFilters={hasActiveFilters}
+              onClearFilters={clearFilters}
+            />
           </div>
         )}
 
@@ -235,7 +170,7 @@ export function CourseCatalog({
               No se encontraron cursos
             </h3>
             <p className="text-muted-foreground mb-6">
-              No hay cursos que coincidan con los filtros seleccionados.
+              No hay cursos que coincidan con tu búsqueda o filtros.
             </p>
             <Button onClick={clearFilters} className="gap-2">
               <X size={18} />
@@ -279,26 +214,5 @@ export function CourseCatalog({
         )}
       </div>
     </section>
-  )
-}
-
-interface FilterButtonProps {
-  children: React.ReactNode
-  active: boolean
-  onClick: () => void
-  icon?: React.ReactNode
-}
-
-function FilterButton({ children, active, onClick, icon }: FilterButtonProps) {
-  return (
-    <Button
-      variant={active ? 'default' : 'secondary'}
-      size="sm"
-      onClick={onClick}
-      className="gap-1.5"
-    >
-      {icon}
-      {children}
-    </Button>
   )
 }

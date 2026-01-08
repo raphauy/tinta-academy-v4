@@ -190,7 +190,7 @@
       "  - Actions: Editar, Publicar/Despublicar, Eliminar (dropdown menu)",
       "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.09",
@@ -230,7 +230,7 @@
       "Run pnpm lint, pnpm typecheck, pnpm build in sequence",
       "Test all actions in browser"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.11",

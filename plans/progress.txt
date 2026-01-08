@@ -467,3 +467,71 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create educator course list page with filters (4.08)
 
 ---
+
+## 2026-01-08 - Educator Course List Page (4.08 + 4.10)
+
+**Completed (PRD items 4.08 and 4.10):**
+- Updated src/app/educator/courses/page.tsx as RSC with auth + educator data fetching
+- Created src/components/educator/CourseList.tsx with:
+  - Search input for filtering by title/description
+  - Expandable filter panel (same style as landing CourseCatalog)
+  - Filter bar: status (Todos, Borrador, Publicado, Finalizado) and type (Todos, WSET, Taller, Cata, Curso)
+  - URL query params support (?status=draft&type=wset)
+  - Empty states for no courses and no filter results (matching landing style)
+  - "Nuevo Curso" button
+  - Publish/Unpublish/Delete actions wired to server actions
+  - AlertDialog for delete confirmation
+  - Toast notifications for success/error
+  - Loading state during mutations
+- Created src/components/educator/EducatorCourseRow.tsx (list view, not grid):
+  - Horizontal row layout matching product-plan design reference
+  - Clickable course image (links to edit page)
+  - Badges using same styles as landing: type badge (WSET, CATA, etc), modality (Online/Presencial), status (Publicado/Borrador)
+  - Title, description (truncated), meta info (alumnos, fecha, duración)
+  - Price displayed on right side
+  - Dropdown menu with: Editar, Ver estudiantes, Publicar/Despublicar, Eliminar
+- Created src/components/educator/EducatorCourseCard.tsx (grid view, kept for potential future use)
+- Created src/components/shared/FilterButton.tsx as reusable component
+- Created src/components/shared/SearchFilterBar.tsx as reusable component (search + filter button)
+- Created src/components/shared/FiltersPanel.tsx as reusable component (configurable filter panel)
+- Refactored landing CourseCatalog to use shared SearchFilterBar and FiltersPanel
+- Refactored educator CourseList to use shared SearchFilterBar and FiltersPanel
+- Both educator and landing now share the same search/filter UI with consistent behavior
+- Educator panel now includes tags filter (fetched from getTags service)
+- Added shadcn/ui components: Badge, DropdownMenu, AlertDialog
+
+**Technical Notes:**
+- List view (EducatorCourseRow) matches product-plan/sections/educator-panel/CourseList.png
+- Badges use same colors as landing CourseCard for consistency
+- Search is client-side with useMemo for performance
+- FilterButton extracted to shared components for reuse
+- Page is a Server Component that fetches educator courses before rendering
+- Uses useTransition for non-blocking mutations
+- Filters applied client-side from URL searchParams for instant feedback
+- Delete requires confirmation via AlertDialog to prevent accidental deletion
+- Actions call server actions which validate ownership and revalidate paths
+- Items 4.08 and 4.10 implemented together since CourseList includes all action wiring
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create presencial course editor form (4.09)
+
+---
+
+## 2026-01-08 - Course Detail Page Tags Display (4.08b)
+
+**Completed (minor enhancement):**
+- Added tags display to CourseDetailPage.tsx hero section
+- Tags appear below the status badge using verde-uva-500 background (same as landing cards)
+- Consistent tag styling across landing cards and course detail page
+
+**Technical Notes:**
+- Tags rendered conditionally when course.tags.length > 0
+- Uses same visual style as CourseCard tags for UI consistency
+- Tags and status badge both displayed in flex-wrap container with gap-2
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create presencial course editor form (4.09)
+
+---

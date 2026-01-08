@@ -200,10 +200,18 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                 {formatMonthYear(course.startDate)}
               </h2>
             )}
-            <div className="mt-4">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-sm">
                 {getStatusText(course.status)}
               </span>
+              {course.tags.length > 0 && course.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="px-3 py-1 bg-verde-uva-500 text-white text-sm rounded-full font-medium"
+                >
+                  {tag.name}
+                </span>
+              ))}
             </div>
           </div>
         </div>

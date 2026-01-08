@@ -1,1 +1,7 @@
 export { EducatorDashboard } from './EducatorDashboard'
+export { CourseList } from './CourseList'
+export { EducatorCourseCard } from './EducatorCourseCard'
+export { EducatorCourseRow } from './EducatorCourseRow'
+export { MetricCard } from './metric-card'
+export { MiniChart } from './mini-chart'
+export { CourseQuickCard } from './course-quick-card'
