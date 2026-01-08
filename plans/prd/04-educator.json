@@ -168,7 +168,7 @@
       "Use shadcn/ui Card, Button components following landing page style",
       "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.08",

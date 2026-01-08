@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X, Search } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { MainNav } from './main-nav'
 import { UserMenu, type UserMenuUser } from './user-menu'
 import { Logo } from '@/components/shared/logo'
-import { UserDropdown } from '@/components/shared/user-dropdown'
+import { PublicHeader } from '@/components/shared/public-header'
 import {
   adminNavItems,
   educatorNavItems,
@@ -38,62 +38,7 @@ export function AppShell({ children, variant, user }: AppShellProps) {
   if (variant === 'public') {
     return (
       <div className="min-h-screen bg-secondary">
-        <header className="sticky top-0 z-50 border-b border-border bg-background">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between">
-              {/* Logo */}
-              <Link href="/" className="hover:opacity-80 transition-opacity">
-                <Logo />
-              </Link>
-
-              {/* Center Navigation */}
-              <nav className="hidden md:flex items-center gap-2">
-                <Button
-                  asChild
-                  variant="ghost"
-                  className="text-foreground hover:bg-muted text-sm font-medium"
-                >
-                  <Link href="/wset">WSET</Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="ghost"
-                  className="text-foreground hover:bg-muted text-sm font-medium"
-                >
-                  <Link href="/#catalog">Cursos</Link>
-                </Button>
-              </nav>
-
-              {/* Right Section */}
-              <div className="flex items-center gap-2">
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="icon"
-                  className="text-foreground hover:bg-muted"
-                  title="Buscar cursos"
-                >
-                  <Link href="/#catalog">
-                    <Search size={18} />
-                  </Link>
-                </Button>
-
-                {user ? (
-                  <UserDropdown user={user} />
-                ) : (
-                  <Button
-                    asChild
-                    variant="ghost"
-                    className="text-foreground hover:bg-muted text-sm font-medium"
-                  >
-                    <Link href="/login">Iniciar sesión</Link>
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </header>
-
+        <PublicHeader user={user} />
         <main>{children}</main>
       </div>
     )
@@ -179,7 +124,7 @@ export function AppShell({ children, variant, user }: AppShellProps) {
 
         {/* Main Content */}
         <main
-          className="min-h-screen flex-1 lg:ml-(--sidebar-width)"
+          className="min-h-screen flex-1 p-6 lg:p-8 lg:ml-(--sidebar-width)"
           style={
             { '--sidebar-width': `${sidebarWidth}px` } as React.CSSProperties
           }

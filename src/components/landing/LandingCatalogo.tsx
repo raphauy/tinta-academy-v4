@@ -3,7 +3,7 @@
 import { useRef } from 'react'
 import type { LandingCatalogoProps } from '@/types/landing'
 import { useLandingShell } from '@/components/shell'
-import { Header } from './Header'
+import { PublicHeader } from '@/components/shared/public-header'
 import { Hero } from './Hero'
 import { EducationSection } from './education-section'
 import { WSETSection } from './wset-section'
@@ -41,7 +41,7 @@ export function LandingCatalogo({
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <Header user={user} onScrollToCatalog={scrollToCatalog} />
+      <PublicHeader user={user} onScrollToCatalog={scrollToCatalog} />
 
       {/* Hero */}
       <Hero
@@ -111,7 +111,7 @@ export function LandingContent({
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Transparent over hero */}
-      <Header user={user} onScrollToCatalog={scrollToCatalog} />
+      <PublicHeader user={user} onScrollToCatalog={scrollToCatalog} />
 
       {/* Hero */}
       <Hero

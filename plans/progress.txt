@@ -431,3 +431,39 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create educator dashboard page with metrics (4.07)
 
 ---
+
+## 2026-01-08 - Educator Dashboard Page (4.07)
+
+**Completed (PRD item 4.07):**
+- Updated src/app/educator/page.tsx as RSC with auth + educator data fetching
+- Created src/components/educator/EducatorDashboard.tsx with:
+  - Welcome message displaying educator name
+  - 4 MetricCard components: Total Cursos, Cursos Publicados, Total Inscripciones, Próximos Cursos
+  - Quick action buttons: Crear Curso, Ver Cursos, Ver Estudiantes (with icons)
+  - List of upcoming courses (max 3) with enrollment stats and links
+  - Empty state for educators with no courses
+- Created src/components/educator/index.ts barrel export
+
+**Technical Notes:**
+- Page is a Server Component that fetches data before rendering
+- Uses getEducatorByUserId to find educator record from session.user.id
+- Uses getEducatorDashboardMetrics to get all dashboard data in single query
+- EducatorDashboard is 'use client' to support client-side interactions (Link/Button)
+- MetricCard is an internal component for consistent card styling
+- Uses shadcn/ui Card and Button components
+- Uses lucide-react icons (BookOpen, Users, Calendar, Plus, List, GraduationCap)
+- Handles edge cases: no session (redirect to login), no educator record (redirect home)
+
+**Additional fixes:**
+- Added p-6 lg:p-8 padding to AppShell main content area (centralized for all authenticated pages)
+- Fixed Next.js Image warnings across the app:
+  - Logo component: added sizes="144px"
+  - Header.tsx: added style={{ width: 'auto', height: 'auto' }} to maintain aspect ratio
+  - Footer.tsx: added sizes="192px" to logo Image with fill
+  - wset-section.tsx: added sizes="(max-width: 1024px) 100vw, 50vw" to WSET.jpg
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create educator course list page with filters (4.08)
+
+---

@@ -14,11 +14,11 @@ export function Logo() {
 
   // Avoid hydration mismatch by showing nothing until mounted
   if (!mounted) {
-    return <div className="relative h-10 w-36" />
+    return <div className="relative h-9 w-40" />
   }
 
   return (
-    <div className="relative h-10 w-36">
+    <div className="relative h-9 w-40">
       <Image
         src={
           resolvedTheme === 'dark'
@@ -27,6 +27,7 @@ export function Logo() {
         }
         alt="Tinta Academy"
         fill
+        sizes="160px"
         className="object-contain"
         priority
       />
