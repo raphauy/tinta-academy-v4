@@ -107,7 +107,9 @@ export function AppShell({ children, variant, user }: AppShellProps) {
       {/* Mobile Header */}
       <header className="sticky top-0 z-50 border-b border-border bg-background lg:hidden">
         <div className="flex h-14 items-center justify-between px-4">
-          <Logo />
+          <Link href="/" className="hover:opacity-80 transition-opacity">
+            <Logo />
+          </Link>
           <Button
             variant="ghost"
             size="icon"
@@ -125,7 +127,9 @@ export function AppShell({ children, variant, user }: AppShellProps) {
           style={{ width: sidebarWidth }}
         >
           <div className="flex h-16 items-center border-b border-border px-6">
-            <Logo />
+            <Link href="/" className="hover:opacity-80 transition-opacity">
+              <Logo />
+            </Link>
           </div>
 
           <div className="flex-1 overflow-y-auto py-4">
@@ -148,7 +152,9 @@ export function AppShell({ children, variant, user }: AppShellProps) {
             />
             <aside className="fixed inset-y-0 left-0 flex w-64 flex-col bg-background shadow-xl">
               <div className="flex h-14 items-center justify-between border-b border-border px-4">
-                <Logo />
+                <Link href="/" className="hover:opacity-80 transition-opacity">
+                  <Logo />
+                </Link>
                 <Button
                   variant="ghost"
                   size="icon"

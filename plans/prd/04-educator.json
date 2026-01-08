@@ -72,7 +72,7 @@
       "Run script: pnpm tsx scripts/migration/migrate-enrollments.ts",
       "Verify migrated enrollments in Prisma Studio",
       "Update Course.enrolledCount based on confirmed enrollments count",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build in sequence"
     ],
     "passes": true
   },
@@ -88,9 +88,9 @@
       "  - publishedCourses: count where status != 'draft'",
       "  - totalEnrollments: sum of enrolledCount across courses",
       "  - upcomingCourses: courses with startDate > now and status in [announced, enrolling]",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.04",
@@ -103,7 +103,7 @@
       "Add publishCourse(id: string) - change status from 'draft' to 'announced'",
       "Add unpublishCourse(id: string) - change status back to 'draft'",
       "Add deleteCourse(id: string) - soft delete or hard delete if no enrollments",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   },
@@ -118,7 +118,7 @@
       "Implement createEnrollment(studentId: string, courseId: string)",
       "Implement updateEnrollmentStatus(id: string, status: EnrollmentStatus)",
       "Implement cancelEnrollment(id: string)",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   },
@@ -135,7 +135,7 @@
       "Implement deleteCourseAction(id) - delete course",
       "All actions must verify educator owns the course",
       "Use revalidatePath after mutations",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   },
@@ -153,7 +153,7 @@
       "  - Quick action buttons: 'Crear Curso', 'Ver Cursos', 'Ver Estudiantes'",
       "  - List of upcoming courses (max 3) with links",
       "Use shadcn/ui Card, Button components following landing page style",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   },
@@ -175,7 +175,7 @@
       "  - Title, type badge, status badge (Borrador, Publicado, etc.)",
       "  - Date, location (for presencial), enrolledCount/maxCapacity",
       "  - Actions: Editar, Publicar/Despublicar, Eliminar (dropdown menu)",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   },
@@ -199,7 +199,7 @@
       "Use react-hook-form with Zod validation",
       "Form calls createCourseAction or updateCourseAction on submit",
       "Redirect to /educator/courses on success",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   },
@@ -214,7 +214,7 @@
       "Show toast on success/error using sonner",
       "Handle loading states during mutations",
       "Verify actions refresh the list correctly",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build",
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence",
       "Test all actions in browser"
     ],
     "passes": false
@@ -234,7 +234,7 @@
       "  - Search input to filter by name/email",
       "Create src/components/educator/StudentRow.tsx for table rows",
       "Use shadcn/ui Table, Badge, Input components",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   },
@@ -251,7 +251,7 @@
       "  - Mix of pending, confirmed, cancelled statuses",
       "Test educator dashboard shows correct metrics",
       "Test student list shows migrated/seeded students",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   },
@@ -266,7 +266,7 @@
       "Create skeleton for dashboard metrics",
       "Verify empty states show correctly when no data",
       "Test with DevTools network throttling",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   },
@@ -282,7 +282,7 @@
       "Action buttons/dropdowns should be touch-friendly",
       "Navigation sidebar should collapse properly (AppShell handles this)",
       "Fix any overflow or spacing issues",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": false
   }

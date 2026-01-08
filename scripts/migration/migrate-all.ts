@@ -38,7 +38,7 @@ async function main() {
         cwd: process.cwd(),
       })
       console.log(`\n✅ ${script.name} completed successfully`)
-    } catch (error) {
+    } catch {
       console.error(`\n❌ ${script.name} failed`)
       console.error('Stopping migration. Fix the issue and re-run.')
       process.exit(1)

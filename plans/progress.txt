@@ -311,3 +311,28 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create educator-service for dashboard metrics (4.03)
 
 ---
+
+## 2026-01-08 - Educator Service (4.03)
+
+**Completed (PRD item 4.03):**
+- Created src/services/educator-service.ts with:
+  - getEducatorByUserId(userId) - fetches educator with user relation
+  - getEducatorById(educatorId) - fetches educator by ID
+  - getEducatorDashboardMetrics(educatorId) - returns dashboard metrics
+
+**Dashboard Metrics returned:**
+- totalCourses: count of all educator courses
+- publishedCourses: count of courses where status != 'draft'
+- totalEnrollments: sum of enrolledCount across all courses
+- upcomingCourses: array of courses with startDate > now and status in [announced, enrolling]
+
+**Also fixed pre-existing lint errors:**
+- testimonials-section.tsx: escaped quotes with &ldquo;/&rdquo;
+- user-dropdown.tsx & user-menu.tsx: added eslint-disable for SSR hydration pattern
+- migrate-all.ts: removed unused error variable in catch block
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Extend course-service for educator operations (4.04)
+
+---
