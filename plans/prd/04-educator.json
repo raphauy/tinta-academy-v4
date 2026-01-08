@@ -74,7 +74,7 @@
       "Update Course.enrolledCount based on confirmed enrollments count",
       "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.03",

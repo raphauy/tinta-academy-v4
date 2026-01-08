@@ -291,3 +291,23 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Migrate enrollments from v3 Orders (4.02c)
 
 ---
+
+## 2026-01-08 - Enrollment Migration (4.02c)
+
+**Completed (PRD item 4.02c):**
+- Created scripts/migration/migrate-enrollments.ts
+- Migrated 248 enrollments from v3 Orders to v4 Enrollments
+- Updated enrolledCount for 10 courses based on confirmed enrollments
+
+**Technical Notes:**
+- Course mappings built dynamically by querying both databases by slug (no separate mapping file needed)
+- Status mapping: Paid → confirmed, Created/Pending/PaymentSent → pending, Rejected/Refunded/Cancelled → cancelled
+- Handles duplicates (same student+course) by keeping confirmed status or most recent enrollment
+- Uses Order.createdAt as enrolledAt timestamp
+- Script automatically updates Course.enrolledCount based on confirmed enrollment count
+
+**Verification:** typecheck ✓, lint ✓ (pre-existing errors only), build ✓
+
+**Next Priority:** Create educator-service for dashboard metrics (4.03)
+
+---
