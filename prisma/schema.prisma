@@ -60,7 +60,8 @@ model Student {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
 
   @@index([userId])
 }
@@ -120,8 +121,9 @@ model Course {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
-  educator Educator @relation(fields: [educatorId], references: [id])
-  tags     Tag[]
+  educator    Educator     @relation(fields: [educatorId], references: [id])
+  tags        Tag[]
+  enrollments Enrollment[]
 
   @@index([slug])
   @@index([educatorId])
@@ -142,6 +144,28 @@ model NewsletterSubscription {
 
   @@index([email])
   @@index([isActive])
+}
+
+// ============================================
+// ENROLLMENT
+// ============================================
+
+model Enrollment {
+  id         String           @id @default(cuid())
+  studentId  String
+  courseId   String
+  enrolledAt DateTime         @default(now())
+  status     EnrollmentStatus @default(pending)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+  @@index([studentId])
+  @@index([courseId])
+  @@index([status])
 }
 
 // ============================================
@@ -174,4 +198,10 @@ enum CourseStatus {
   in_progress
   finished
   available
+}
+
+enum EnrollmentStatus {
+  pending
+  confirmed
+  cancelled
 }

@@ -30,7 +30,7 @@
       "Run prisma generate and prisma migrate dev --name add_enrollment",
       "Verify with pnpm tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.02b",

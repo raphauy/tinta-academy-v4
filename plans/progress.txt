@@ -249,3 +249,25 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create Enrollment model (4.02)
 
 ---
+
+## 2026-01-08 - Enrollment Model (4.02)
+
+**Completed (PRD item 4.02):**
+- Created Enrollment model in Prisma schema with all required fields
+- Created EnrollmentStatus enum: pending, confirmed, cancelled
+- Added enrollments relation to Student model
+- Added enrollments relation to Course model
+- Added @@unique([studentId, courseId]) constraint to prevent duplicate enrollments
+- Created migration: 20260108131146_add_enrollment
+
+**Technical Notes:**
+- Enrollment has onDelete: Cascade for both student and course relations
+- Default status is 'pending' (new enrollments start as pending)
+- enrolledAt defaults to now() for automatic timestamp on creation
+- Indexes on studentId, courseId, and status for query performance
+
+**Verification:** typecheck ✓
+
+**Next Priority:** Migrate students from v3 database (4.02b)
+
+---
