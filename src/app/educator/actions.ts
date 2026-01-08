@@ -11,8 +11,16 @@ import {
   unpublishCourse,
   deleteCourse,
   getCourseById,
+  checkSlug,
 } from '@/services/course-service'
 import { CourseType } from '@prisma/client'
+import type { MaterialType } from '@prisma/client'
+import {
+  createMaterial,
+  updateMaterial,
+  deleteMaterial,
+  getMaterialById,
+} from '@/services/material-service'
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -32,6 +40,13 @@ const createCourseSchema = z.object({
   startDate: z.coerce.date().optional(),
   endDate: z.coerce.date().optional(),
   duration: z.string().optional(),
+  // Class schedule fields
+  classDates: z.array(z.coerce.date()).optional(),
+  startTime: z.string().optional(),
+  classDuration: z.coerce.number().int().positive().optional(),
+  examDate: z.coerce.date().optional(),
+  registrationDeadline: z.coerce.date().optional(),
+  // Other fields
   maxCapacity: z.coerce.number().int().positive().optional(),
   priceUSD: z.coerce.number().positive('El precio debe ser mayor a 0'),
   location: z.string().optional(),
@@ -113,6 +128,10 @@ export async function createCourseAction(
 
   const { educator } = authResult
 
+  // Parse classDates from JSON string
+  const classDatesStr = formData.get('classDates') as string | null
+  const classDates = classDatesStr ? JSON.parse(classDatesStr) : undefined
+
   const rawData = {
     title: formData.get('title') as string,
     slug: formData.get('slug') as string,
@@ -121,6 +140,13 @@ export async function createCourseAction(
     startDate: formData.get('startDate') || undefined,
     endDate: formData.get('endDate') || undefined,
     duration: (formData.get('duration') as string) || undefined,
+    // Class schedule fields
+    classDates,
+    startTime: (formData.get('startTime') as string) || undefined,
+    classDuration: formData.get('classDuration') || undefined,
+    examDate: formData.get('examDate') || undefined,
+    registrationDeadline: formData.get('registrationDeadline') || undefined,
+    // Other fields
     maxCapacity: formData.get('maxCapacity') || undefined,
     priceUSD: formData.get('priceUSD'),
     location: (formData.get('location') as string) || undefined,
@@ -179,6 +205,10 @@ export async function updateCourseAction(
     return { success: false, error: ownershipResult.error }
   }
 
+  // Parse classDates from JSON string
+  const classDatesStr = formData.get('classDates') as string | null
+  const classDates = classDatesStr ? JSON.parse(classDatesStr) : undefined
+
   const rawData = {
     title: formData.get('title') || undefined,
     slug: formData.get('slug') || undefined,
@@ -187,6 +217,13 @@ export async function updateCourseAction(
     startDate: formData.get('startDate') || undefined,
     endDate: formData.get('endDate') || undefined,
     duration: formData.get('duration') || undefined,
+    // Class schedule fields
+    classDates,
+    startTime: formData.get('startTime') || undefined,
+    classDuration: formData.get('classDuration') || undefined,
+    examDate: formData.get('examDate') || undefined,
+    registrationDeadline: formData.get('registrationDeadline') || undefined,
+    // Other fields
     maxCapacity: formData.get('maxCapacity') || undefined,
     priceUSD: formData.get('priceUSD') || undefined,
     location: formData.get('location') || undefined,
@@ -348,6 +385,195 @@ export async function deleteCourseAction(
     return {
       success: false,
       error: message,
+    }
+  }
+}
+
+export async function checkSlugAction(
+  slug: string,
+  courseId?: string
+): Promise<ActionResult<{ exists: boolean }>> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  try {
+    const exists = await checkSlug(slug, courseId)
+    return { success: true, data: { exists } }
+  } catch (error) {
+    console.error('Error checking slug:', error)
+    return {
+      success: false,
+      error: 'Error al verificar el slug',
+    }
+  }
+}
+
+// ============================================
+// MATERIAL ACTIONS
+// ============================================
+
+const materialTypes = ['link', 'image', 'document', 'video', 'other'] as const
+
+const createMaterialSchema = z.object({
+  courseId: z.string().min(1, 'El curso es requerido'),
+  name: z.string().min(1, 'El nombre es requerido'),
+  type: z.enum(materialTypes),
+  url: z.string().url('La URL no es valida'),
+  description: z.string().optional(),
+})
+
+export async function addMaterialAction(
+  formData: FormData
+): Promise<ActionResult<{ id: string }>> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  const rawData = {
+    courseId: formData.get('courseId') as string,
+    name: formData.get('name') as string,
+    type: formData.get('type') as string,
+    url: formData.get('url') as string,
+    description: (formData.get('description') as string) || undefined,
+  }
+
+  const validated = createMaterialSchema.safeParse(rawData)
+
+  if (!validated.success) {
+    return {
+      success: false,
+      error: validated.error.issues[0].message,
+    }
+  }
+
+  // Verify course ownership
+  const ownershipResult = await verifyCourseOwnership(
+    validated.data.courseId,
+    educator.id
+  )
+
+  if ('error' in ownershipResult) {
+    return { success: false, error: ownershipResult.error }
+  }
+
+  try {
+    const material = await createMaterial({
+      courseId: validated.data.courseId,
+      name: validated.data.name,
+      type: validated.data.type,
+      url: validated.data.url,
+      description: validated.data.description,
+    })
+
+    revalidatePath(`/educator/courses/${validated.data.courseId}/edit`)
+
+    return { success: true, data: { id: material.id } }
+  } catch (error) {
+    console.error('Error creating material:', error)
+    return {
+      success: false,
+      error: 'Error al agregar el material',
+    }
+  }
+}
+
+export async function updateMaterialAction(
+  materialId: string,
+  formData: FormData
+): Promise<ActionResult> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  // Get material to find courseId
+  const material = await getMaterialById(materialId)
+
+  if (!material) {
+    return { success: false, error: 'Material no encontrado' }
+  }
+
+  // Verify course ownership
+  const ownershipResult = await verifyCourseOwnership(
+    material.courseId,
+    educator.id
+  )
+
+  if ('error' in ownershipResult) {
+    return { success: false, error: ownershipResult.error }
+  }
+
+  const rawData = {
+    name: (formData.get('name') as string) || undefined,
+    type: (formData.get('type') as MaterialType) || undefined,
+    url: (formData.get('url') as string) || undefined,
+    description: (formData.get('description') as string) || undefined,
+  }
+
+  try {
+    await updateMaterial(materialId, rawData)
+
+    revalidatePath(`/educator/courses/${material.courseId}/edit`)
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating material:', error)
+    return {
+      success: false,
+      error: 'Error al actualizar el material',
+    }
+  }
+}
+
+export async function deleteMaterialAction(
+  materialId: string
+): Promise<ActionResult> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  // Get material to find courseId
+  const material = await getMaterialById(materialId)
+
+  if (!material) {
+    return { success: false, error: 'Material no encontrado' }
+  }
+
+  // Verify course ownership
+  const ownershipResult = await verifyCourseOwnership(
+    material.courseId,
+    educator.id
+  )
+
+  if ('error' in ownershipResult) {
+    return { success: false, error: ownershipResult.error }
+  }
+
+  try {
+    await deleteMaterial(materialId)
+
+    revalidatePath(`/educator/courses/${material.courseId}/edit`)
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error deleting material:', error)
+    return {
+      success: false,
+      error: 'Error al eliminar el material',
     }
   }
 }

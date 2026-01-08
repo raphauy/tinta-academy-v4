@@ -100,36 +100,65 @@ model Tag {
 }
 
 model Course {
-  id             String          @id @default(cuid())
-  slug           String          @unique
-  title          String
-  type           CourseType
-  modality       CourseModality
-  description    String?
-  startDate      DateTime?
-  endDate        DateTime?
-  duration       String?
-  maxCapacity    Int?
-  enrolledCount  Int             @default(0)
-  priceUSD       Float
-  location       String?
-  address        String?
-  imageUrl       String?
-  status         CourseStatus
-  educatorId     String
-  wsetLevel      Int?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id                   String          @id @default(cuid())
+  slug                 String          @unique
+  title                String
+  type                 CourseType
+  modality             CourseModality
+  description          String?
+  startDate            DateTime?
+  endDate              DateTime?
+  duration             String?
+  // Class schedule fields
+  classDates           DateTime[]
+  startTime            String?         // e.g. "17:00"
+  classDuration        Int?            // duration per class in minutes
+  examDate             DateTime?
+  registrationDeadline DateTime?
+  // Capacity and pricing
+  maxCapacity          Int?
+  enrolledCount        Int             @default(0)
+  priceUSD             Float
+  location             String?
+  address              String?
+  imageUrl             String?
+  status               CourseStatus
+  educatorId           String
+  wsetLevel            Int?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 
-  educator    Educator     @relation(fields: [educatorId], references: [id])
+  educator    Educator         @relation(fields: [educatorId], references: [id])
   tags        Tag[]
   enrollments Enrollment[]
+  materials   CourseMaterial[]
 
   @@index([slug])
   @@index([educatorId])
   @@index([status])
   @@index([type])
   @@index([modality])
+}
+
+// ============================================
+// COURSE MATERIALS
+// ============================================
+
+model CourseMaterial {
+  id          String       @id @default(cuid())
+  courseId    String
+  name        String
+  type        MaterialType
+  url         String
+  description String?
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([order])
 }
 
 // ============================================
@@ -204,4 +233,12 @@ enum EnrollmentStatus {
   pending
   confirmed
   cancelled
+}
+
+enum MaterialType {
+  link
+  image
+  document
+  video
+  other
 }

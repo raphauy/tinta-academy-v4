@@ -194,14 +194,14 @@ export function CourseList({ courses, tags }: CourseListProps) {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Mis Cursos</h1>
           <p className="text-muted-foreground mt-1">
-            Gestiona tus cursos online y presenciales
+            Gestiona tus cursos presenciales
           </p>
         </div>
 
         <Button asChild>
           <Link href="/educator/courses/create">
             <Plus className="h-4 w-4 mr-2" />
-            Nuevo Curso
+            Nuevo Curso Presencial
           </Link>
         </Button>
       </div>

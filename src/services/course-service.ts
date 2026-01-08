@@ -21,6 +21,13 @@ export interface CreateCourseInput {
   startDate?: Date
   endDate?: Date
   duration?: string
+  // Class schedule fields
+  classDates?: Date[]
+  startTime?: string
+  classDuration?: number
+  examDate?: Date
+  registrationDeadline?: Date
+  // Capacity and other fields
   maxCapacity?: number
   priceUSD: number
   location?: string
@@ -38,6 +45,13 @@ export interface UpdateCourseInput {
   startDate?: Date
   endDate?: Date
   duration?: string
+  // Class schedule fields
+  classDates?: Date[]
+  startTime?: string
+  classDuration?: number
+  examDate?: Date
+  registrationDeadline?: Date
+  // Capacity and other fields
   maxCapacity?: number
   priceUSD?: number
   location?: string
@@ -46,17 +60,29 @@ export interface UpdateCourseInput {
   wsetLevel?: number
 }
 
+// Status values that are considered "published" (visible to public)
+const publicStatuses: CourseStatus[] = [
+  'announced',
+  'enrolling',
+  'full',
+  'in_progress',
+  'available',
+]
+
 export async function getCourses(filters: CourseFilters = {}) {
-  const where: Prisma.CourseWhereInput = {}
-  
+  const where: Prisma.CourseWhereInput = {
+    // Only show published courses to public
+    status: { in: publicStatuses },
+  }
+
   if (filters.modality) {
     where.modality = filters.modality as CourseModality
   }
-  
+
   if (filters.type) {
     where.type = filters.type as CourseType
   }
-  
+
   if (filters.tagIds?.length) {
     where.tags = {
       some: {
@@ -103,14 +129,22 @@ export async function getPastCourses(filters: CourseFilters = {}) {
   return pastCourses
 }
 
-export async function getCourseBySlug(slug: string) {
-  return prisma.course.findUnique({
+export async function getCourseBySlug(slug: string, includeUnpublished = false) {
+  const course = await prisma.course.findUnique({
     where: { slug },
     include: {
       educator: true,
       tags: true,
     },
   })
+
+  // If course is not found or should be hidden from public
+  if (!course) return null
+  if (!includeUnpublished && !publicStatuses.includes(course.status)) {
+    return null
+  }
+
+  return course
 }
 
 export async function getCourseById(id: string) {
@@ -157,8 +191,7 @@ export async function getEducatorCourses(
       },
     },
     orderBy: [
-      { status: 'asc' },
-      { startDate: 'desc' },
+      { createdAt: 'desc' },
     ],
   })
 }
@@ -174,6 +207,13 @@ export async function createCourse(data: CreateCourseInput) {
       startDate: data.startDate,
       endDate: data.endDate,
       duration: data.duration,
+      // Class schedule fields
+      classDates: data.classDates ?? [],
+      startTime: data.startTime,
+      classDuration: data.classDuration,
+      examDate: data.examDate,
+      registrationDeadline: data.registrationDeadline,
+      // Other fields
       maxCapacity: data.maxCapacity,
       priceUSD: data.priceUSD,
       location: data.location,
@@ -201,6 +241,13 @@ export async function updateCourse(id: string, data: UpdateCourseInput) {
       ...(data.startDate !== undefined && { startDate: data.startDate }),
       ...(data.endDate !== undefined && { endDate: data.endDate }),
       ...(data.duration !== undefined && { duration: data.duration }),
+      // Class schedule fields
+      ...(data.classDates !== undefined && { classDates: data.classDates }),
+      ...(data.startTime !== undefined && { startTime: data.startTime }),
+      ...(data.classDuration !== undefined && { classDuration: data.classDuration }),
+      ...(data.examDate !== undefined && { examDate: data.examDate }),
+      ...(data.registrationDeadline !== undefined && { registrationDeadline: data.registrationDeadline }),
+      // Other fields
       ...(data.maxCapacity !== undefined && { maxCapacity: data.maxCapacity }),
       ...(data.priceUSD !== undefined && { priceUSD: data.priceUSD }),
       ...(data.location !== undefined && { location: data.location }),
@@ -249,4 +296,27 @@ export async function deleteCourse(id: string) {
   return prisma.course.delete({
     where: { id },
   })
+}
+
+/**
+ * Checks if a slug is already in use by another course.
+ * When editing, pass the courseId to allow the same slug for the same course.
+ * @returns true if slug is in use by another course, false if available
+ */
+export async function checkSlug(slug: string, courseId?: string): Promise<boolean> {
+  const existingCourse = await prisma.course.findUnique({
+    where: { slug },
+    select: { id: true },
+  })
+
+  if (!existingCourse) {
+    return false // Slug is available
+  }
+
+  // If editing the same course, allow the same slug
+  if (courseId && existingCourse.id === courseId) {
+    return false // Slug belongs to this course, so it's available
+  }
+
+  return true // Slug is in use by another course
 }

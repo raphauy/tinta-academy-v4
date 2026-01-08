@@ -52,7 +52,7 @@ export function EducatorDashboard({
         <Button asChild>
           <Link href="/educator/courses/create">
             <Plus className="w-4 h-4 mr-2" />
-            Nuevo Curso
+            Nuevo Curso Presencial
           </Link>
         </Button>
       </div>

@@ -160,7 +160,7 @@
       "Update src/app/educator/page.tsx as RSC",
       "Fetch educator data using getEducatorByUserId from session",
       "Fetch dashboard metrics using getEducatorDashboardMetrics",
-      "Create src/components/educator/EducatorDashboard.tsx with:",
+      "Create src/components/educator/educator-dashboard.tsx with:",
       "  - Welcome message with educator name",
       "  - MetricCard components: Total Cursos, Cursos Publicados, Total Inscripciones, Pr\u00f3ximos Cursos",
       "  - Quick action buttons: 'Crear Curso', 'Ver Cursos', 'Ver Estudiantes'",
@@ -178,12 +178,12 @@
       "Update src/app/educator/courses/page.tsx as RSC",
       "Fetch educator's courses using getEducatorCourses",
       "Support URL query params for filters: ?status=draft&type=wset",
-      "Create src/components/educator/CourseList.tsx with:",
+      "Create src/components/educator/course-list.tsx with:",
       "  - Filter bar: status (todos, borrador, publicado, finalizado), type chips",
       "  - Empty state: 'A\u00fan no has creado ning\u00fan curso' with CTA",
-      "  - Grid/list of EducatorCourseCard components",
+      "  - Grid/list of educator-course-card components",
       "  - 'Crear nuevo curso' button",
-      "Create src/components/educator/EducatorCourseCard.tsx:",
+      "Create src/components/educator/educator-course-card.tsx:",
       "  - Course image or placeholder gradient",
       "  - Title, type badge, status badge (Borrador, Publicado, etc.)",
       "  - Date, location (for presencial), enrolledCount/maxCapacity",
@@ -199,7 +199,7 @@
     "steps": [
       "Update src/app/educator/courses/create/page.tsx as RSC",
       "Create src/app/educator/courses/[id]/edit/page.tsx for editing",
-      "Create src/components/educator/PresencialCourseForm.tsx with sections:",
+      "Create src/components/educator/presencial-course-form.tsx with sections:",
       "  - Informaci\u00f3n B\u00e1sica: title, slug (auto-generated), description (textarea), type (select: wset, taller, cata, curso)",
       "  - Para WSET: wsetLevel selector (1, 2, 3)",
       "  - Imagen: Vercel blob like /profile but adapted to course images",
@@ -215,14 +215,14 @@
       "Redirect to /educator/courses on success",
       "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.10",
     "category": "feature",
     "description": "Wire course list actions (publish, unpublish, delete)",
     "steps": [
-      "Wire 'Publicar' button in EducatorCourseCard to publishCourseAction",
+      "Wire 'Publicar' button in educator-course-card to publishCourseAction",
       "Wire 'Despublicar' button to unpublishCourseAction",
       "Wire 'Eliminar' to deleteCourseAction with confirmation dialog (AlertDialog)",
       "Show toast on success/error using sonner",
@@ -240,13 +240,13 @@
     "steps": [
       "Update src/app/educator/students/page.tsx to show course selector",
       "Create src/app/educator/courses/[id]/students/page.tsx for course-specific students",
-      "Create src/components/educator/StudentList.tsx with:",
+      "Create src/components/educator/student-list.tsx with:",
       "  - Course info header (title, dates, enrolled/capacity)",
       "  - Empty state: 'A\u00fan no hay estudiantes inscritos en este curso'",
       "  - Table with columns: Nombre, Email, Fecha inscripci\u00f3n, Estado",
       "  - Status badge: Pendiente (yellow), Confirmado (green), Cancelado (gray)",
       "  - Search input to filter by name/email",
-      "Create src/components/educator/StudentRow.tsx for table rows",
+      "Create src/components/educator/student-row.tsx for table rows",
       "Use shadcn/ui Table, Badge, Input components",
       "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
@@ -275,8 +275,8 @@
     "description": "Add empty states and loading skeletons to educator pages",
     "steps": [
       "Add Suspense boundaries around data-fetching sections",
-      "Create skeleton components for CourseList (grid of placeholder cards)",
-      "Create skeleton for StudentList (table rows placeholder)",
+      "Create skeleton components for course-list (grid of placeholder cards)",
+      "Create skeleton for student-list (table rows placeholder)",
       "Create skeleton for dashboard metrics",
       "Verify empty states show correctly when no data",
       "Test with DevTools network throttling",

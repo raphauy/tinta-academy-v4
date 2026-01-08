@@ -535,3 +535,72 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create presencial course editor form (4.09)
 
 ---
+
+## 2026-01-08 - Presencial Course Editor Form (4.09)
+
+**Completed (PRD item 4.09):**
+- Added generateSlug function to src/lib/utils.ts (handles Spanish accents, ñ, spaces)
+- Added checkSlug function to src/services/course-service.ts (checks slug uniqueness)
+- Added checkSlugAction to src/app/educator/actions.ts
+- Created src/components/educator/presencial-course-form.tsx with all required sections:
+  - Informacion Basica: title, slug (with auto-generate button), type selector
+  - WSET level selector (appears when type=wset)
+  - Course image upload using ImageUpload component (Vercel Blob)
+  - Fechas y Duracion: startDate, endDate, duration
+  - Ubicacion: location, address
+  - Capacidad y Precio: maxCapacity, priceUSD
+- Updated src/app/educator/courses/create/page.tsx to use PresencialCourseForm
+- Created src/app/educator/courses/[id]/edit/page.tsx for editing existing courses
+- Added shadcn/ui Select and Textarea components
+
+**Technical Notes:**
+- Slug generation adapted from v3: handles accents (á→a), ñ→n, removes special chars
+- Real-time slug availability check with debounce (500ms)
+- Visual feedback for slug status: checking (spinner), available (check), taken (alert)
+- Uses Zod 4 syntax: `error` function for conditional messages (replaces deprecated `required_error`)
+- Zod 4 + react-hook-form compatibility: explicit types `useForm<Input, unknown, Output>`
+- Form uses react-hook-form with zodResolver for validation
+- ImageUpload component reused from profile with aspectRatio="video" for course images
+- Edit page verifies course ownership before rendering form
+
+**Verification:** typecheck ✓, lint ✓ (1 warning: React Compiler incompatible library), build ✓
+
+**Next Priority:** Create students list page for a course (4.11)
+
+---
+
+## 2026-01-08 - Course Materials & Presencial Labeling (4.09b)
+
+**Completed (extension to PRD item 4.09):**
+- Created CourseMaterial model in Prisma schema with fields:
+  - id, courseId, name, type (enum), url, description, order, timestamps
+- Created MaterialType enum: link, image, document, video, other
+- Created migration: 20260108172659_add_course_materials
+- Created src/services/material-service.ts with CRUD operations
+- Added material server actions to educator/actions.ts:
+  - addMaterialAction, updateMaterialAction, deleteMaterialAction
+- Created src/components/educator/materials-section.tsx with:
+  - List of existing materials with type icons
+  - Add material form with type selector
+  - Image upload integration (Vercel Blob) for image type
+  - URL input for documents, links, videos with contextual placeholders
+  - Delete confirmation dialog
+- Updated edit course page to show MaterialsSection
+- Updated all UI texts to indicate "Curso Presencial":
+  - Page titles: "Crear Curso Presencial", "Editar Curso Presencial"
+  - Buttons: "Nuevo Curso Presencial"
+  - Descriptions updated to clarify presencial context
+- Updated placeholders to use Montevideo examples (Sinergia Faro)
+
+**Technical Notes:**
+- Materials can only be added after course creation (need courseId)
+- Creation page shows note about adding materials after creating
+- MaterialsSection uses local state for optimistic updates
+- Types: document (PDFs, etc via external links), image (Vercel Blob), link, video (YouTube/Vimeo)
+- Materials will be visible to enrolled students in future student panel
+
+**Verification:** typecheck ✓, lint ✓ (1 warning: React Compiler), build ✓
+
+**Next Priority:** Create students list page for a course (4.11)
+
+---
