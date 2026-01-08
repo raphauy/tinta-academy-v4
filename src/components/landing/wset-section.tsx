@@ -32,7 +32,14 @@ export function WSETSection({ onCTA }: WSETSectionProps) {
             alt="WSET Approved Programme Provider"
             width={180}
             height={60}
-            className="h-12 md:h-14 w-auto mb-8"
+            className="h-12 md:h-14 w-auto mb-8 dark:hidden"
+          />
+          <Image
+            src="/WSET_LANDSCAPE_APP_WHITE.png"
+            alt="WSET Approved Programme Provider"
+            width={180}
+            height={60}
+            className="h-12 md:h-14 w-auto mb-8 hidden dark:block"
           />
 
           {/* CTA Button */}
@@ -40,7 +47,7 @@ export function WSETSection({ onCTA }: WSETSectionProps) {
             onClick={onCTA}
             size="lg"
             variant="outline"
-            className="rounded-full !px-8 py-6 border-verde-uva-700 text-verde-uva-700 font-semibold hover:bg-verde-uva-700 hover:text-white"
+            className="rounded-full !px-8 py-6 border-verde-uva-700 text-verde-uva-700 dark:border-verde-uva-400 dark:text-white font-semibold hover:bg-verde-uva-700 hover:text-white dark:hover:bg-verde-uva-500"
           >
             Ver cursos
           </Button>
