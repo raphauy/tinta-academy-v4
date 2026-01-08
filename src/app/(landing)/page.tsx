@@ -40,7 +40,7 @@ function transformCourse(prismaCourse: PrismaCourseWithRelations): Course {
       name: prismaCourse.educator.name,
       title: prismaCourse.educator.title || '',
       bio: prismaCourse.educator.bio || '',
-      imageUrl: prismaCourse.educator.imageUrl || '/placeholder-educator.jpg'
+      imageUrl: prismaCourse.educator.imageUrl || '/placeholder-educator.svg'
     },
     tags: prismaCourse.tags.map(tag => ({
       id: tag.id,

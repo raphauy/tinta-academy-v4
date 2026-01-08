@@ -60,6 +60,7 @@ export function WSETSection({ onCTA }: WSETSectionProps) {
               src="/WSET.jpg"
               alt="WSET Certification"
               fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover"
             />
           </div>

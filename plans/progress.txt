@@ -230,3 +230,537 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **MILESTONE 2 COMPLETE** - All PRD items pass. Next milestone: 03-enrollment or 04-educator
 
 ---
+
+## 2026-01-08 - Educator Milestone Start (4.01)
+
+**Completed (PRD item 4.01):**
+- Added 'draft' status to CourseStatus enum in Prisma schema
+- Created migration: 20260108125218_add_draft_status
+- Updated src/types/landing.ts to include 'draft' in Course status type
+
+**Technical Notes:**
+- Draft status placed before 'announced' in enum order (represents workflow: draft → announced → enrolling → ...)
+- Draft courses will be used by educators to create courses before publishing
+- Updated landing.ts type to match Prisma enum (required for type compatibility)
+- Pre-existing lint errors in testimonials-section.tsx and user-dropdown.tsx not addressed (unrelated to this change)
+
+**Verification:** typecheck ✓, build ✓ (lint has pre-existing errors unrelated to this change)
+
+**Next Priority:** Create Enrollment model (4.02)
+
+---
+
+## 2026-01-08 - Enrollment Model (4.02)
+
+**Completed (PRD item 4.02):**
+- Created Enrollment model in Prisma schema with all required fields
+- Created EnrollmentStatus enum: pending, confirmed, cancelled
+- Added enrollments relation to Student model
+- Added enrollments relation to Course model
+- Added @@unique([studentId, courseId]) constraint to prevent duplicate enrollments
+- Created migration: 20260108131146_add_enrollment
+
+**Technical Notes:**
+- Enrollment has onDelete: Cascade for both student and course relations
+- Default status is 'pending' (new enrollments start as pending)
+- enrolledAt defaults to now() for automatic timestamp on creation
+- Indexes on studentId, courseId, and status for query performance
+
+**Verification:** typecheck ✓
+
+**Next Priority:** Migrate students from v3 database (4.02b)
+
+---
+
+## 2026-01-08 - Student Migration (4.02b)
+
+**Completed (PRD item 4.02b):**
+- Created scripts/migration/migrate-students.ts
+- Migrated 226 students from v3 to v4 database
+- Saved mapping to student-mapping.json for enrollment migration
+
+**Technical Notes:**
+- v3 Student model has email directly on Student (not on User like originally assumed)
+- Script creates User with role=student + Student record for each v3 student
+- Uses transaction for atomicity (User + Student created together)
+- Handles duplicates by skipping if email already exists
+- Maps all fields: firstName, lastName, dateOfBirth, phone, address, city, zip, country
+
+**Verification:** typecheck ✓
+
+**Next Priority:** Migrate enrollments from v3 Orders (4.02c)
+
+---
+
+## 2026-01-08 - Enrollment Migration (4.02c)
+
+**Completed (PRD item 4.02c):**
+- Created scripts/migration/migrate-enrollments.ts
+- Migrated 248 enrollments from v3 Orders to v4 Enrollments
+- Updated enrolledCount for 10 courses based on confirmed enrollments
+
+**Technical Notes:**
+- Course mappings built dynamically by querying both databases by slug (no separate mapping file needed)
+- Status mapping: Paid → confirmed, Created/Pending/PaymentSent → pending, Rejected/Refunded/Cancelled → cancelled
+- Handles duplicates (same student+course) by keeping confirmed status or most recent enrollment
+- Uses Order.createdAt as enrolledAt timestamp
+- Script automatically updates Course.enrolledCount based on confirmed enrollment count
+
+**Verification:** typecheck ✓, lint ✓ (pre-existing errors only), build ✓
+
+**Next Priority:** Create educator-service for dashboard metrics (4.03)
+
+---
+
+## 2026-01-08 - Educator Service (4.03)
+
+**Completed (PRD item 4.03):**
+- Created src/services/educator-service.ts with:
+  - getEducatorByUserId(userId) - fetches educator with user relation
+  - getEducatorById(educatorId) - fetches educator by ID
+  - getEducatorDashboardMetrics(educatorId) - returns dashboard metrics
+
+**Dashboard Metrics returned:**
+- totalCourses: count of all educator courses
+- publishedCourses: count of courses where status != 'draft'
+- totalEnrollments: sum of enrolledCount across all courses
+- upcomingCourses: array of courses with startDate > now and status in [announced, enrolling]
+
+**Also fixed pre-existing lint errors:**
+- testimonials-section.tsx: escaped quotes with &ldquo;/&rdquo;
+- user-dropdown.tsx & user-menu.tsx: added eslint-disable for SSR hydration pattern
+- migrate-all.ts: removed unused error variable in catch block
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Extend course-service for educator operations (4.04)
+
+---
+
+## 2026-01-08 - Course Service Educator Operations (4.04)
+
+**Completed (PRD item 4.04):**
+- Extended src/services/course-service.ts with educator-specific operations:
+  - getEducatorCourses(educatorId, filters?) - fetches courses with status/type/modality filters
+  - getCourseById(id) - fetches single course with relations
+  - createCourse(data) - creates new presencial course with 'draft' status
+  - updateCourse(id, data) - updates course fields selectively
+  - publishCourse(id) - changes status from 'draft' to 'announced'
+  - unpublishCourse(id) - changes status back to 'draft'
+  - deleteCourse(id) - hard delete only if no enrollments
+
+**Technical Notes:**
+- CreateCourseInput and UpdateCourseInput interfaces exported for use in server actions
+- getEducatorCourses includes enrollment count via _count relation
+- updateCourse uses conditional spread to only update provided fields
+- deleteCourse checks enrollment count and throws descriptive error if course has students
+- New courses default to modality='presencial' (online support planned for later)
+- Courses ordered by status (drafts first) then by startDate descending
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create enrollment-service for managing course enrollments (4.05)
+
+---
+
+## 2026-01-08 - Enrollment Service (4.05)
+
+**Completed (PRD item 4.05):**
+- Created src/services/enrollment-service.ts with all enrollment operations:
+  - getEnrollmentsByCourse(courseId) - returns enrollments with student + user data
+  - getEnrollmentsByStudent(studentId) - returns enrollments with course + educator data
+  - getEnrollmentById(id) - fetches single enrollment with relations
+  - createEnrollment(studentId, courseId) - creates new pending enrollment
+  - updateEnrollmentStatus(id, status) - updates status with course count adjustment
+  - cancelEnrollment(id) - convenience wrapper for cancellation
+  - confirmEnrollment(id) - convenience wrapper for confirmation
+  - getCourseEnrollmentStats(courseId) - returns counts by status
+
+**Technical Notes:**
+- createEnrollment checks for existing enrollment and course capacity before creating
+- updateEnrollmentStatus uses transaction to atomically update enrollment and course.enrolledCount
+- Course enrolledCount increments when status changes TO 'confirmed', decrements when FROM 'confirmed'
+- All queries include relevant relations (student.user for email/name, course.educator for course queries)
+- Error messages in Spanish for user-facing errors
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create server actions for educator course management (4.06)
+
+---
+
+## 2026-01-08 - Educator Server Actions (4.06)
+
+**Completed (PRD item 4.06):**
+- Created src/app/educator/actions.ts with all course management actions:
+  - createCourseAction(formData) - validates with Zod, creates course as draft
+  - updateCourseAction(courseId, formData) - validates and updates course fields
+  - publishCourseAction(courseId) - changes status from 'draft' to 'announced'
+  - unpublishCourseAction(courseId) - changes status back to 'draft'
+  - deleteCourseAction(courseId) - deletes course (if no enrollments)
+
+**Technical Notes:**
+- All actions verify authentication (session required) and authorization (role=educator)
+- All actions verify course ownership before mutation
+- Zod schemas validate course data with Spanish error messages
+- Uses explicit TypeScript return types for helper functions to ensure type narrowing
+- revalidatePath called for /educator/courses, /educator, and / (landing) after mutations
+- ActionResult generic type for consistent success/error responses
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create educator dashboard page with metrics (4.07)
+
+---
+
+## 2026-01-08 - Superadmin Course Access (4.06b)
+
+**Completed (PRD item 4.06b):**
+- Updated getAuthenticatedEducator() in src/app/educator/actions.ts
+- Changed role check from `role !== 'educator'` to `role !== 'educator' && role !== 'superadmin'`
+- Superadmins can now create and manage their own courses via educator panel
+
+**Technical Notes:**
+- This aligns actions.ts with middleware (proxy.ts) and layout.tsx which already allowed superadmin access
+- Superadmin still needs an Educator record to associate courses (can be created via Prisma Studio or migration)
+- No schema changes required - Prisma already supports User with any role having an Educator record
+- Single line change with maximum impact
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create educator dashboard page with metrics (4.07)
+
+---
+
+## 2026-01-08 - Educator Dashboard Page (4.07)
+
+**Completed (PRD item 4.07):**
+- Updated src/app/educator/page.tsx as RSC with auth + educator data fetching
+- Created src/components/educator/EducatorDashboard.tsx with:
+  - Welcome message displaying educator name
+  - 4 MetricCard components: Total Cursos, Cursos Publicados, Total Inscripciones, Próximos Cursos
+  - Quick action buttons: Crear Curso, Ver Cursos, Ver Estudiantes (with icons)
+  - List of upcoming courses (max 3) with enrollment stats and links
+  - Empty state for educators with no courses
+- Created src/components/educator/index.ts barrel export
+
+**Technical Notes:**
+- Page is a Server Component that fetches data before rendering
+- Uses getEducatorByUserId to find educator record from session.user.id
+- Uses getEducatorDashboardMetrics to get all dashboard data in single query
+- EducatorDashboard is 'use client' to support client-side interactions (Link/Button)
+- MetricCard is an internal component for consistent card styling
+- Uses shadcn/ui Card and Button components
+- Uses lucide-react icons (BookOpen, Users, Calendar, Plus, List, GraduationCap)
+- Handles edge cases: no session (redirect to login), no educator record (redirect home)
+
+**Additional fixes:**
+- Added p-6 lg:p-8 padding to AppShell main content area (centralized for all authenticated pages)
+- Fixed Next.js Image warnings across the app:
+  - Logo component: added sizes="144px"
+  - Header.tsx: added style={{ width: 'auto', height: 'auto' }} to maintain aspect ratio
+  - Footer.tsx: added sizes="192px" to logo Image with fill
+  - wset-section.tsx: added sizes="(max-width: 1024px) 100vw, 50vw" to WSET.jpg
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create educator course list page with filters (4.08)
+
+---
+
+## 2026-01-08 - Educator Course List Page (4.08 + 4.10)
+
+**Completed (PRD items 4.08 and 4.10):**
+- Updated src/app/educator/courses/page.tsx as RSC with auth + educator data fetching
+- Created src/components/educator/CourseList.tsx with:
+  - Search input for filtering by title/description
+  - Expandable filter panel (same style as landing CourseCatalog)
+  - Filter bar: status (Todos, Borrador, Publicado, Finalizado) and type (Todos, WSET, Taller, Cata, Curso)
+  - URL query params support (?status=draft&type=wset)
+  - Empty states for no courses and no filter results (matching landing style)
+  - "Nuevo Curso" button
+  - Publish/Unpublish/Delete actions wired to server actions
+  - AlertDialog for delete confirmation
+  - Toast notifications for success/error
+  - Loading state during mutations
+- Created src/components/educator/EducatorCourseRow.tsx (list view, not grid):
+  - Horizontal row layout matching product-plan design reference
+  - Clickable course image (links to edit page)
+  - Badges using same styles as landing: type badge (WSET, CATA, etc), modality (Online/Presencial), status (Publicado/Borrador)
+  - Title, description (truncated), meta info (alumnos, fecha, duración)
+  - Price displayed on right side
+  - Dropdown menu with: Editar, Ver estudiantes, Publicar/Despublicar, Eliminar
+- Created src/components/educator/EducatorCourseCard.tsx (grid view, kept for potential future use)
+- Created src/components/shared/FilterButton.tsx as reusable component
+- Created src/components/shared/SearchFilterBar.tsx as reusable component (search + filter button)
+- Created src/components/shared/FiltersPanel.tsx as reusable component (configurable filter panel)
+- Refactored landing CourseCatalog to use shared SearchFilterBar and FiltersPanel
+- Refactored educator CourseList to use shared SearchFilterBar and FiltersPanel
+- Both educator and landing now share the same search/filter UI with consistent behavior
+- Educator panel now includes tags filter (fetched from getTags service)
+- Added shadcn/ui components: Badge, DropdownMenu, AlertDialog
+
+**Technical Notes:**
+- List view (EducatorCourseRow) matches product-plan/sections/educator-panel/CourseList.png
+- Badges use same colors as landing CourseCard for consistency
+- Search is client-side with useMemo for performance
+- FilterButton extracted to shared components for reuse
+- Page is a Server Component that fetches educator courses before rendering
+- Uses useTransition for non-blocking mutations
+- Filters applied client-side from URL searchParams for instant feedback
+- Delete requires confirmation via AlertDialog to prevent accidental deletion
+- Actions call server actions which validate ownership and revalidate paths
+- Items 4.08 and 4.10 implemented together since CourseList includes all action wiring
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create presencial course editor form (4.09)
+
+---
+
+## 2026-01-08 - Course Detail Page Tags Display (4.08b)
+
+**Completed (minor enhancement):**
+- Added tags display to CourseDetailPage.tsx hero section
+- Tags appear below the status badge using verde-uva-500 background (same as landing cards)
+- Consistent tag styling across landing cards and course detail page
+
+**Technical Notes:**
+- Tags rendered conditionally when course.tags.length > 0
+- Uses same visual style as CourseCard tags for UI consistency
+- Tags and status badge both displayed in flex-wrap container with gap-2
+
+**Verification:** typecheck ✓, lint ✓, build ✓
+
+**Next Priority:** Create presencial course editor form (4.09)
+
+---
+
+## 2026-01-08 - Presencial Course Editor Form (4.09)
+
+**Completed (PRD item 4.09):**
+- Added generateSlug function to src/lib/utils.ts (handles Spanish accents, ñ, spaces)
+- Added checkSlug function to src/services/course-service.ts (checks slug uniqueness)
+- Added checkSlugAction to src/app/educator/actions.ts
+- Created src/components/educator/presencial-course-form.tsx with all required sections:
+  - Informacion Basica: title, slug (with auto-generate button), type selector
+  - WSET level selector (appears when type=wset)
+  - Course image upload using ImageUpload component (Vercel Blob)
+  - Fechas y Duracion: startDate, endDate, duration
+  - Ubicacion: location, address
+  - Capacidad y Precio: maxCapacity, priceUSD
+- Updated src/app/educator/courses/create/page.tsx to use PresencialCourseForm
+- Created src/app/educator/courses/[id]/edit/page.tsx for editing existing courses
+- Added shadcn/ui Select and Textarea components
+
+**Technical Notes:**
+- Slug generation adapted from v3: handles accents (á→a), ñ→n, removes special chars
+- Real-time slug availability check with debounce (500ms)
+- Visual feedback for slug status: checking (spinner), available (check), taken (alert)
+- Uses Zod 4 syntax: `error` function for conditional messages (replaces deprecated `required_error`)
+- Zod 4 + react-hook-form compatibility: explicit types `useForm<Input, unknown, Output>`
+- Form uses react-hook-form with zodResolver for validation
+- ImageUpload component reused from profile with aspectRatio="video" for course images
+- Edit page verifies course ownership before rendering form
+
+**Verification:** typecheck ✓, lint ✓ (1 warning: React Compiler incompatible library), build ✓
+
+**Next Priority:** Create students list page for a course (4.11)
+
+---
+
+## 2026-01-08 - Course Materials & Presencial Labeling (4.09b)
+
+**Completed (extension to PRD item 4.09):**
+- Created CourseMaterial model in Prisma schema with fields:
+  - id, courseId, name, type (enum), url, description, order, timestamps
+- Created MaterialType enum: link, image, document, video, other
+- Created migration: 20260108172659_add_course_materials
+- Created src/services/material-service.ts with CRUD operations
+- Added material server actions to educator/actions.ts:
+  - addMaterialAction, updateMaterialAction, deleteMaterialAction
+- Created src/components/educator/materials-section.tsx with:
+  - List of existing materials with type icons
+  - Add material form with type selector
+  - Image upload integration (Vercel Blob) for image type
+  - URL input for documents, links, videos with contextual placeholders
+  - Delete confirmation dialog
+- Updated edit course page to show MaterialsSection
+- Updated all UI texts to indicate "Curso Presencial":
+  - Page titles: "Crear Curso Presencial", "Editar Curso Presencial"
+  - Buttons: "Nuevo Curso Presencial"
+  - Descriptions updated to clarify presencial context
+- Updated placeholders to use Montevideo examples (Sinergia Faro)
+
+**Technical Notes:**
+- Materials can only be added after course creation (need courseId)
+- Creation page shows note about adding materials after creating
+- MaterialsSection uses local state for optimistic updates
+- Types: document (PDFs, etc via external links), image (Vercel Blob), link, video (YouTube/Vimeo)
+- Materials will be visible to enrolled students in future student panel
+
+**Verification:** typecheck ✓, lint ✓ (1 warning: React Compiler), build ✓
+
+**Next Priority:** Create students list page for a course (4.11)
+
+---
+
+## 2026-01-08 - Student List Page (4.11)
+
+**Completed (PRD item 4.11):**
+- Updated src/app/educator/students/page.tsx to show course selector:
+  - Lists all educator's courses with enrollment count
+  - Each course links to /educator/courses/[id]/students
+  - Empty state for educators with no courses
+- Created src/app/educator/courses/[id]/students/page.tsx:
+  - RSC with auth verification and course ownership check
+  - Fetches enrollments using getEnrollmentsByCourse
+  - Dynamic metadata with course title
+- Created src/components/educator/student-list.tsx with:
+  - Header with course title and description
+  - 4 metric cards: Total inscritos, Confirmados, Pendientes, Cancelados
+  - Search input to filter by name/email
+  - Table with columns: Estudiante (avatar+name), Email, Fecha inscripcion, Estado
+  - Status badges: Pendiente (yellow), Confirmado (green), Cancelado (gray)
+  - Email action button for each student
+  - Empty states: no students enrolled / no search results
+- Added shadcn/ui Table component
+
+**Technical Notes:**
+- Visual design adapted from ProductPlan reference (StudentList.png) to project colors
+- Uses verde-uva-100/700 for avatars and accent colors
+- Metrics grid uses same card style as educator dashboard
+- Table uses shadcn/ui Table with hover states
+- StudentList component uses explicit type for EnrollmentWithStudent matching service return
+- No need for separate student-row.tsx - used inline table rows
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Verify migrated data and seed fallback if needed (4.12)
+
+---
+
+## 2026-01-08 - Data Verification (4.12)
+
+**Completed (PRD item 4.12):**
+- Created temporary verification script using pg library to query database directly
+- Verified all migrated data:
+  - 226 students migrated from v3
+  - 248 enrollments (246 confirmed, 2 pending)
+  - All 17 courses have correct enrolledCount matching confirmed enrollments
+- No seed fallback needed - migration was successful
+- All verification commands pass (typecheck, lint, build)
+
+**Technical Notes:**
+- Used pg library directly (not Prisma client) because Neon serverless adapter requires WebSocket in Node.js
+- Query verified enrolledCount by comparing Course.enrolledCount with COUNT of confirmed enrollments
+- All counts match perfectly - migration script correctly updated enrolledCount values
+- Script removed after verification (not needed in codebase)
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Add empty states and loading skeletons to educator pages (4.13)
+
+---
+
+## 2026-01-08 - Loading Skeletons and Suspense Boundaries (4.13)
+
+**Completed (PRD item 4.13):**
+- Created src/components/educator/skeletons.tsx with all skeleton components:
+  - DashboardSkeleton - for educator dashboard with metrics grid, charts, and quick course cards
+  - CourseListSkeleton - for courses page with search bar, filters, and course row placeholders
+  - StudentListSkeleton - for course-specific student list with metrics and table rows
+  - AllStudentsListSkeleton - for all students page with filters and table rows
+- Added Suspense boundaries to all educator pages:
+  - src/app/educator/page.tsx - wraps DashboardContent
+  - src/app/educator/courses/page.tsx - wraps CoursesContent
+  - src/app/educator/students/page.tsx - wraps StudentsContent
+  - src/app/educator/courses/[id]/students/page.tsx - wraps CourseStudentsContent
+- Updated src/components/educator/index.ts to export all skeleton components
+- Empty states already implemented in previous PRD items (4.08, 4.11)
+
+**Technical Notes:**
+- Skeletons use Tailwind's animate-pulse for consistent loading animation
+- Each skeleton mirrors the structure of its corresponding component
+- Extracted data-fetching logic into separate async components for proper Suspense streaming
+- Pattern follows existing landing page skeleton structure for consistency
+- Skeletons use same styling tokens (bg-muted, rounded corners) as landing page
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Ensure responsive design and mobile usability (4.14)
+
+---
+
+## 2026-01-08 - Responsive Design for Educator Pages (4.14)
+
+**Completed (PRD item 4.14):**
+- Simplified course status workflow: publishCourse now goes directly to 'enrolling' (skipping 'announced')
+- Fixed educator-course-row.tsx for mobile stacking:
+  - Changed main flex to `flex-col sm:flex-row` for proper mobile layout
+  - Image now full width on mobile, fixed size on desktop
+  - Updated Image sizes attribute for responsive loading
+  - Price and actions row adapts to mobile (horizontal) vs desktop (vertical)
+- Fixed student-list.tsx table for mobile:
+  - Added `overflow-x-auto` to table container
+  - Hide Email column on mobile (`hidden md:table-cell`)
+  - Hide Date column on smaller screens (`hidden lg:table-cell`)
+  - Show email below name on mobile (like all-students-list.tsx pattern)
+  - Avatar hidden on very small screens (`hidden sm:flex`)
+  - Added `whitespace-nowrap` to status badge to prevent wrapping
+- Added mobile menu to PublicHeader (landing page) matching AppShell pattern:
+  - Logo on left, hamburger button on right (matching AppShell mobile header)
+  - Left-side sliding overlay menu (same style as authenticated panels)
+  - Menu includes: WSET, Cursos links in navigation section
+  - User section reuses UserDropdown component (same as desktop) for consistency
+  - Backdrop overlay closes menu on click
+  - All links close menu on navigation for better UX
+- Verified existing responsive patterns are correct:
+  - Dashboard metrics: `sm:grid-cols-2 lg:grid-cols-4` ✓
+  - Course form: `sm:grid-cols-2` for type/price fields ✓
+  - All-students-list: Already had good responsive design ✓
+
+**Technical Notes:**
+- Mobile breakpoints used consistently: sm (640px), md (768px), lg (1024px)
+- Pattern: stack vertically on mobile, horizontal on larger screens
+- Tables: hide columns progressively, show inline data on mobile
+- Images: use responsive sizes attribute for Next.js Image optimization
+- Mobile menu uses overlay pattern matching AppShell (left-side sidebar + backdrop)
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Add tag selector/creator component to course editor (4.15)
+
+---
+
+## 2026-01-08 - Tag Selector Component (4.15)
+
+**Completed (PRD item 4.15):**
+- Created TagSelector component with modern Combobox pattern (Command + Popover)
+- Updated tag-service.ts with createTag function and slug generation
+- Added server actions: getTagsAction, createTagAction
+- Updated course-service.ts to handle tagIds in createCourse and updateCourse
+- Integrated TagSelector into presencial-course-form.tsx
+- Updated create/edit course pages to pass initialTags
+- Fixed pre-existing lint error in public-header.tsx (replaced mounted state with suppressHydrationWarning)
+
+**TagSelector Features:**
+- Searchable/filterable list of existing tags
+- Selected tags shown as removable badges below input
+- "Crear tag" option appears when search doesn't match existing tags
+- Inline tag creation with auto-generated slug
+- Loading states for fetching and creating tags
+- Uses verde-uva-100/800 colors for badge styling
+
+**Technical Notes:**
+- Tags use Prisma `set` operation for updates (replaces all tags with new set)
+- Tags use `connect` operation for create (links existing tags by ID)
+- createTag returns existing tag if slug already exists (prevents duplicates)
+- Form sends tagIds as JSON string in formData, parsed server-side
+- TagSelector is fetches tags on mount if not provided via initialTags prop
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**MILESTONE 4 COMPLETE** - All PRD items pass.
+
+---

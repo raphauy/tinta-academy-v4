@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { toLocalDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 interface CourseCardProps {
   course: Course
@@ -20,6 +21,8 @@ const courseImages: Record<string, string> = {
   'cata': 'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=600&q=80',
   'curso': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
 }
+
+type BadgeVariant = 'default' | 'verde-uva' | 'muted'
 
 /**
  * CourseCard - Clean course card with visible image
@@ -47,14 +50,16 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
     return labels[type] || type
   }
 
-  const getTypeColor = (type: Course['type']) => {
-    const colors: Record<string, string> = {
-      wset: 'bg-primary text-primary-foreground',
-      taller: 'bg-verde-uva-500 text-white',
-      cata: 'bg-verde-uva-500 text-white',
-      curso: 'bg-muted-foreground text-white',
+  const getTypeVariant = (type: Course['type']): BadgeVariant => {
+    switch (type) {
+      case 'wset':
+        return 'default'
+      case 'taller':
+      case 'cata':
+        return 'verde-uva'
+      default:
+        return 'muted'
     }
-    return colors[type] || 'bg-muted-foreground text-white'
   }
 
   const imageUrl = course.imageUrl || courseImages[course.type] || courseImages['curso']
@@ -78,12 +83,12 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
         />
         {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-2">
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getTypeColor(course.type)}`}>
+          <Badge variant={getTypeVariant(course.type)} className="px-3 py-1 font-semibold">
             {getTypeLabel(course.type, course.wsetLevel)}
-          </span>
+          </Badge>
         </div>
         <div className="absolute top-3 right-3">
-          <span className="inline-flex items-center gap-1 px-3 py-1 bg-background/95 backdrop-blur-sm rounded-full text-xs font-medium text-foreground">
+          <Badge variant="outline" className="bg-background/95 backdrop-blur-sm">
             {course.modality === 'online' ? (
               <>
                 <Monitor size={12} />
@@ -95,63 +100,63 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
                 {course.location}
               </>
             )}
-          </span>
+          </Badge>
         </div>
       </div>
 
       {/* Content */}
       <div className="p-5 flex flex-col flex-1">
-        {/* Title */}
-        <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
-          {course.title}
-        </h3>
+        {/* Top section: Title + Description + Tags */}
+        <div>
+          {/* Title */}
+          <h3 className="text-lg font-semibold text-foreground mb-2 line-clamp-2">
+            {course.title}
+          </h3>
 
-        {/* Description */}
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-          {course.description}
-        </p>
+          {/* Description - always takes space */}
+          <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem]">
+            {course.description || '\u00A0'}
+          </p>
 
-        {/* Tags */}
-        {course.tags && course.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-4">
-            {course.tags.map((tag) => (
-              <span
-                key={tag.id}
-                className="px-2 py-0.5 bg-verde-uva-500 text-white text-xs rounded-full font-medium"
-              >
+          {/* Tags - always takes space */}
+          <div className="flex flex-wrap gap-1.5 mb-4 min-h-[1.75rem]">
+            {course.tags && course.tags.length > 0 && course.tags.map((tag) => (
+              <Badge key={tag.id} variant="verde-uva">
                 {tag.name}
-              </span>
+              </Badge>
             ))}
           </div>
-        )}
-
-        {/* Meta */}
-        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
-          {course.startDate ? (
-            <span className="inline-flex items-center gap-1">
-              <Calendar size={14} className="text-primary" />
-              {formatDate(course.startDate)}
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1">
-              <Monitor size={14} className="text-primary" />
-              Acceso inmediato
-            </span>
-          )}
-          <span className="inline-flex items-center gap-1">
-            <Clock size={14} className="text-primary" />
-            {course.duration}h
-          </span>
-          {course.maxCapacity && (
-            <span className="inline-flex items-center gap-1">
-              <Users size={14} className="text-primary" />
-              Máx. {course.maxCapacity}
-            </span>
-          )}
         </div>
 
-        {/* Footer - pushed to bottom */}
-        <div className="border-t border-border pt-4 mt-auto">
+        {/* Bottom section - always at bottom */}
+        <div className="mt-auto">
+          {/* Meta */}
+          <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
+            {course.startDate ? (
+              <span className="inline-flex items-center gap-1">
+                <Calendar size={14} className="text-primary" />
+                {formatDate(course.startDate)}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <Monitor size={14} className="text-primary" />
+                Acceso inmediato
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1">
+              <Clock size={14} className="text-primary" />
+              {course.duration}h
+            </span>
+            {course.maxCapacity && (
+              <span className="inline-flex items-center gap-1">
+                <Users size={14} className="text-primary" />
+                Máx. {course.maxCapacity}
+              </span>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between">
             {/* Educator */}
             {educator && (
@@ -184,16 +189,17 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
                 </p>
               </div>
             )}
+            </div>
           </div>
-        </div>
 
-        {/* CTA */}
-        <Button
-          onClick={onView}
-          className="mt-4 w-full"
-        >
-          Ver detalles
-        </Button>
+          {/* CTA */}
+          <Button
+            onClick={onView}
+            className="mt-4 w-full"
+          >
+            Ver detalles
+          </Button>
+        </div>
       </div>
     </article>
   )

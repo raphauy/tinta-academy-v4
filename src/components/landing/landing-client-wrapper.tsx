@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback } from 'react'
 import { toast } from 'sonner'
 import type { HeroContent, FooterLinks, ContactInfo, Course, Tag, CourseFilters } from '@/types/landing'
-import { LandingContent } from './LandingCatalogo'
+import { LandingContent } from './landing-catalogo'
 import { subscribeToNewsletter } from '@/app/(public)/actions'
 
 interface LandingClientWrapperProps {

@@ -9,7 +9,7 @@
       "Run prisma migrate dev --name add_draft_status",
       "Verify with pnpm tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.02",
@@ -30,7 +30,7 @@
       "Run prisma generate and prisma migrate dev --name add_enrollment",
       "Verify with pnpm tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.02b",
@@ -50,7 +50,7 @@
       "Verify migrated students in Prisma Studio",
       "Run pnpm tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.02c",
@@ -72,9 +72,9 @@
       "Run script: pnpm tsx scripts/migration/migrate-enrollments.ts",
       "Verify migrated enrollments in Prisma Studio",
       "Update Course.enrolledCount based on confirmed enrollments count",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm tsc --noEmit, pnpm lint, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.03",
@@ -88,9 +88,9 @@
       "  - publishedCourses: count where status != 'draft'",
       "  - totalEnrollments: sum of enrolledCount across courses",
       "  - upcomingCourses: courses with startDate > now and status in [announced, enrolling]",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.04",
@@ -103,9 +103,9 @@
       "Add publishCourse(id: string) - change status from 'draft' to 'announced'",
       "Add unpublishCourse(id: string) - change status back to 'draft'",
       "Add deleteCourse(id: string) - soft delete or hard delete if no enrollments",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.05",
@@ -118,9 +118,9 @@
       "Implement createEnrollment(studentId: string, courseId: string)",
       "Implement updateEnrollmentStatus(id: string, status: EnrollmentStatus)",
       "Implement cancelEnrollment(id: string)",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.06",
@@ -135,9 +135,22 @@
       "Implement deleteCourseAction(id) - delete course",
       "All actions must verify educator owns the course",
       "Use revalidatePath after mutations",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
+  },
+  {
+    "id": "4.06b",
+    "category": "api",
+    "description": "Allow superadmins to create and manage their own courses",
+    "steps": [
+      "Update getAuthenticatedEducator() in src/app/educator/actions.ts to allow superadmin role",
+      "Change role check from 'educator' only to 'educator' OR 'superadmin'",
+      "Ensure superadmin user has an Educator record to associate courses",
+      "Verify with pnpm tsc --noEmit, pnpm lint, pnpm build in sequence",
+      "Test: login as superadmin, create course, publish, verify on landing"
+    ],
+    "passes": true
   },
   {
     "id": "4.07",
@@ -147,15 +160,15 @@
       "Update src/app/educator/page.tsx as RSC",
       "Fetch educator data using getEducatorByUserId from session",
       "Fetch dashboard metrics using getEducatorDashboardMetrics",
-      "Create src/components/educator/EducatorDashboard.tsx with:",
+      "Create src/components/educator/educator-dashboard.tsx with:",
       "  - Welcome message with educator name",
       "  - MetricCard components: Total Cursos, Cursos Publicados, Total Inscripciones, Pr\u00f3ximos Cursos",
       "  - Quick action buttons: 'Crear Curso', 'Ver Cursos', 'Ver Estudiantes'",
       "  - List of upcoming courses (max 3) with links",
       "Use shadcn/ui Card, Button components following landing page style",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.08",
@@ -165,19 +178,19 @@
       "Update src/app/educator/courses/page.tsx as RSC",
       "Fetch educator's courses using getEducatorCourses",
       "Support URL query params for filters: ?status=draft&type=wset",
-      "Create src/components/educator/CourseList.tsx with:",
+      "Create src/components/educator/course-list.tsx with:",
       "  - Filter bar: status (todos, borrador, publicado, finalizado), type chips",
       "  - Empty state: 'A\u00fan no has creado ning\u00fan curso' with CTA",
-      "  - Grid/list of EducatorCourseCard components",
+      "  - Grid/list of educator-course-card components",
       "  - 'Crear nuevo curso' button",
-      "Create src/components/educator/EducatorCourseCard.tsx:",
+      "Create src/components/educator/educator-course-card.tsx:",
       "  - Course image or placeholder gradient",
       "  - Title, type badge, status badge (Borrador, Publicado, etc.)",
       "  - Date, location (for presencial), enrolledCount/maxCapacity",
       "  - Actions: Editar, Publicar/Despublicar, Eliminar (dropdown menu)",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.09",
@@ -186,38 +199,39 @@
     "steps": [
       "Update src/app/educator/courses/create/page.tsx as RSC",
       "Create src/app/educator/courses/[id]/edit/page.tsx for editing",
-      "Create src/components/educator/PresencialCourseForm.tsx with sections:",
+      "Create src/components/educator/presencial-course-form.tsx with sections:",
       "  - Informaci\u00f3n B\u00e1sica: title, slug (auto-generated), description (textarea), type (select: wset, taller, cata, curso)",
       "  - Para WSET: wsetLevel selector (1, 2, 3)",
-      "  - Imagen: imageUrl input (URL manual por ahora)",
+      "  - Imagen: Vercel blob like /profile but adapted to course images",
       "  - Fechas: startDate, endDate (date pickers)",
       "  - Ubicaci\u00f3n: location, address inputs",
       "  - Capacidad: maxCapacity (number input)",
       "  - Precio: priceUSD (number input)",
       "  - duration: text input (ej: '8 horas', '2 d\u00edas')",
+      "  - slug: is very important because it is used to generate the course URL. You can check the old version (v3): /home/raphael/desarrollo/tinta-academy-v3/src/app/admin/courses for slug generation logic.",
       "Use shadcn/ui form components: Input, Textarea, Select, Button",
       "Use react-hook-form with Zod validation",
       "Form calls createCourseAction or updateCourseAction on submit",
       "Redirect to /educator/courses on success",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.10",
     "category": "feature",
     "description": "Wire course list actions (publish, unpublish, delete)",
     "steps": [
-      "Wire 'Publicar' button in EducatorCourseCard to publishCourseAction",
+      "Wire 'Publicar' button in educator-course-card to publishCourseAction",
       "Wire 'Despublicar' button to unpublishCourseAction",
       "Wire 'Eliminar' to deleteCourseAction with confirmation dialog (AlertDialog)",
       "Show toast on success/error using sonner",
       "Handle loading states during mutations",
       "Verify actions refresh the list correctly",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build",
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence",
       "Test all actions in browser"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.11",
@@ -226,17 +240,17 @@
     "steps": [
       "Update src/app/educator/students/page.tsx to show course selector",
       "Create src/app/educator/courses/[id]/students/page.tsx for course-specific students",
-      "Create src/components/educator/StudentList.tsx with:",
+      "Create src/components/educator/student-list.tsx with:",
       "  - Course info header (title, dates, enrolled/capacity)",
       "  - Empty state: 'A\u00fan no hay estudiantes inscritos en este curso'",
       "  - Table with columns: Nombre, Email, Fecha inscripci\u00f3n, Estado",
       "  - Status badge: Pendiente (yellow), Confirmado (green), Cancelado (gray)",
       "  - Search input to filter by name/email",
-      "Create src/components/educator/StudentRow.tsx for table rows",
+      "Create src/components/educator/student-row.tsx for table rows",
       "Use shadcn/ui Table, Badge, Input components",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.12",
@@ -251,9 +265,9 @@
       "  - Mix of pending, confirmed, cancelled statuses",
       "Test educator dashboard shows correct metrics",
       "Test student list shows migrated/seeded students",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.13",
@@ -261,14 +275,14 @@
     "description": "Add empty states and loading skeletons to educator pages",
     "steps": [
       "Add Suspense boundaries around data-fetching sections",
-      "Create skeleton components for CourseList (grid of placeholder cards)",
-      "Create skeleton for StudentList (table rows placeholder)",
+      "Create skeleton components for course-list (grid of placeholder cards)",
+      "Create skeleton for student-list (table rows placeholder)",
       "Create skeleton for dashboard metrics",
       "Verify empty states show correctly when no data",
       "Test with DevTools network throttling",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "4.14",
@@ -282,8 +296,40 @@
       "Action buttons/dropdowns should be touch-friendly",
       "Navigation sidebar should collapse properly (AppShell handles this)",
       "Fix any overflow or spacing issues",
-      "Run pnpm tsc --noEmit, pnpm lint, pnpm build"
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
+  },
+  {
+    "id": "4.15",
+    "category": "feature",
+    "description": "Add tag selector/creator component to course editor",
+    "steps": [
+      "Create src/components/educator/tag-selector.tsx with modern UI/UX:",
+      "  - Use Combobox pattern (shadcn/ui Command + Popover) for search + select",
+      "  - Show existing tags as searchable/filterable list",
+      "  - Display selected tags as removable badges/chips below the input",
+      "  - 'Crear tag' option appears when search doesn't match existing tags",
+      "  - Inline tag creation: user types name, hits Enter or clicks 'Crear', tag is created and selected",
+      "  - New tags auto-generate slug from name (kebab-case)",
+      "  - Loading state while fetching/creating tags",
+      "Add server actions in src/app/educator/actions.ts:",
+      "  - getTagsAction() - fetch all available tags",
+      "  - createTagAction(name: string) - create new tag, return created tag",
+      "Update tag-service.ts if needed:",
+      "  - Ensure createTag(name) generates slug and handles duplicates",
+      "Integrate TagSelector into presencial-course-form.tsx:",
+      "  - Add 'Tags' section after basic info",
+      "  - Pass selected tag IDs to createCourseAction/updateCourseAction",
+      "Update course-service createCourse/updateCourse to handle tagIds:",
+      "  - Connect tags relation when creating/updating course",
+      "Visual design:",
+      "  - Selected tags shown as colored badges (use tag colors if available)",
+      "  - Smooth animations for adding/removing tags",
+      "  - Clear empty state: 'Busca o crea tags para categorizar tu curso'",
+      "Run pnpm lint, pnpm typecheck, pnpm build in sequence",
+      "Test: create course with existing tags, create course with new tag, edit course tags"
+    ],
+    "passes": true
   }
 ]

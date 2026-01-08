@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import { useTheme } from 'next-themes'
-import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export function Logo() {
@@ -15,24 +14,23 @@ export function Logo() {
 
   // Avoid hydration mismatch by showing nothing until mounted
   if (!mounted) {
-    return <div className="relative h-10 w-36" />
+    return <div className="relative h-9 w-40" />
   }
 
   return (
-    <div className="relative h-10 w-36">
-      <Link href="/">
-        <Image
-          src={
-            resolvedTheme === 'dark'
-              ? '/TintaAcademy_Logo_Blanco.png'
-              : '/TintaAcademy_Logo_Negro.png'
-          }
-          alt="Tinta Academy"
-          fill
-          className="object-contain"
-          priority
-        />
-      </Link>
+    <div className="relative h-9 w-40">
+      <Image
+        src={
+          resolvedTheme === 'dark'
+            ? '/TintaAcademy_Logo_Blanco.png'
+            : '/TintaAcademy_Logo_Negro.png'
+        }
+        alt="Tinta Academy"
+        fill
+        sizes="160px"
+        className="object-contain"
+        priority
+      />
     </div>
   )
 }

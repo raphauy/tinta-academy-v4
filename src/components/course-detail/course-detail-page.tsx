@@ -3,6 +3,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import { Course, Educator, Tag } from '@prisma/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -19,6 +21,8 @@ import {
   GraduationCap,
   CheckCircle,
   ArrowLeft,
+  BookOpen,
+  AlertCircle,
 } from 'lucide-react'
 
 type CourseWithRelations = Course & {
@@ -45,6 +49,24 @@ function formatMonthYear(date: Date | null): string {
     month: 'long',
     year: 'numeric',
   }).format(toLocalDate(date))
+}
+
+function formatClassDate(date: Date): string {
+  return format(toLocalDate(date), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
+}
+
+function getEndTime(startTime: string | null, durationMinutes: number | null): string {
+  if (!startTime || !durationMinutes) return ''
+  try {
+    const [hours, minutes] = startTime.split(':').map(Number)
+    const startMinutes = hours * 60 + minutes
+    const endMinutes = startMinutes + durationMinutes
+    const endHours = Math.floor(endMinutes / 60) % 24
+    const endMins = endMinutes % 60
+    return `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`
+  } catch {
+    return ''
+  }
 }
 
 function getCourseTypeName(type: Course['type'], wsetLevel?: number | null): string {
@@ -164,7 +186,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
       {/* Back Navigation */}
       <div className="container mx-auto px-4 py-4">
         <Link
-          href="/"
+          href="/#catalog"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="size-4" />
@@ -200,10 +222,18 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                 {formatMonthYear(course.startDate)}
               </h2>
             )}
-            <div className="mt-4">
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-sm">
                 {getStatusText(course.status)}
               </span>
+              {course.tags.length > 0 && course.tags.map((tag) => (
+                <span
+                  key={tag.id}
+                  className="px-3 py-1 bg-verde-uva-500 text-white text-sm rounded-full font-medium"
+                >
+                  {tag.name}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -263,6 +293,62 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                   </CardContent>
                 </Card>
               </div>
+            )}
+
+            {/* Dates Card */}
+            {course.classDates && course.classDates.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Fechas del Curso</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {course.classDates.map((date, index) => {
+                    const endTime = getEndTime(course.startTime, course.classDuration)
+                    return (
+                      <div key={index} className="flex items-start gap-3">
+                        <BookOpen className="size-5 text-muted-foreground mt-0.5" />
+                        <div>
+                          <span className="font-medium">Clase {index + 1}:</span>{' '}
+                          <span className="capitalize">
+                            {formatClassDate(new Date(date))}
+                          </span>
+                          {course.startTime && endTime && (
+                            <span className="text-muted-foreground">
+                              {' '}- {course.startTime} a {endTime} hs
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+
+                  {/* Exam date for WSET */}
+                  {isWset && course.examDate && (
+                    <div className="flex items-start gap-3 pt-2 border-t">
+                      <GraduationCap className="size-5 text-muted-foreground mt-0.5" />
+                      <div>
+                        <span className="font-medium">Examen:</span>{' '}
+                        <span className="capitalize">
+                          {formatClassDate(new Date(course.examDate))}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Registration deadline */}
+                  {course.registrationDeadline && (
+                    <div className="flex items-start gap-3 pt-2 border-t">
+                      <AlertCircle className="size-5 text-amber-500 mt-0.5" />
+                      <div>
+                        <span className="font-medium">Fecha limite de inscripcion:</span>{' '}
+                        <span className="capitalize">
+                          {formatClassDate(new Date(course.registrationDeadline))}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
 
             {/* Educator Card */}
@@ -338,31 +424,6 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                   <div className="flex items-center gap-3">
                     <GraduationCap className="size-5 text-muted-foreground" />
                     <span>Incluye examen de certificación</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Dates Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Fechas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <CalendarDays className="size-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Inicio</p>
-                    <span>{formatDate(course.startDate)}</span>
-                  </div>
-                </div>
-                {course.endDate && (
-                  <div className="flex items-center gap-3">
-                    <CalendarDays className="size-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm text-muted-foreground">Finalización</p>
-                      <span>{formatDate(course.endDate)}</span>
-                    </div>
                   </div>
                 )}
               </CardContent>

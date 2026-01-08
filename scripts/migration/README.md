@@ -11,10 +11,21 @@ Scripts para migrar datos desde la base de datos de v3 a v4.
 
 | Script | Descripción | Estado |
 |--------|-------------|--------|
-| `migrate-educators.ts` | Migrar educadores (crear Users + Educators) | Pendiente |
-| `migrate-courses.ts` | Migrar cursos con mapeo de tipos/status | Pendiente |
-| `migrate-students.ts` | Migrar estudiantes (crear Users + Students) | Pendiente |
-| `migrate-orders.ts` | Migrar órdenes/inscripciones | Pendiente |
+| `migrate-educators.ts` | Migrar educadores (crear Users + Educators) | ✅ Completado |
+| `migrate-courses.ts` | Migrar cursos con mapeo de tipos/status | ✅ Completado |
+| `migrate-students.ts` | Migrar estudiantes (crear Users + Students) | ✅ Completado |
+| `migrate-enrollments.ts` | Migrar enrollments desde Orders | ✅ Completado |
+
+## Archivos de mapeo generados
+
+| Archivo | Descripción |
+|---------|-------------|
+| `educator-mapping.json` | v3 educatorId → v4 educatorId |
+| `student-mapping.json` | v3 studentId → v4 studentId |
+
+**Nota:** El mapeo de cursos no genera archivo. `migrate-enrollments.ts` construye el mapeo dinámicamente consultando ambas bases de datos por `slug`.
+
+Estos archivos son necesarios para las migraciones subsiguientes.
 
 ## Mapeo de datos
 
@@ -58,23 +69,92 @@ v3 tiene Educators standalone. v4 requiere User asociado.
 - Crear Educator relacionado al User
 - Guardar mapeo de IDs para migración de cursos
 
-## Ejecución
+### OrderStatus → EnrollmentStatus
+
+| v3 OrderStatus | v4 EnrollmentStatus |
+|----------------|---------------------|
+| `Paid` | `confirmed` |
+| `Created` | `pending` |
+| `Pending` | `pending` |
+| `PaymentSent` | `pending` |
+| `Rejected` | `cancelled` |
+| `Refunded` | `cancelled` |
+| `Cancelled` | `cancelled` |
+
+**Nota:** Si hay múltiples Orders para el mismo estudiante+curso, se mantiene el estado `confirmed` o el más reciente.
+
+## Ejecución (desarrollo)
+
+Los scripts deben ejecutarse **en orden** debido a dependencias:
 
 ```bash
-# Migrar educadores primero (los cursos dependen de ellos)
+# 1. Migrar educadores (genera educator-mapping.json)
 pnpm tsx scripts/migration/migrate-educators.ts
 
-# Migrar cursos
+# 2. Migrar cursos (usa educator-mapping.json)
 pnpm tsx scripts/migration/migrate-courses.ts
 
-# Migrar estudiantes (futuro)
+# 3. Migrar estudiantes (genera student-mapping.json)
 pnpm tsx scripts/migration/migrate-students.ts
+
+# 4. Migrar enrollments (usa student-mapping.json, mapea cursos por slug)
+pnpm tsx scripts/migration/migrate-enrollments.ts
 ```
 
 ## Variables de entorno necesarias
 
 ```env
-# En .env.local de v4
-DATABASE_URL=...         # DB de v4 (destino)
-V3_DATABASE_URL=...      # DB de v3 (origen)
+# En .env.local
+DATABASE_URL=...              # DB de v4 (pooled connection)
+DIRECT_DATABASE_URL=...       # DB de v4 (direct connection - para scripts)
+V3_DATABASE_URL=...           # DB de v3 (origen)
+```
+
+## Ejecución en PRODUCCIÓN
+
+### Paso 1: Aplicar migraciones de Prisma
+
+```bash
+# Asegúrate de que DIRECT_DATABASE_URL apunta a producción
+pnpm prisma migrate deploy
+```
+
+### Paso 2: Configurar variables para producción
+
+Crea un archivo `.env.production` o exporta temporalmente:
+
+```bash
+export DIRECT_DATABASE_URL="postgresql://prod-v4-direct..."
+export V3_DATABASE_URL="postgresql://prod-v3..."
+```
+
+### Paso 3: Ejecutar scripts de datos
+
+```bash
+# Los archivos de mapping se regenerarán para producción
+pnpm tsx scripts/migration/migrate-educators.ts
+pnpm tsx scripts/migration/migrate-courses.ts
+pnpm tsx scripts/migration/migrate-students.ts
+pnpm tsx scripts/migration/migrate-enrollments.ts
+```
+
+### Alternativa: Script de migración completa
+
+```bash
+pnpm tsx scripts/migration/migrate-all.ts
+```
+
+## Idempotencia
+
+Los scripts son **idempotentes**: si un registro ya existe (mismo email para usuarios, mismo slug para cursos), se salta y se agrega al mapeo. Esto permite re-ejecutar los scripts sin duplicar datos.
+
+## Rollback (solo si es necesario)
+
+```sql
+-- CUIDADO: Esto borra todos los datos migrados
+DELETE FROM "Enrollment";
+DELETE FROM "Student";
+DELETE FROM "Course";
+DELETE FROM "Educator";
+DELETE FROM "User" WHERE role IN ('student', 'educator');
 ```

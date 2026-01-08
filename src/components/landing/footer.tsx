@@ -87,6 +87,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
                   src="/TintaAcademy_Logo_Blanco.png"
                   alt="Tinta Academy"
                   fill
+                  sizes="192px"
                   className="object-contain object-left"
                   priority
                 />

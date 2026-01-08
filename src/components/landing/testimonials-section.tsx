@@ -146,7 +146,7 @@ export function TestimonialsSection() {
 
                     {/* Comment */}
                     <p className="text-foreground leading-relaxed flex-grow mb-4">
-                      "{testimonial.comment}"
+                      &ldquo;{testimonial.comment}&rdquo;
                     </p>
 
                     {/* Stars */}

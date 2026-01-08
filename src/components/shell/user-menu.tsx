@@ -37,6 +37,8 @@ export function UserMenu({ user }: UserMenuProps) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // Necessary for SSR hydration - theme needs to render after mount
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
   }, [])
 

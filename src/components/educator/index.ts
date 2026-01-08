@@ -1,0 +1,19 @@
+export { EducatorDashboard } from './educator-dashboard'
+export { CourseList } from './course-list'
+export { EducatorCourseCard } from './educator-course-card'
+export { EducatorCourseRow } from './educator-course-row'
+export { MetricCard } from './metric-card'
+export { MiniChart } from './mini-chart'
+export { CourseQuickCard } from './course-quick-card'
+export { PresencialCourseForm } from './presencial-course-form'
+export { MaterialsSection } from './materials-section'
+export { CourseStatusActions } from './course-status-actions'
+export { StudentList } from './student-list'
+export { AllStudentsList } from './all-students-list'
+export { TagSelector } from './tag-selector'
+export {
+  DashboardSkeleton,
+  CourseListSkeleton,
+  StudentListSkeleton,
+  AllStudentsListSkeleton,
+} from './skeletons'
