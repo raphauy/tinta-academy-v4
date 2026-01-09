@@ -204,7 +204,7 @@
       "  - reorderBankAccounts(orderedIds): update displayOrder for all",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.09",

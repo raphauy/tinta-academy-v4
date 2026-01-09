@@ -1440,3 +1440,38 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create bank-account-service for transfer payment data (6.08)
 
 ---
+
+## 2026-01-09 - Bank Account Service (6.08)
+
+**Completed (PRD item 6.08):**
+- Created src/services/bank-account-service.ts with all required functions:
+
+**Types:**
+- CreateBankAccountInput: bankName, accountHolder, accountType, accountNumber, currency, optional fields
+- UpdateBankAccountInput: partial input for updates with nullable fields support
+
+**Queries:**
+- getBankAccountById(id): BankAccount | null
+- getAllBankAccounts(): BankAccount[] (for admin, ordered by displayOrder)
+- getActiveBankAccounts(): BankAccount[] (for checkout, only isActive=true)
+- getBankAccountsByCurrency(currency): BankAccount[] (filtered by currency)
+
+**Mutations:**
+- createBankAccount(input): creates new bank account with defaults
+- updateBankAccount(id, input): updates specified fields only
+- toggleBankAccountStatus(id): flips isActive boolean
+- deleteBankAccount(id): hard delete if no orders linked, throws error otherwise
+- reorderBankAccounts(orderedIds): updates displayOrder for all accounts in transaction
+
+**Technical Notes:**
+- Follows same pattern as order-service and coupon-service for consistency
+- Uses Prisma transactions for reorderBankAccounts to ensure atomicity
+- deleteBankAccount checks order count before deletion, suggests soft delete if orders exist
+- Error messages in Spanish for user-facing errors
+- All queries ordered by displayOrder then createdAt for consistent ordering
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create mercadopago-service for payment gateway integration (6.09)
+
+---
