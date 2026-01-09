@@ -1119,3 +1119,33 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Ensure responsive design and mobile usability (3.14)
 
 ---
+
+## 2026-01-09 - Responsive Design Polish (3.14)
+
+**Completed (PRD item 3.14):**
+- Reviewed all student components for mobile responsiveness
+- All components already use proper responsive patterns:
+  - StudentDashboard: grid-cols-2 lg:grid-cols-4 for metrics ✓
+  - StudentProfile: sm:grid-cols-2 and flex-col sm:flex-row ✓
+  - StudentCourseList: flex-col sm:flex-row header ✓
+  - StudentCourseCard: flex-col sm:flex-row layout ✓
+- Enhanced touch targets (min 44px) for:
+  - Material download/open buttons in StudentCourseDetail (min-h-[44px] min-w-[44px])
+  - Material toggle button in StudentCourseCard (min-h-[44px] with hover state)
+  - Material items in StudentCourseCard (p-3 min-h-[44px])
+  - "Ver detalles" button in StudentCourseCard (min-h-[44px])
+- Mobile-friendly button labels:
+  - "Descargar"/"Abrir" text hidden on mobile (sm:inline) leaving only icons
+  - Icons remain visible for compact mobile display
+
+**Technical Notes:**
+- Used min-h-[44px] as per Apple's HIG for touch targets
+- Button labels use hidden sm:inline to show icons only on mobile
+- Material toggle button has hover:bg-muted for better tap feedback
+- All existing responsive patterns were already correct (grid-cols-2, flex-col sm:flex-row)
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Remove obsolete student pages (3.15)
+
+---

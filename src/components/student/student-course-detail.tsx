@@ -433,15 +433,15 @@ export function StudentCourseDetail({ enrollment, viewAs }: StudentCourseDetailP
                           {material.description && ` · ${material.description}`}
                         </p>
                       </div>
-                      <Button variant="ghost" size="sm" className="shrink-0 gap-2">
+                      <Button variant="ghost" size="sm" className="shrink-0 gap-2 min-h-[44px] min-w-[44px]">
                         {isExternal ? (
                           <>
-                            Abrir
+                            <span className="hidden sm:inline">Abrir</span>
                             <ExternalLink className="size-4" />
                           </>
                         ) : (
                           <>
-                            Descargar
+                            <span className="hidden sm:inline">Descargar</span>
                             <Download className="size-4" />
                           </>
                         )}

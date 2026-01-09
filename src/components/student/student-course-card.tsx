@@ -226,7 +226,7 @@ export function StudentCourseCard({ enrollment, viewAs }: StudentCourseCardProps
               {materialsCount > 0 && (
                 <button
                   onClick={() => setShowMaterials(!showMaterials)}
-                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors min-h-[44px] px-2 -mx-2 rounded-md hover:bg-muted"
                 >
                   <FileText size={14} />
                   {materialsCount} {materialsCount === 1 ? 'material' : 'materiales'}
@@ -235,7 +235,7 @@ export function StudentCourseCard({ enrollment, viewAs }: StudentCourseCardProps
               )}
             </div>
 
-            <Button asChild size="sm" className="gap-2">
+            <Button asChild size="sm" className="gap-2 min-h-[44px]">
               <Link href={courseDetailUrl}>
                 Ver detalles
                 <ArrowRight className="size-4" />
@@ -260,7 +260,7 @@ export function StudentCourseCard({ enrollment, viewAs }: StudentCourseCardProps
                     href={material.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors group"
+                    className="flex items-center gap-3 p-3 min-h-[44px] rounded-lg hover:bg-muted transition-colors group"
                   >
                     <div className="shrink-0 size-8 rounded-lg bg-verde-uva-100 text-verde-uva-700 flex items-center justify-center">
                       <Icon size={16} />
