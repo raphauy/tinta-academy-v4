@@ -346,7 +346,7 @@
       "  - CTA buttons: 'Ir a mi curso', 'Completar mis datos' (if needed)",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.15",

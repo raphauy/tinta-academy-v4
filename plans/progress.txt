@@ -1717,3 +1717,37 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create checkout success page (6.14)
 
 ---
+
+## 2026-01-09 - Checkout Success Page (6.14)
+
+**Completed (PRD item 6.14):**
+- Installed react-confetti package for celebration effect
+- Created src/components/checkout/success-page.tsx with:
+  - Confetti effect using react-confetti (auto-stops after 5 seconds)
+  - Success header with green check icon and confirmation message
+  - WSET data banner for incomplete profiles (amber colored, prominent CTA)
+  - Order details card: course image, title, type/level badges, educator name
+  - Course details: start date, duration, location
+  - Payment info: method and total amount
+  - Action buttons: "Ir a mi curso" (primary), "Completar mis datos" (if WSET)
+  - Additional info text about email confirmation
+- Created src/app/checkout/success/[orderId]/page.tsx as RSC with:
+  - Auth verification and order ownership check
+  - notFound() if order doesn't exist
+  - Redirect to /checkout/pending if status is pending_payment
+  - Redirect to /student if not paid
+  - WSET profile completeness check (firstName, lastName, dateOfBirth, identityDocument)
+  - Dynamic metadata with course title
+- Updated checkout components barrel export
+
+**Technical Notes:**
+- Used useSyncExternalStore hook for window size to avoid React Compiler lint error
+- Profile is considered incomplete for WSET if any of: firstName, lastName, dateOfBirth, identityDocument is missing
+- Confetti uses wine-themed colors: burgundy, brown, gold, green, blue
+- Page verifies order ownership before displaying (security)
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout pending page for bank transfers (6.15)
+
+---
