@@ -1149,3 +1149,31 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Remove obsolete student pages (3.15)
 
 ---
+
+## 2026-01-09 - Remove Obsolete Student Pages (3.15)
+
+**Completed (PRD item 3.15):**
+- Removed obsolete student page directories:
+  - src/app/student/continue/ (was placeholder)
+  - src/app/student/calendar/ (was placeholder)
+  - src/app/student/progress/ (was placeholder)
+  - src/app/student/data/ (replaced by /student/profile)
+- Verified no internal links referenced old routes
+- Navigation config already updated in PRD 3.02
+
+**Final Student Route Structure:**
+- /student → Dashboard (panel de control con métricas)
+- /student/courses → Lista de cursos inscritos
+- /student/courses/[id] → Detalle del curso
+- /student/profile → Perfil del estudiante
+
+**Technical Notes:**
+- Required clearing .next cache before typecheck (cached references to deleted files)
+- Build output confirms only 4 student routes remain
+- Navigation config (studentNavItems) already matched final structure
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Ensure test data for student panel (3.16)
+
+---
