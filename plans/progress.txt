@@ -832,3 +832,28 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Extend enrollment-service for student operations (3.04)
 
 ---
+
+## 2026-01-09 - Enrollment Service Extension (3.04)
+
+**Completed (PRD item 3.04):**
+- Added getStudentEnrollments(studentId, filters?) to enrollment-service.ts:
+  - Optional status filter (EnrollmentStatus)
+  - Returns enrollments with full course data including materials
+  - Includes educator info (id, name, imageUrl)
+  - Includes tags and materials ordered by order field
+- Added getEnrollmentWithCourseDetails(enrollmentId):
+  - Full student data with user email/name
+  - Full course data with educator details (name, title, bio, imageUrl)
+  - All course materials and tags
+
+**Technical Notes:**
+- Kept existing getEnrollmentsByStudent for backwards compatibility
+- New functions provide richer data needed for student UI
+- Materials are always ordered by 'order' field for consistent display
+- Educator select includes imageUrl for avatar display in UI
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create server actions for student operations (3.05)
+
+---

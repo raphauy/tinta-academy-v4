@@ -43,6 +43,85 @@ export async function getEnrollmentsByStudent(studentId: string) {
   })
 }
 
+/**
+ * Get student enrollments with full course details including materials
+ * Used for student course list page with optional status filter
+ */
+export async function getStudentEnrollments(
+  studentId: string,
+  filters?: { status?: EnrollmentStatus }
+) {
+  return prisma.enrollment.findMany({
+    where: {
+      studentId,
+      ...(filters?.status && { status: filters.status }),
+    },
+    include: {
+      course: {
+        include: {
+          educator: {
+            select: {
+              id: true,
+              name: true,
+              imageUrl: true,
+            },
+          },
+          materials: {
+            orderBy: {
+              order: 'asc',
+            },
+          },
+          tags: true,
+        },
+      },
+    },
+    orderBy: {
+      enrolledAt: 'desc',
+    },
+  })
+}
+
+/**
+ * Get single enrollment with full course details for student course detail page
+ */
+export async function getEnrollmentWithCourseDetails(enrollmentId: string) {
+  return prisma.enrollment.findUnique({
+    where: { id: enrollmentId },
+    include: {
+      student: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+            },
+          },
+        },
+      },
+      course: {
+        include: {
+          educator: {
+            select: {
+              id: true,
+              name: true,
+              title: true,
+              bio: true,
+              imageUrl: true,
+            },
+          },
+          materials: {
+            orderBy: {
+              order: 'asc',
+            },
+          },
+          tags: true,
+        },
+      },
+    },
+  })
+}
+
 export async function getEnrollmentById(id: string) {
   return prisma.enrollment.findUnique({
     where: { id },
