@@ -1350,3 +1350,49 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create order-service for order management (6.06)
 
 ---
+
+## 2026-01-09 - Order Service (6.06)
+
+**Completed (PRD item 6.06):**
+- Created src/services/order-service.ts with all required functions:
+
+**Types:**
+- CreateOrderInput: userId, courseId, paymentMethod, currency, couponId, pricing fields
+- UpdateOrderStatusMetadata: optional fields for status updates (MP data, timestamps, studentId)
+- orderWithRelations: shared include config for full order details
+
+**Queries:**
+- getOrderById(id): OrderWithRelations | null
+- getOrderByNumber(orderNumber): OrderWithRelations | null
+- getOrdersByUserId(userId): OrderWithRelations[]
+- getOrdersByStatus(status): OrderWithRelations[]
+- getOrderByMpPreferenceId(preferenceId): Order | null
+- getOrderByMpPaymentId(paymentId): Order | null
+- getPendingTransferOrders(): OrderWithRelations[] (for admin review)
+- getOrders(filters?): paginated list with status, paymentMethod, courseId, userId filters
+- getUserOrderForCourse(userId, courseId): check existing orders
+
+**Mutations:**
+- createOrder(input): creates order with auto-generated unique orderNumber
+- updateOrderStatus(orderId, status, metadata?): flexible status update
+- setMercadoPagoPreference(orderId, preferenceId): save MP preference
+- cancelOrder(orderId): sets cancelled status with timestamp
+- markTransferAsSent(orderId, reference?, proofUrl?): user marks transfer done
+- linkStudentToOrder(orderId, studentId): post-payment linking
+- markOrderAsPaid(orderId, studentId?): marks paid with timestamp
+- refundOrder(orderId): marks refunded with timestamp
+
+**Helper:**
+- generateOrderNumber(): format TA-YYYYMMDD-XXXX with retry for uniqueness
+
+**Technical Notes:**
+- Follows same pattern as enrollment-service for consistency
+- orderWithRelations includes user, course (with educator/tags), student, coupon, bankAccount
+- Order number generation has retry logic (max 5 attempts) for collision handling
+- All mutations include orderWithRelations by default for immediate UI updates
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create coupon-service for discount validation (6.07)
+
+---

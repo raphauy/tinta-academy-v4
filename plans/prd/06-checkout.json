@@ -151,7 +151,7 @@
       "Helper: generateOrderNumber() - format TA-YYYYMMDD-XXXX",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.07",
