@@ -1751,3 +1751,39 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create checkout pending page for bank transfers (6.15)
 
 ---
+
+## 2026-01-09 - Checkout Pending Page (6.15)
+
+**Completed (PRD item 6.15):**
+- Created src/components/checkout/pending-transfer-page.tsx with:
+  - Header with clock icon and "Pendiente de Pago" title
+  - Order summary card: course image, title, type/level badges, educator name
+  - Course details: start date, location
+  - Total amount to transfer prominently displayed (verde-uva-700)
+  - Bank account details section with copy buttons for each field
+  - Transfer instructions as numbered list
+  - Important notice about 48h verification time (amber styled)
+  - Mark transfer as sent form with optional reference field
+  - Success state after marking transfer (green styled with checkmark)
+  - Help text with contact email
+- Created src/app/checkout/pending/[orderId]/page.tsx as RSC with:
+  - Auth verification and order ownership check
+  - notFound() if order doesn't exist
+  - Redirect to /checkout/success if already paid
+  - Redirect to /student if not bank_transfer or cancelled
+  - Fetches active bank accounts for display
+  - Dynamic metadata with course title
+- Updated checkout components barrel export
+
+**Technical Notes:**
+- CopyButton component handles clipboard API with toast feedback
+- Bank accounts filtered by order currency (USD for bank transfers)
+- Uses markTransferSentAction from checkout actions
+- Shows success state if order.transferReference already exists
+- Empty state for no bank accounts (instructs user to contact support)
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Create MercadoPago webhook endpoint (6.16)
+
+---

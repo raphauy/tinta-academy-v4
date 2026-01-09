@@ -365,7 +365,7 @@
       "  - After marking sent: show confirmation message with next steps",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.16",
