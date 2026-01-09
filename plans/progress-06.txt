@@ -1,0 +1,591 @@
+# Progress Log - Milestone 06: Checkout
+
+This file tracks progress for Milestone 06. Each entry documents what was implemented, technical decisions, and suggestions for next steps.
+
+---
+
+## 2026-01-09 - Checkout Milestone Start (6.01)
+
+**Completed (PRD item 6.01):**
+- Added Order model to prisma/schema.prisma with all required fields:
+  - Identification: id, orderNumber (unique, format TA-YYYYMMDD-XXXX)
+  - Relations: userId, courseId, studentId?, couponId?, bankAccountId?
+  - Pricing: originalPriceUSD, originalPriceUYU?, discountPercent, discountAmount, finalAmount, currency
+  - Payment: paymentMethod, status
+  - MercadoPago: mpPreferenceId?, mpPaymentId?, mpStatus?, mpStatusDetail?
+  - Bank transfer: transferReference?
+  - Timestamps: createdAt, updatedAt, paidAt?, cancelledAt?, refundedAt?
+- Added enums: OrderStatus, PaymentMethod, Currency
+- Added orders relation to User, Student, and Course models
+- Added all required indexes
+
+**Technical Notes:**
+- Created branch `feature/06-checkout` for this milestone
+- couponId and bankAccountId fields are present but relations to Coupon and BankAccount models will be added in PRD 6.02 and 6.03
+- No migration run yet - will migrate after all schema changes (6.04)
+- Prisma generate successful with new types
+- Pre-existing lint warnings (4) are unrelated to this change
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Add BankAccount model (6.02)
+
+---
+
+## 2026-01-09 - BankAccount Model (6.02)
+
+**Completed (PRD item 6.02):**
+- Added BankAccount model to prisma/schema.prisma with all required fields:
+  - id, bankName, accountHolder, accountType, accountNumber
+  - currency (uses Currency enum)
+  - swiftCode?, routingNumber? (for international transfers)
+  - displayOrder (for ordering in UI)
+  - notes? (internal notes)
+  - isActive (default true)
+  - createdAt, updatedAt
+- Added orders relation (Order[]) to BankAccount
+- Added bankAccount relation to Order model
+- Added indexes on currency and isActive
+
+**Technical Notes:**
+- BankAccount supports multiple currencies (USD, UYU) using existing Currency enum
+- displayOrder allows admin to control which accounts appear first
+- isActive flag for soft-disabling accounts without deleting
+- Relation from Order to BankAccount now fully connected (was placeholder in 6.01)
+- No migration run yet - will migrate after all schema changes (6.04)
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Add Coupon model (6.03)
+
+---
+
+## 2026-01-09 - Coupon Model (6.03)
+
+**Completed (PRD item 6.03):**
+- Added Coupon model to prisma/schema.prisma with all required fields:
+  - id, code (unique)
+  - discountPercent (0-100)
+  - maxUses, currentUses (for usage tracking)
+  - restrictedToEmail?, restrictedToCourseId? (restrictions)
+  - minPurchaseAmount? (minimum purchase requirement)
+  - validFrom, expiresAt? (validity period)
+  - isActive (default true)
+  - description?, createdBy? (admin metadata)
+  - createdAt, updatedAt
+- Added coupon relation to Order model
+- Added coupons relation to Course model (for restricted coupons)
+- Added indexes on code, isActive, expiresAt, restrictedToEmail
+
+**Technical Notes:**
+- Coupons can be restricted to specific email addresses (personal coupons)
+- Coupons can be restricted to specific courses
+- minPurchaseAmount allows minimum cart value requirements
+- maxUses/currentUses track usage limits
+- All checkout models (Order, BankAccount, Coupon) now complete
+- No migration run yet - will migrate in 6.04
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Run migration and finalize schema changes (6.04)
+
+---
+
+## 2026-01-09 - Checkout Schema Migration (6.04)
+
+**Completed (PRD item 6.04):**
+- Added priceUYU: Float? field to Course model (for MercadoPago pricing)
+- Ran prisma migrate dev --name add_checkout_models
+- Migration created all checkout tables and enums in a single SQL file
+
+**Migration Summary (20260109190018_add_checkout_models):**
+- Created 3 enums: OrderStatus, PaymentMethod, Currency
+- Created 3 tables: BankAccount, Coupon, Order
+- Added priceUYU column to Course table
+- Created all indexes for performance
+- Added all foreign key constraints
+
+**Technical Notes:**
+- Items 6.01-6.03 added schema changes without migrating (prisma generate only)
+- Item 6.04 consolidated all changes into a single migration
+- This approach avoids multiple small migrations and ensures atomicity
+- Database now fully supports checkout flow:
+  - Orders track purchases with MercadoPago or bank transfer
+  - BankAccounts store transfer destination info
+  - Coupons enable discount codes with restrictions
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create migration script for v3 BankData and Coupons (6.05)
+
+---
+
+## 2026-01-09 - Checkout Data Migration Script (6.05)
+
+**Completed (PRD item 6.05):**
+- Created scripts/migration/migrate-checkout-data.ts with:
+  - Connection to v3 PostgreSQL database via pg library
+  - BankData migration: parses v3 info string into structured BankAccount fields
+  - Coupon migration: transfers active coupons (not expired, uses < maxUses)
+  - Course ID mapping: builds slug-based mapping v3 → v4 for course restrictions
+  - Duplicate detection: skips already migrated records
+  - Detailed logging of migration progress
+- Added `migrate:checkout` script to package.json
+
+**Migration Features:**
+- parseBankInfo() function parses v3's multi-line info string into:
+  - bankName, accountHolder, accountType, accountNumber
+- Course-restricted coupons: maps v3 courseId to v4 by matching slugs
+- Preserves coupon usage counts (currentUses) from v3
+- Saves original v3 info as notes field for reference
+- Handles missing tables gracefully (checks table existence before querying)
+
+**Technical Notes:**
+- Follows same pattern as existing migration scripts (migrate-educators.ts)
+- Uses DIRECT_DATABASE_URL to bypass connection pooler
+- Table existence check prevents errors if v3 schema differs
+- Course mapping issues logged but don't block migration
+- Manual review recommended after migration for bank account details
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create order-service for order management (6.06)
+
+---
+
+## 2026-01-09 - Order Service (6.06)
+
+**Completed (PRD item 6.06):**
+- Created src/services/order-service.ts with all required functions:
+
+**Types:**
+- CreateOrderInput: userId, courseId, paymentMethod, currency, couponId, pricing fields
+- UpdateOrderStatusMetadata: optional fields for status updates (MP data, timestamps, studentId)
+- orderWithRelations: shared include config for full order details
+
+**Queries:**
+- getOrderById(id): OrderWithRelations | null
+- getOrderByNumber(orderNumber): OrderWithRelations | null
+- getOrdersByUserId(userId): OrderWithRelations[]
+- getOrdersByStatus(status): OrderWithRelations[]
+- getOrderByMpPreferenceId(preferenceId): Order | null
+- getOrderByMpPaymentId(paymentId): Order | null
+- getPendingTransferOrders(): OrderWithRelations[] (for admin review)
+- getOrders(filters?): paginated list with status, paymentMethod, courseId, userId filters
+- getUserOrderForCourse(userId, courseId): check existing orders
+
+**Mutations:**
+- createOrder(input): creates order with auto-generated unique orderNumber
+- updateOrderStatus(orderId, status, metadata?): flexible status update
+- setMercadoPagoPreference(orderId, preferenceId): save MP preference
+- cancelOrder(orderId): sets cancelled status with timestamp
+- markTransferAsSent(orderId, reference?, proofUrl?): user marks transfer done
+- linkStudentToOrder(orderId, studentId): post-payment linking
+- markOrderAsPaid(orderId, studentId?): marks paid with timestamp
+- refundOrder(orderId): marks refunded with timestamp
+
+**Helper:**
+- generateOrderNumber(): format TA-YYYYMMDD-XXXX with retry for uniqueness
+
+**Technical Notes:**
+- Follows same pattern as enrollment-service for consistency
+- orderWithRelations includes user, course (with educator/tags), student, coupon, bankAccount
+- Order number generation has retry logic (max 5 attempts) for collision handling
+- All mutations include orderWithRelations by default for immediate UI updates
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create coupon-service for discount validation (6.07)
+
+---
+
+## 2026-01-09 - Coupon Service (6.07)
+
+**Completed (PRD item 6.07):**
+- Created src/services/coupon-service.ts with all required functions:
+
+**Types:**
+- CouponError: union type for all validation error codes
+- ValidateCouponResult: { valid, coupon?, error?, errorMessage?, discountPercent?, discountAmount?, finalAmount? }
+- CreateCouponInput, UpdateCouponInput: input types for mutations
+
+**Queries:**
+- getCouponByCode(code): Coupon | null (normalizes to uppercase)
+- getCouponById(id): Coupon | null
+- getAllCoupons(): Coupon[]
+- getActiveCoupons(): active coupons (isActive, not expired, validFrom passed)
+- getCoupons(filters?): admin list with search, isActive, courseId filters
+
+**Validation:**
+- validateCoupon(code, userEmail, courseId, originalAmount): ValidateCouponResult
+  - Checks: exists, isActive, validFrom, expiresAt, usage limit, email restriction, course restriction, min amount
+  - Calculates: discountPercent, discountAmount, finalAmount
+  - Returns Spanish error messages for each validation failure
+
+**Mutations:**
+- incrementCouponUsage(couponId): atomic increment of currentUses
+- createCoupon(input): admin creation (normalizes code to uppercase)
+- updateCoupon(id, input): admin update with partial fields
+- deactivateCoupon(id): soft delete (isActive=false)
+- reactivateCoupon(id): restore deactivated coupon
+- deleteCoupon(id): hard delete (only if no orders linked)
+
+**Technical Notes:**
+- All coupon codes normalized to uppercase for case-insensitive matching
+- Emails normalized to lowercase for consistent comparison
+- Discount calculations rounded to 2 decimal places
+- Error messages in Spanish for user-facing validation
+- deleteCoupon checks order count before deletion
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create bank-account-service for transfer payment data (6.08)
+
+---
+
+## 2026-01-09 - Bank Account Service (6.08)
+
+**Completed (PRD item 6.08):**
+- Created src/services/bank-account-service.ts with all required functions:
+
+**Types:**
+- CreateBankAccountInput: bankName, accountHolder, accountType, accountNumber, currency, optional fields
+- UpdateBankAccountInput: partial input for updates with nullable fields support
+
+**Queries:**
+- getBankAccountById(id): BankAccount | null
+- getAllBankAccounts(): BankAccount[] (for admin, ordered by displayOrder)
+- getActiveBankAccounts(): BankAccount[] (for checkout, only isActive=true)
+- getBankAccountsByCurrency(currency): BankAccount[] (filtered by currency)
+
+**Mutations:**
+- createBankAccount(input): creates new bank account with defaults
+- updateBankAccount(id, input): updates specified fields only
+- toggleBankAccountStatus(id): flips isActive boolean
+- deleteBankAccount(id): hard delete if no orders linked, throws error otherwise
+- reorderBankAccounts(orderedIds): updates displayOrder for all accounts in transaction
+
+**Technical Notes:**
+- Follows same pattern as order-service and coupon-service for consistency
+- Uses Prisma transactions for reorderBankAccounts to ensure atomicity
+- deleteBankAccount checks order count before deletion, suggests soft delete if orders exist
+- Error messages in Spanish for user-facing errors
+- All queries ordered by displayOrder then createdAt for consistent ordering
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create mercadopago-service for payment gateway integration (6.09)
+
+---
+
+## 2026-01-09 - MercadoPago Service (6.09)
+
+**Completed (PRD item 6.09):**
+- Reviewed v3 implementation in /home/raphael/desarrollo/tinta-academy-v3/src/services/order-services.ts
+- Installed mercadopago package v2.11.0
+- Added environment variables to .env.example:
+  - MERCADOPAGO_ACCESS_TOKEN
+  - MERCADOPAGO_PUBLIC_KEY
+  - MERCADOPAGO_WEBHOOK_SECRET
+  - MERCADOPAGO_SANDBOX (true/false)
+- Created src/services/mercadopago-service.ts with all required functions:
+
+**Config:**
+- getMercadoPagoClient(): lazily creates MercadoPagoConfig with accessToken
+- isSandbox flag for sandbox/production mode
+
+**Types:**
+- CreatePreferenceInput: orderId, courseId, courseTitle, amount, URLs, user info
+- PreferenceResult: preferenceId, initPoint URL
+- PaymentInfo: id, status, statusDetail, externalReference, transactionAmount, orderId
+
+**Functions:**
+- createPreference(input): creates MP preference, returns preferenceId and initPoint URL
+- getPayment(paymentId): fetches payment details from MP API
+- verifyPaymentStatus(paymentId): returns status, statusDetail, orderId
+- validateWebhookSignature(dataId, xSignature, xRequestId): HMAC-SHA256 validation
+- isMercadoPagoConfigured(): checks if service is configured
+- getMercadoPagoMode(): returns 'sandbox' or 'production'
+
+**Technical Notes:**
+- Followed v3 pattern: Preference for checkout, Payment for webhook verification
+- Uses sandbox_init_point vs init_point based on MERCADOPAGO_SANDBOX env
+- Webhook signature validation follows MP's format: ts=timestamp,v1=hash
+- Uses crypto.timingSafeEqual for secure hash comparison
+- Auto_return set to 'approved' for better UX
+- Currency set to UYU for Uruguay market
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout-service for checkout flow orchestration (6.10)
+
+---
+
+## 2026-01-09 - MercadoPago Service Security Audit Response (6.09b)
+
+**Audit Review:** plans/audit/audit_2026-01-09.txt
+**Response Document:** plans/audit/audit_2026-01-09_response.txt
+
+**Bug Fixes Applied:**
+
+1. **CRÍTICO - timingSafeEqual buffer length crash:**
+   - Agregada verificación de longitud de buffers antes de timingSafeEqual
+   - Sin esto, hashes de diferente longitud causaban crash del servidor
+   - Ahora retorna false con log de error en lugar de crashear
+
+2. **RECOMENDADO - Verificación temporal de timestamp:**
+   - Agregada constante WEBHOOK_MAX_AGE_MS = 5 minutos
+   - Webhooks con timestamp > 5 min son rechazados
+   - Previene replay attacks donde atacante reenvía webhook capturado
+   - Permite 1 minuto de clock skew hacia el futuro
+
+**Cambios V3→V4 Justificados:**
+
+| Cambio                  | Decisión | Razón                                      |
+|-------------------------|----------|---------------------------------------------|
+| notification_url        | MANTENER | Más robusto, sobrescribe config del panel   |
+| auto_return: 'approved' | MANTENER | Mejora UX, redirección automática           |
+| currency_id: 'UYU'      | MANTENER | SDK 2.x lo recomienda, más explícito        |
+| payer info (email/name) | MANTENER | Pre-rellena checkout, mejora UX             |
+
+**Notas de Migración:**
+- Variables de entorno renombradas (MP_* → MERCADOPAGO_*)
+- Ver tabla completa en audit_2026-01-09_response.txt
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout-service for checkout flow orchestration (6.10)
+
+---
+
+## 2026-01-09 - Checkout Service (6.10)
+
+**Completed (PRD item 6.10):**
+- Created src/services/checkout-service.ts with all checkout flow orchestration:
+
+**Types:**
+- EnrollmentBlockReason: 'already_enrolled' | 'course_full' | 'course_closed' | 'deadline_passed'
+- Pricing: originalPriceUSD/UYU, discountPercent, discountAmount, finalPrice, isFree
+- CheckoutContext: user, course, coupon, bankAccounts, pricing, canEnroll, enrollmentBlockReason
+
+**Functions:**
+- getCheckoutContext(userId, courseId, couponCode?): CheckoutContext
+  - Validates user and course existence
+  - Checks enrollment eligibility (not already enrolled, course not full, deadline not passed)
+  - Validates coupon if provided
+  - Gets active bank accounts
+  - Calculates pricing with discounts
+- initiateCheckout(userId, courseId, paymentMethod, currency, couponCode?): creates Order
+- processCheckoutMercadoPago(orderId): creates MP preference, returns redirectUrl
+- processCheckoutBankTransfer(orderId, bankAccountId): sets pending_payment status
+- processFreeEnrollment(userId, courseId, couponCode?): immediate enrollment for free courses
+- completeCheckout(orderId): full transaction completing order, creating student/enrollment
+- hasExistingEnrollment(userId, courseId): utility check
+- getPendingOrderForCourse(userId, courseId): find incomplete orders
+
+**Technical Notes:**
+- Uses DEFAULT_USD_TO_UYU_RATE = 42 when course.priceUYU not set
+- completeCheckout runs in Prisma transaction for atomicity
+- Creates student record and assigns role on first purchase
+- Increments coupon usage within transaction
+- Increments course enrolledCount within transaction
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create server actions for checkout operations (6.11)
+
+---
+
+## 2026-01-09 - Checkout Server Actions (6.11)
+
+**Completed (PRD item 6.11):**
+- Created src/app/checkout/actions.ts with 'use server' directive
+- Created checkout directory for checkout-related pages
+
+**Helper Function:**
+- getAuthenticatedUser(): validates session, returns user { id, email } or error
+
+**Server Actions:**
+- getCheckoutContextAction(courseId, couponCode?): returns CheckoutContext or error
+- applyCouponAction(courseId, couponCode): validates coupon, returns ValidateCouponResult
+- initiateCheckoutAction(courseId, paymentMethod, currency, couponCode?, bankAccountId?):
+  - For mercadopago: creates order, creates MP preference, returns { orderId, redirectUrl }
+  - For bank_transfer: creates order, returns { orderId }
+  - For free: completes enrollment immediately, returns { orderId }
+- markTransferSentAction(orderId, reference?): marks bank transfer as sent by user
+- getOrderStatusAction(orderId): returns order status and details for success/pending pages
+
+**Technical Notes:**
+- All actions verify user authentication before processing
+- Uses Zod schemas for input validation (initiateCheckoutSchema, markTransferSentSchema)
+- Validates order ownership before allowing mutations
+- Returns consistent ActionResult<T> type for all actions
+- Error messages in Spanish for user-facing errors
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create server actions for admin order management (6.12)
+
+---
+
+## 2026-01-09 - Admin Order Server Actions (6.12)
+
+**Completed (PRD item 6.12):**
+- Created src/app/admin/orders/actions.ts with 'use server' directive
+
+**Helper Function:**
+- requireAdmin(): validates session and checks role === 'superadmin'
+
+**Server Actions:**
+- getOrdersAction(filters?): returns paginated list of orders with status/paymentMethod/courseId filters
+- getOrderDetailAction(orderId): returns full order details with all relations
+- confirmTransferPaymentAction(orderId):
+  - Validates order is bank_transfer and pending
+  - Calls completeCheckout to create student/enrollment
+  - Revalidates admin paths
+- cancelOrderAction(orderId):
+  - Validates order is not already paid/refunded
+  - Uses cancelOrderService from order-service
+- refundOrderAction(orderId):
+  - Validates order is paid
+  - Uses Prisma transaction to:
+    - Mark order as refunded with timestamp
+    - Cancel associated enrollment if exists
+    - Decrement course enrolledCount
+
+**Technical Notes:**
+- All actions require superadmin role
+- Uses revalidatePath for /admin/orders and /admin after mutations
+- refundOrderAction uses transaction for atomicity when cancelling enrollment
+- Returns consistent ActionResult<T> type for all actions
+- Error messages in Spanish for user-facing errors
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout page for course purchase (6.13)
+
+---
+
+## 2026-01-09 - Checkout Page (6.13)
+
+**Completed (PRD item 6.13):**
+- Created src/app/checkout/layout.tsx with minimal layout:
+  - Logo header linking to home
+  - Centered content area with max-w-5xl
+  - Stone background for visual distinction from main app
+- Created src/app/checkout/[courseId]/page.tsx as RSC with:
+  - Authentication check - redirects to /login?returnUrl=/checkout/[courseId]
+  - Course existence check with notFound()
+  - Checkout context fetching with optional coupon from query params
+  - Dynamic metadata with course title
+  - Suspense boundary with loading spinner
+- Created src/components/checkout/cannot-enroll.tsx:
+  - Visual feedback for each enrollment block reason
+  - Different icons/colors for: already_enrolled, course_full, course_closed, deadline_passed
+  - CTA buttons: "Ir a mis cursos" or "Explorar otros cursos"
+- Created src/components/checkout/free-checkout.tsx:
+  - For courses with price=0 or 100% coupon
+  - Course summary card with image, details, and pricing
+  - Single "Inscribirme ahora" button that calls initiateCheckoutAction
+  - Loading state and error handling with toast notifications
+  - Redirects to success page on completion
+- Created src/components/checkout/checkout-form.tsx:
+  - Placeholder component for paid courses (full implementation in 6.17-6.20)
+  - 2-column layout: payment options (left) + order summary (right)
+  - Order summary shows course image, details, educator, and price breakdown
+- Created src/components/checkout/index.ts barrel export
+
+**Technical Notes:**
+- Checkout page supports ?coupon= query param to pre-apply discount code
+- Free checkout uses paymentMethod='free' and completes immediately
+- CannotEnroll component uses same visual patterns as other status pages
+- CheckoutForm is a placeholder - payment methods will be added in PRD 6.17-6.20
+- Layout uses minimal header (logo only) without sidebar for focused checkout experience
+
+**Additional changes:**
+- Updated course-detail-page.tsx to link "Inscribite ahora" button to /checkout/[courseId]
+- Added enrollment state logic: checks if enrollable, full, or deadline passed
+- Button now shows different states: "Inscribite ahora", "Cupo completo", "Inscripciones cerradas"
+- Removed unused imports (CalendarDays, formatDate)
+- Added priceUYU field to educator course form (presencial-course-form.tsx)
+- Added priceUYU to educator server actions schema (actions.ts)
+- Added priceUYU to CreateCourseInput and UpdateCourseInput in course-service.ts
+- Added priceUYU to createCourse() and updateCourse() Prisma calls
+- 3-column grid for Capacidad/PrecioUSD/PrecioUYU fields
+- Optional field with helper text explaining auto-calculation (USD × 42)
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout success page (6.14)
+
+---
+
+## 2026-01-09 - Checkout Success Page (6.14)
+
+**Completed (PRD item 6.14):**
+- Installed react-confetti package for celebration effect
+- Created src/components/checkout/success-page.tsx with:
+  - Confetti effect using react-confetti (auto-stops after 5 seconds)
+  - Success header with green check icon and confirmation message
+  - WSET data banner for incomplete profiles (amber colored, prominent CTA)
+  - Order details card: course image, title, type/level badges, educator name
+  - Course details: start date, duration, location
+  - Payment info: method and total amount
+  - Action buttons: "Ir a mi curso" (primary), "Completar mis datos" (if WSET)
+  - Additional info text about email confirmation
+- Created src/app/checkout/success/[orderId]/page.tsx as RSC with:
+  - Auth verification and order ownership check
+  - notFound() if order doesn't exist
+  - Redirect to /checkout/pending if status is pending_payment
+  - Redirect to /student if not paid
+  - WSET profile completeness check (firstName, lastName, dateOfBirth, identityDocument)
+  - Dynamic metadata with course title
+- Updated checkout components barrel export
+
+**Technical Notes:**
+- Used useSyncExternalStore hook for window size to avoid React Compiler lint error
+- Profile is considered incomplete for WSET if any of: firstName, lastName, dateOfBirth, identityDocument is missing
+- Confetti uses wine-themed colors: burgundy, brown, gold, green, blue
+- Page verifies order ownership before displaying (security)
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout pending page for bank transfers (6.15)
+
+---
+
+## 2026-01-09 - Checkout Pending Page (6.15)
+
+**Completed (PRD item 6.15):**
+- Created src/components/checkout/pending-transfer-page.tsx with:
+  - Header with clock icon and "Pendiente de Pago" title
+  - Order summary card: course image, title, type/level badges, educator name
+  - Course details: start date, location
+  - Total amount to transfer prominently displayed (verde-uva-700)
+  - Bank account details section with copy buttons for each field
+  - Transfer instructions as numbered list
+  - Important notice about 48h verification time (amber styled)
+  - Mark transfer as sent form with optional reference field
+  - Success state after marking transfer (green styled with checkmark)
+  - Help text with contact email
+- Created src/app/checkout/pending/[orderId]/page.tsx as RSC with:
+  - Auth verification and order ownership check
+  - notFound() if order doesn't exist
+  - Redirect to /checkout/success if already paid
+  - Redirect to /student if not bank_transfer or cancelled
+  - Fetches active bank accounts for display
+  - Dynamic metadata with course title
+- Updated checkout components barrel export
+
+**Technical Notes:**
+- CopyButton component handles clipboard API with toast feedback
+- Bank accounts filtered by order currency (USD for bank transfers)
+- Uses markTransferSentAction from checkout actions
+- Shows success state if order.transferReference already exists
+- Empty state for no bank accounts (instructs user to contact support)
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Create MercadoPago webhook endpoint (6.16)
+
+---

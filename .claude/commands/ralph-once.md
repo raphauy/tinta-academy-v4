@@ -10,8 +10,8 @@ description: Ejecuta una iteración del método Ralph Wiggum
 Lee estos archivos para entender el contexto:
 
 - @plans/AGENT.md - Instrucciones de build/test y arquitectura
-- @plans/progress.txt - Historial de progreso entre sesiones
-- @plans/prd/$ARGUMENTS.json - PRD del milestone (ej: 02-landing)
+- @plans/progress-XX.txt - Progreso del milestone actual (XX = número del PRD, ej: progress-06.txt para 06-checkout)
+- @plans/prd/$ARGUMENTS.json - PRD del milestone (ej: 06-checkout)
 
 ## ARGUMENTS por defecto: 06-checkout
 

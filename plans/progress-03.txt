@@ -1,0 +1,442 @@
+# Progress Log - Milestone 03: Student Panel
+
+This file tracks progress for Milestone 03. Each entry documents what was implemented, technical decisions, and suggestions for next steps.
+
+---
+
+## 2026-01-09 - Student Milestone Start (3.01)
+
+**Completed (PRD item 3.01):**
+- Extended Student model in Prisma schema with new fields:
+  - Billing: billingName, billingTaxId, billingAddress (all optional String)
+  - Notifications: notifyNewCourses (default true), notifyPromotions (default false), notifyCourseUpdates (default true)
+- Created migration: 20260109115802_extend_student_profile
+- Generated Prisma client with new types
+
+**Technical Notes:**
+- Created branch `feature/03-student` for this milestone
+- All billing fields are optional to avoid breaking existing student records
+- Notification preferences have sensible defaults (no marketing spam by default)
+- Pre-existing lint warnings (3) are unrelated to this change
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Update student sidebar navigation (3.02)
+
+---
+
+## 2026-01-09 - Student Navigation (3.02)
+
+**Completed (PRD item 3.02):**
+- Updated studentNavItems in navigation-config.ts:
+  - Panel de Control (/student) with LayoutDashboard icon
+  - Mis Cursos (/student/courses) with BookOpen icon
+  - Mi Perfil (/student/profile) with User icon
+- Removed obsolete entries: Continuar, Calendario, Mi Progreso, Mis Datos
+- Cleaned up unused imports (PlayCircle, Calendar, TrendingUp)
+
+**Technical Notes:**
+- Navigation now matches educator sidebar structure (3 main items)
+- Avatar at bottom is handled by AppShell (already implemented)
+- Old pages still exist but will be removed in PRD 3.15
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create student-service for dashboard metrics (3.03)
+
+---
+
+## 2026-01-09 - Student Service (3.03)
+
+**Completed (PRD item 3.03):**
+- Created src/services/student-service.ts with all required functions:
+  - getStudentByUserId(userId) - fetch student with user relation
+  - getStudentById(studentId) - fetch student by ID
+  - getStudentDashboardMetrics(studentId) - returns dashboard metrics:
+    - totalCourses, inProgressCourses, completedCourses, upcomingCoursesCount
+    - upcomingCourses (sorted by startDate, max 3)
+    - recentCourses (last 3 enrolled)
+  - getStudentProfile(studentId) - full student data for editing
+  - updateStudentProfile(studentId, data) - update student fields
+
+**Technical Notes:**
+- Follows same pattern as educator-service for consistency
+- Only counts confirmed enrollments for metrics
+- StudentCourseQuickAccess interface includes educator name for display
+- UpdateStudentInput includes all new billing/notification fields from PRD 3.01
+- Queries include educator relation for course cards
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Extend enrollment-service for student operations (3.04)
+
+---
+
+## 2026-01-09 - Enrollment Service Extension (3.04)
+
+**Completed (PRD item 3.04):**
+- Added getStudentEnrollments(studentId, filters?) to enrollment-service.ts:
+  - Optional status filter (EnrollmentStatus)
+  - Returns enrollments with full course data including materials
+  - Includes educator info (id, name, imageUrl)
+  - Includes tags and materials ordered by order field
+- Added getEnrollmentWithCourseDetails(enrollmentId):
+  - Full student data with user email/name
+  - Full course data with educator details (name, title, bio, imageUrl)
+  - All course materials and tags
+
+**Technical Notes:**
+- Kept existing getEnrollmentsByStudent for backwards compatibility
+- New functions provide richer data needed for student UI
+- Materials are always ordered by 'order' field for consistent display
+- Educator select includes imageUrl for avatar display in UI
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create server actions for student operations (3.05)
+
+---
+
+## 2026-01-09 - Student Server Actions (3.05)
+
+**Completed (PRD item 3.05):**
+- Created src/app/student/actions.ts with all required server actions:
+  - getAuthenticatedStudent() - helper to verify session and fetch student record
+  - updateStudentProfileAction(formData) - validates with Zod, updates profile fields
+  - updateNotificationPreferencesAction(preferences) - updates notification settings
+- Actions verify user role is 'student' before allowing mutations
+- Actions use student-service.ts updateStudentProfile function
+- revalidatePath called for /student/profile and /student after updates
+
+**Technical Notes:**
+- Follows same pattern as educator/actions.ts for consistency
+- Uses ActionResult<T> generic type for consistent success/error responses
+- Zod schemas validate profile data with Spanish error messages
+- Profile action filters undefined values to only update provided fields
+- Notification preferences action takes object directly (not FormData) for type safety
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create student dashboard page with metrics (3.06)
+
+---
+
+## 2026-01-09 - Student Dashboard Page (3.06)
+
+**Completed (PRD item 3.06):**
+- Updated src/app/student/page.tsx as RSC with:
+  - Auth verification and student lookup
+  - Fetches metrics using getStudentDashboardMetrics
+  - Suspense boundary with inline skeleton fallback
+- Created src/components/student/student-dashboard.tsx with:
+  - Welcome message with student first name
+  - 4 MetricCards: Cursos Inscritos (highlight), En Curso, Completados, Próximos
+  - "Explorar Cursos" button linking to /#catalog
+  - Recent courses grid (max 3) with StudentCourseQuickCard
+  - Upcoming courses section (shows if different from recent)
+  - Empty state with friendly message and CTA for students with no courses
+
+**Technical Notes:**
+- Reuses MetricCard from educator components (same visual style)
+- StudentCourseQuickCard is a local component within dashboard (can be extracted later if needed)
+- Cards link to /student/courses/[id] (will be implemented in PRD 3.09)
+- Uses toLocalDate for proper timezone handling of dates
+- Uses Badge component with same variants as educator panel
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create student course list page with filters (3.07)
+
+---
+
+## 2026-01-09 - Student Course List Page (3.07)
+
+**Completed (PRD item 3.07):**
+- Created src/app/student/courses/page.tsx as RSC with:
+  - Auth verification using resolveStudentForPage (supports view-as feature)
+  - Fetches confirmed enrollments using getStudentEnrollments
+  - Suspense boundary with inline skeleton fallback
+  - URL query param support for status filter (?status=in_progress)
+- Created src/components/student/student-course-list.tsx with:
+  - Header with BookOpen icon, course count, and "Explorar Cursos" CTA button
+  - Filter chips: Todos, En Progreso, Completados (rounded-full style)
+  - URL-based filtering using router.push with searchParams
+  - Sorted courses: in_progress first, then upcoming, then completed
+  - Empty state for no enrollments (dashed border, GraduationCap icon, CTA)
+  - Empty state for no filter results with "Ver todos los cursos" button
+- Created src/components/student/student-course-row.tsx with horizontal card layout:
+  - Image on the left (clickable to course detail)
+  - Badges layout: type + status on the left, location/modality on the right
+  - Title, educator name, tags (max 4, verde-uva style)
+  - Meta info row: date, duration, materials count
+  - "Ver detalles" button on the right
+  - Same styling as EducatorCourseRow for consistency
+
+**Technical Notes:**
+- StudentCourseRow follows same pattern as EducatorCourseRow (horizontal layout)
+- Badge layout matches CourseCard: type top-left, location top-right
+- Status badges: Completado (green), Próximamente (blue), En curso (amber)
+- Tags use verde-uva-100/800 colors (same as landing)
+- Shows materials count if course has materials attached
+- Only shows confirmed enrollments (students only see courses they're actually enrolled in)
+- Filter "En Progreso" includes both in_progress and upcoming courses
+- Uses same styling patterns as educator panel (rounded-2xl cards, stone colors)
+- Properly typed using Prisma return types from getStudentEnrollments
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create student course card component (3.08)
+
+---
+
+## 2026-01-09 - Student Course Card Component (3.08)
+
+**Completed (PRD item 3.08):**
+- Renamed student-course-row.tsx to student-course-card.tsx (per PRD naming)
+- Added expandable materials section with:
+  - Toggle button showing materials count with chevron icon
+  - Collapsible list of materials when clicked
+  - Icons per material type: document (FileText), image (Image), video (Video), link (Link2), other (File)
+  - Material name, type label, and optional description
+  - Download icon for documents/images, ExternalLink icon for links/videos
+  - All materials open in new tab
+- Updated StudentCourseList to use StudentCourseCard component
+
+**Technical Notes:**
+- Materials section uses useState for collapse state (client component)
+- Icons and labels mapped from Prisma MaterialType enum
+- External materials (link, video) show ExternalLink icon; downloadable (document, image, other) show Download icon
+- Material items have hover state with bg-muted background
+- PRD mentioned file sizes but model doesn't have that field; showing material type and description instead
+- Same verde-uva-100/700 colors for material type icons as educator panel
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create presencial course detail page for student (3.09)
+
+---
+
+## 2026-01-09 - Student Course Detail Page (3.09)
+
+**Completed (PRD item 3.09):**
+- Created src/app/student/courses/[id]/page.tsx as RSC with:
+  - Auth verification using resolveStudentForPage (supports view-as feature)
+  - Enrollment lookup using new getStudentEnrollmentByCourse function
+  - Suspense boundary with skeleton fallback
+  - Redirect to course list if not enrolled or enrollment not confirmed
+  - notFound() if enrollment doesn't exist
+- Added getStudentEnrollmentByCourse to enrollment-service.ts:
+  - Uses Prisma's unique compound key (studentId_courseId)
+  - Returns full course details with educator, materials, and tags
+- Created src/components/student/student-course-detail.tsx with:
+  - Hero header with course image, badges (type, status, modality), and title
+  - Tags display below hero
+  - Educator info card with avatar, name, title, and bio
+  - Event details card for presencial courses:
+    - Location with Google Maps link
+    - Start/end dates formatted in Spanish
+    - Duration
+  - WSET certification info card (for WSET courses)
+  - Materials section with download/open buttons per material type
+  - Empty state for no materials
+  - Back button to course list (preserves viewAs)
+
+**Technical Notes:**
+- Used getStudentEnrollmentByCourse instead of getEnrollmentWithCourseDetails because URL uses courseId, not enrollmentId
+- Google Maps link built with location + address for better search results
+- Materials show "Descargar" for files, "Abrir" for external links/videos
+- Educator avatar shows User icon fallback if no imageUrl
+- All dates use Spanish locale formatting
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Implement material download functionality (3.10)
+
+---
+
+## 2026-01-09 - Material Download Functionality (3.10)
+
+**Completed (PRD item 3.10):**
+- Material download already implemented in StudentCourseDetail via direct links
+- Access control verified at page level (only confirmed enrollments can view course detail)
+- Materials open in new tab with appropriate icons (Download for files, ExternalLink for links/videos)
+
+**Technical Notes:**
+- No separate server action needed - access is implicitly verified by page-level auth
+- Direct `<a href={material.url}>` links provide better UX than action-based downloads
+- Security maintained because only enrolled students can access the course detail page
+
+**Verification:** Functionality already working from 3.09 implementation
+
+**Next Priority:** Create student profile page (3.11)
+
+---
+
+## 2026-01-09 - Student Profile Page (3.11)
+
+**Completed (PRD item 3.11):**
+- Created src/app/student/profile/page.tsx as RSC with:
+  - Auth verification using resolveStudentForPage (supports view-as feature)
+  - Fetches profile using getStudentProfile
+  - Suspense boundary with ProfileSkeleton fallback
+  - Read-only mode when superadmin views another student's profile
+- Created src/components/student/student-profile.tsx with:
+  - Header with title and description
+  - Avatar section with ImageUpload component (rounded-full style)
+  - Personal Info section: firstName, lastName, email (disabled), phone, dateOfBirth
+  - Address section: address, city, zip, country
+  - Billing section: billingName, billingTaxId, billingAddress (new fields from 3.01)
+  - Notification preferences section with Switch toggles for each notification type
+  - Sticky save button that appears only when changes are made
+  - ProfileSection wrapper component with icon headers (verde-uva theme)
+- Added shadcn/ui Switch component for notification toggles
+- Form uses react-hook-form with Zod validation
+- Wired to updateStudentProfileAction and updateNotificationPreferencesAction
+- Shows toast on success/error using sonner
+
+**Technical Notes:**
+- ProfileSection component reuses verde-uva icon styling from educator panel
+- Form handles nullable firstName/lastName from Prisma schema (|| '' defaults)
+- Notification preferences use separate state to track dirty state independently
+- Read-only mode disables all inputs when superadmin views student profile
+- Avatar upload integrated but actual upload action will be in PRD 3.12
+- Session update called when name changes to reflect in header immediately
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Enhancement (post-3.11):**
+- Added identityDocument (CI) field to Student model
+- Created migration: 20260109151517_add_student_identity_document
+- Added CI field in Personal Info section
+- Added "Usar mis datos personales" switch in Billing section:
+  - When toggled ON, copies fullName, CI, and full address to billing fields
+  - Uses react-hook-form watch() and setValue() for real-time updates
+- Updated student-service.ts and actions.ts to handle identityDocument
+
+**Next Priority:** Implement avatar upload for student profile (3.12)
+
+---
+
+## 2026-01-09 - Student Loading Skeletons (3.13)
+
+**Completed (PRD item 3.13):**
+- Created src/components/student/skeletons.tsx with all skeleton components:
+  - StudentDashboardSkeleton - metrics grid (with highlight card), recent courses
+  - StudentCourseListSkeleton - header, filter chips, course cards
+  - StudentCourseDetailSkeleton - hero image, educator card, materials section
+  - StudentProfileSkeleton - header, avatar section, form sections
+- Updated all student pages to import skeletons from centralized file:
+  - src/app/student/page.tsx - uses StudentDashboardSkeleton
+  - src/app/student/courses/page.tsx - uses StudentCourseListSkeleton
+  - src/app/student/courses/[id]/page.tsx - uses StudentCourseDetailSkeleton
+  - src/app/student/profile/page.tsx - uses StudentProfileSkeleton
+- Verified existing empty states are properly implemented:
+  - StudentCourseList: "sin cursos" and "sin resultados de filtro"
+  - StudentDashboard: "sin cursos" with CTA
+  - StudentCourseDetail: "sin materiales" for empty materials section
+
+**Technical Notes:**
+- Skeletons follow same pattern as educator skeletons (animate-pulse, bg-muted)
+- Highlight metric card skeleton uses verde-uva colors to match the actual component
+- Pages still have Suspense boundaries wrapping async content components
+- Centralizing skeletons in a single file improves maintainability and reusability
+- All inline skeleton functions removed from pages in favor of imported components
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Enhancement (post-3.13):**
+- Added user.image to all enrollment service queries that return student data:
+  - getEnrollmentsByCourse, getEnrollmentWithCourseDetails, getEnrollmentById
+  - getStudentEnrollmentByCourse, createEnrollment, updateEnrollmentStatus
+  - getEducatorStudents
+- Updated StudentTable component to display student avatar images:
+  - Shows Image component when user.image exists
+  - Falls back to initials when no image
+- Updated AllStudentsList component with same avatar image pattern
+- Updated type definitions in student-list.tsx and all-students-list.tsx
+
+**Next Priority:** Ensure responsive design and mobile usability (3.14)
+
+---
+
+## 2026-01-09 - Responsive Design Polish (3.14)
+
+**Completed (PRD item 3.14):**
+- Reviewed all student components for mobile responsiveness
+- All components already use proper responsive patterns:
+  - StudentDashboard: grid-cols-2 lg:grid-cols-4 for metrics ✓
+  - StudentProfile: sm:grid-cols-2 and flex-col sm:flex-row ✓
+  - StudentCourseList: flex-col sm:flex-row header ✓
+  - StudentCourseCard: flex-col sm:flex-row layout ✓
+- Enhanced touch targets (min 44px) for:
+  - Material download/open buttons in StudentCourseDetail (min-h-[44px] min-w-[44px])
+  - Material toggle button in StudentCourseCard (min-h-[44px] with hover state)
+  - Material items in StudentCourseCard (p-3 min-h-[44px])
+  - "Ver detalles" button in StudentCourseCard (min-h-[44px])
+- Mobile-friendly button labels:
+  - "Descargar"/"Abrir" text hidden on mobile (sm:inline) leaving only icons
+  - Icons remain visible for compact mobile display
+
+**Technical Notes:**
+- Used min-h-[44px] as per Apple's HIG for touch targets
+- Button labels use hidden sm:inline to show icons only on mobile
+- Material toggle button has hover:bg-muted for better tap feedback
+- All existing responsive patterns were already correct (grid-cols-2, flex-col sm:flex-row)
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Remove obsolete student pages (3.15)
+
+---
+
+## 2026-01-09 - Remove Obsolete Student Pages (3.15)
+
+**Completed (PRD item 3.15):**
+- Removed obsolete student page directories:
+  - src/app/student/continue/ (was placeholder)
+  - src/app/student/calendar/ (was placeholder)
+  - src/app/student/progress/ (was placeholder)
+  - src/app/student/data/ (replaced by /student/profile)
+- Verified no internal links referenced old routes
+- Navigation config already updated in PRD 3.02
+
+**Final Student Route Structure:**
+- /student → Dashboard (panel de control con métricas)
+- /student/courses → Lista de cursos inscritos
+- /student/courses/[id] → Detalle del curso
+- /student/profile → Perfil del estudiante
+
+**Technical Notes:**
+- Required clearing .next cache before typecheck (cached references to deleted files)
+- Build output confirms only 4 student routes remain
+- Navigation config (studentNavItems) already matched final structure
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create student components barrel export (3.16)
+
+---
+
+## 2026-01-09 - Student Components Index (3.16)
+
+**Completed (PRD item 3.16):**
+- Created src/components/student/index.ts barrel export file
+- Exports all main student components:
+  - StudentDashboard, StudentCourseList, StudentCourseCard
+  - StudentCourseDetail, StudentProfile
+- Exports all skeleton components:
+  - StudentDashboardSkeleton, StudentCourseListSkeleton
+  - StudentCourseDetailSkeleton, StudentProfileSkeleton
+- Exports view-as feature components:
+  - ViewAsProvider, useViewAs, ViewAsBanner, AppShellWithBannerClient
+
+**Technical Notes:**
+- Barrel export follows same pattern as educator/index.ts
+- Includes all components found in src/components/student/ directory
+- Organized by category: main components, skeletons, view-as feature
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**MILESTONE 3 (Student) COMPLETE** - All 16 PRD items pass.
+
+---

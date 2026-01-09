@@ -1,0 +1,232 @@
+# Progress Log - Milestone 02: Landing & Catalog
+
+This file tracks progress for Milestone 02. Each entry documents what was implemented, technical decisions, and suggestions for next steps.
+
+---
+
+## 2026-01-06 - Initial Setup
+
+Created Ralph Wiggum infrastructure:
+- plans/ralph-once.sh - Human-in-the-loop script
+- plans/AGENT.md - Build/test instructions
+- plans/progress.txt - This file
+- plans/prd/02-landing.json - Milestone 2 PRD
+
+Foundation (Milestone 1) was already implemented:
+- NextAuth with OTP login
+- App shells for all roles (public, student, educator, admin)
+- Basic Prisma schema (User, Student, Educator, OtpToken)
+- Routing structure with role-based protection
+
+Next: Start implementing Milestone 2 - Landing & Catalog
+
+---
+
+## 2026-01-06 - Database Schema & API Foundation
+
+**Completed (PRD items 2.01-2.09):**
+- Added Course, Tag, and NewsletterSubscription models to Prisma schema
+- Created CourseType, CourseModality, and CourseStatus enums
+- Implemented many-to-many relationship between Course and Tag
+- Added wsetLevel field for WSET courses
+- Enhanced seed script with 3 educators, 6 tags, and 6 sample courses
+- Created API routes: /api/courses (with filtering), /api/tags, /api/newsletter
+
+**Technical Notes:**
+- Used Prisma migrations instead of db push for better version control
+- API routes support query parameters for filtering courses by modality, type, tagIds
+- Courses are automatically separated into upcoming vs past based on startDate and status
+- Newsletter API uses Zod validation and handles duplicate emails gracefully
+
+**Next Priority:** UI components (CourseCard, CourseCatalog, Hero, Footer)
+
+---
+
+## 2026-01-06 - API Routes Refactor to Server Actions
+
+**Completed (PRD item 2.09b):**
+- Replaced API routes (/api/courses, /api/tags, /api/newsletter) with service layer architecture
+- Created course-service.ts with getCourses, getUpcomingCourses, getPastCourses functions
+- Created tag-service.ts with getTags function
+- Created newsletter-service.ts with subscribe function
+- Added subscribeToNewsletter server action in src/app/(public)/actions.ts
+- Removed API route files and cleaned up empty directories
+
+**Technical Notes:**
+- Services use proper Prisma types (CourseWhereInput, CourseModality, CourseType enums)
+- Server action includes Zod validation for email input
+- Course filtering logic preserved with proper TypeScript typing
+- Architecture now follows Next.js App Router patterns: RSC → Services → Prisma
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** UI components implementation (CourseCard, CourseCatalog, Hero, Footer)
+
+---
+
+## 2026-01-06 - Landing UI Components Implementation
+
+**Completed (PRD item 2.10):**
+- Created src/types/landing.ts - adapted types from product-plan to work with Prisma Course model
+- Implemented all landing components in src/components/landing/:
+  - CourseCard.tsx - with Next.js Image optimization and proper Prisma type integration
+  - CourseCatalog.tsx - course filtering and catalog display
+  - Hero.tsx - cinematic hero section with background image
+  - Header.tsx - responsive navigation header
+  - Footer.tsx - full institutional footer with newsletter subscription
+  - LandingCatalogo.tsx - main landing page component orchestrating all sections
+- Created index.ts barrel export for clean imports
+- Fixed all ESLint warnings (Next.js Image usage, unused variables)
+
+**Technical Notes:**
+- Used Next.js Image component for optimized loading instead of regular img tags
+- Adapted original product-plan types to match Prisma model structure (Date types, relation structure)
+- Course cards display educator info from embedded relation, not separate lookup
+- Removed unused educator parameter passing through component tree
+- All components are client components due to React hooks usage ('use client' directive)
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Implement landing page with real data from services (PRD 2.11)
+
+---
+
+## 2026-01-06 - Landing Page Implementation
+
+**Completed (PRD item 2.11):**
+- Implemented landing page with real data from services in src/app/(public)/page.tsx
+- Added data transformation functions to convert Prisma types to landing page component types
+- Configured hero content, footer links, and contact information for the landing page
+- Integrated getUpcomingCourses, getPastCourses from course-service
+- Integrated getTags from tag-service
+- Transformed Prisma Course model data to match expected landing page types
+- Set up LandingCatalogo component with real course and tag data
+
+**Technical Notes:**
+- Created transformation functions (transformCourse, transformTag) to bridge Prisma nullable fields with component non-nullable requirements
+- Landing page now displays actual seeded courses and tags from database
+- Hero section configured with wine education messaging
+- Footer configured with realistic institutional links and contact information
+- Placeholder handlers added for future features (navigation, subscriptions, course details)
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Wire landing page interactions (filters, scroll, navigation) - PRD 2.12
+
+---
+
+## 2026-01-06 - v3 Database Migration
+
+**Completed (PRD item 2.11b):**
+- Created migration scripts in scripts/migration/:
+  - migrate-educators.ts - Migrates educators from v3 to v4 (creates User + Educator)
+  - migrate-courses.ts - Migrates courses with type/status mapping
+- Added V3_DATABASE_URL to .env.local
+- Successfully migrated:
+  - 1 educator (Gabi Zimmer)
+  - 4 courses (WSET Nivel 1, Taller top, Cata top, Curso Test)
+  - 1 course skipped (already existed from seed)
+
+**Technical Notes:**
+- Used `pg` library directly instead of Prisma adapter (Neon serverless adapter requires WebSocket)
+- Scripts use DIRECT_DATABASE_URL to bypass connection pooler for better reliability
+- Type mapping: WSET_NIVEL_X → type=wset + wsetLevel=X
+- Status mapping: Anunciado→announced, Inscribiendo→enrolling, Finalizado→finished
+- Default modality 'presencial' (v3 doesn't have this field)
+- Dates: classDates[0]→startDate, examDate or last classDate→endDate
+- Duration string: "{totalDuration} horas"
+- Educator mapping saved to educator-mapping.json for course migration dependency
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Wire landing page interactions (filters, scroll, navigation) - PRD 2.12
+
+---
+
+## 2026-01-06 - Landing Page Interactions
+
+**Completed (PRD item 2.12):**
+- Created LandingClientWrapper component to handle client-side interactions
+- Implemented URL search params support for filtering (?modality=online&type=wset&tagIds=id1,id2)
+- Wired onFilter callback to update URL params when user changes filters
+- onHeroCTA already scrolls to catalog section (implemented in LandingCatalogo)
+- onNavigate callback wired to use Next.js router for navigation
+- onViewCourse callback navigates to /cursos/[slug]
+- Added Suspense boundary with loading fallback for the landing page
+
+**Technical Notes:**
+- Used useMemo for memoizing currentFilters from searchParams to avoid unnecessary re-renders
+- Used useMemo for filtered courses arrays (filteredUpcoming, filteredPast)
+- Refactored page.tsx to separate data fetching (LandingData async component) from rendering
+- LandingClientWrapper reads filters from URL and applies them client-side
+- CourseCatalog now accepts onFilter callback and calls updateFilters for all filter changes
+- Added id="catalog" to catalog section for potential direct linking
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Implement newsletter subscription flow - PRD 2.13
+
+---
+
+## 2026-01-06 - Newsletter Subscription Flow
+
+**Completed (PRD item 2.13):**
+- Wired onSubscribe callback in LandingClientWrapper to call subscribeToNewsletter server action
+- Updated Footer component to support async onSubscribe with loading state
+- Added loading spinner and disabled state during submission
+- Integrated sonner toasts for success/error feedback
+- Updated LandingCatalogoProps type to reflect async onSubscribe signature
+
+**Technical Notes:**
+- Footer now shows a loading spinner and disables input during submission
+- Success toast: "¡Gracias por suscribirte!" with description about future updates
+- Error toast: "Error al suscribirse" with specific error message from server action
+- The existing subscribed state still shows the inline success message after successful subscription
+- Type signature changed from `(email: string) => void` to `(email: string) => Promise<{ success: boolean; error?: string }>`
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Implement full course detail page with modern design - PRD 2.14
+
+---
+
+## 2026-01-06 - Course Detail Page
+
+**Completed (PRD item 2.14):**
+- Added getCourseBySlug function to course-service.ts with educator and tags relations
+- Created src/app/(public)/cursos/[slug]/page.tsx as RSC with generateMetadata for SEO
+- Created src/components/course-detail/CourseDetailPage.tsx with all required sections
+- Extracted footer config to src/config/footer.ts for reuse across pages
+- Shared Footer component between landing and course detail pages
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**Next Priority:** Polish landing page (empty states, responsive, loading) - PRD 2.15
+
+---
+
+## 2026-01-06 - Landing Page Polish
+
+**Completed (PRD item 2.15):**
+- Improved empty states in CourseCatalog:
+  - "No hay cursos programados" when upcomingCourses is empty (with wine emoji)
+  - "No se encontraron cursos" when filters return no results with prominent "Limpiar filtros" button
+- Past courses section already hides when empty (was already implemented)
+- Created CourseCatalogSkeleton component for loading states:
+  - Header skeleton with animated pulse
+  - 4 course card skeletons with image, title, date, description, tags, and footer placeholders
+- Added Suspense boundary in landing page with LandingFallback component:
+  - Hero skeleton (animated pulse)
+  - CourseCatalogSkeleton for course grid
+
+**Technical Notes:**
+- Skeleton uses Tailwind animate-pulse for smooth loading animation
+- Empty states use visual hierarchy: emoji icon, bold title, muted description
+- "Limpiar filtros" button uses primary color and is prominently displayed
+- Suspense boundary wraps LandingClientWrapper to show fallback during data loading
+
+**Verification:** All checks pass (typecheck, lint, build)
+
+**MILESTONE 2 COMPLETE** - All PRD items pass. Next milestone: 03-enrollment or 04-educator
+
+---
