@@ -42,3 +42,6 @@ next-env.d.ts
 
 dev.log
 /src/generated/prisma
+
+# audit files (internal use only)
+/plans/audit/

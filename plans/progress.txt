@@ -1475,3 +1475,83 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create mercadopago-service for payment gateway integration (6.09)
 
 ---
+
+## 2026-01-09 - MercadoPago Service (6.09)
+
+**Completed (PRD item 6.09):**
+- Reviewed v3 implementation in /home/raphael/desarrollo/tinta-academy-v3/src/services/order-services.ts
+- Installed mercadopago package v2.11.0
+- Added environment variables to .env.example:
+  - MERCADOPAGO_ACCESS_TOKEN
+  - MERCADOPAGO_PUBLIC_KEY
+  - MERCADOPAGO_WEBHOOK_SECRET
+  - MERCADOPAGO_SANDBOX (true/false)
+- Created src/services/mercadopago-service.ts with all required functions:
+
+**Config:**
+- getMercadoPagoClient(): lazily creates MercadoPagoConfig with accessToken
+- isSandbox flag for sandbox/production mode
+
+**Types:**
+- CreatePreferenceInput: orderId, courseId, courseTitle, amount, URLs, user info
+- PreferenceResult: preferenceId, initPoint URL
+- PaymentInfo: id, status, statusDetail, externalReference, transactionAmount, orderId
+
+**Functions:**
+- createPreference(input): creates MP preference, returns preferenceId and initPoint URL
+- getPayment(paymentId): fetches payment details from MP API
+- verifyPaymentStatus(paymentId): returns status, statusDetail, orderId
+- validateWebhookSignature(dataId, xSignature, xRequestId): HMAC-SHA256 validation
+- isMercadoPagoConfigured(): checks if service is configured
+- getMercadoPagoMode(): returns 'sandbox' or 'production'
+
+**Technical Notes:**
+- Followed v3 pattern: Preference for checkout, Payment for webhook verification
+- Uses sandbox_init_point vs init_point based on MERCADOPAGO_SANDBOX env
+- Webhook signature validation follows MP's format: ts=timestamp,v1=hash
+- Uses crypto.timingSafeEqual for secure hash comparison
+- Auto_return set to 'approved' for better UX
+- Currency set to UYU for Uruguay market
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout-service for checkout flow orchestration (6.10)
+
+---
+
+## 2026-01-09 - MercadoPago Service Security Audit Response (6.09b)
+
+**Audit Review:** plans/audit/audit_2026-01-09.txt
+**Response Document:** plans/audit/audit_2026-01-09_response.txt
+
+**Bug Fixes Applied:**
+
+1. **CRÍTICO - timingSafeEqual buffer length crash:**
+   - Agregada verificación de longitud de buffers antes de timingSafeEqual
+   - Sin esto, hashes de diferente longitud causaban crash del servidor
+   - Ahora retorna false con log de error en lugar de crashear
+
+2. **RECOMENDADO - Verificación temporal de timestamp:**
+   - Agregada constante WEBHOOK_MAX_AGE_MS = 5 minutos
+   - Webhooks con timestamp > 5 min son rechazados
+   - Previene replay attacks donde atacante reenvía webhook capturado
+   - Permite 1 minuto de clock skew hacia el futuro
+
+**Cambios V3→V4 Justificados:**
+
+| Cambio                  | Decisión | Razón                                      |
+|-------------------------|----------|---------------------------------------------|
+| notification_url        | MANTENER | Más robusto, sobrescribe config del panel   |
+| auto_return: 'approved' | MANTENER | Mejora UX, redirección automática           |
+| currency_id: 'UYU'      | MANTENER | SDK 2.x lo recomienda, más explícito        |
+| payer info (email/name) | MANTENER | Pre-rellena checkout, mejora UX             |
+
+**Notas de Migración:**
+- Variables de entorno renombradas (MP_* → MERCADOPAGO_*)
+- Ver tabla completa en audit_2026-01-09_response.txt
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout-service for checkout flow orchestration (6.10)
+
+---

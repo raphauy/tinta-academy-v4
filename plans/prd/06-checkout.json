@@ -211,6 +211,7 @@
     "category": "api",
     "description": "Create mercadopago-service for payment gateway integration",
     "steps": [
+      "First of all, check the current production functionality of sales through MercadoPago in Tinta Academy V3: /home/raphael/desarrollo/tinta-academy-v3/",
       "Install mercadopago package: pnpm add mercadopago",
       "Add environment variables to .env.example:",
       "  - MERCADOPAGO_ACCESS_TOKEN",
@@ -234,7 +235,7 @@
       "  - validateWebhookSignature(payload, signature, requestId): HMAC validation",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.10",
