@@ -785,3 +785,24 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Update student sidebar navigation (3.02)
 
 ---
+
+## 2026-01-09 - Student Navigation (3.02)
+
+**Completed (PRD item 3.02):**
+- Updated studentNavItems in navigation-config.ts:
+  - Panel de Control (/student) with LayoutDashboard icon
+  - Mis Cursos (/student/courses) with BookOpen icon
+  - Mi Perfil (/student/profile) with User icon
+- Removed obsolete entries: Continuar, Calendario, Mi Progreso, Mis Datos
+- Cleaned up unused imports (PlayCircle, Calendar, TrendingUp)
+
+**Technical Notes:**
+- Navigation now matches educator sidebar structure (3 main items)
+- Avatar at bottom is handled by AppShell (already implemented)
+- Old pages still exist but will be removed in PRD 3.15
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create student-service for dashboard metrics (3.03)
+
+---

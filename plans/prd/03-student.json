@@ -30,7 +30,7 @@
       "Keep consistent with educator sidebar structure (avatar at bottom already handled by AppShell)",
       "Verify with pnpm lint, pnpm tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "3.03",

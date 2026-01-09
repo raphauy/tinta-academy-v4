@@ -12,9 +12,6 @@ import {
   Settings,
   PlusCircle,
   BarChart3,
-  PlayCircle,
-  Calendar,
-  TrendingUp,
   User,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -59,11 +56,9 @@ export const educatorNavItems: NavItem[] = [
 
 // Student navigation
 export const studentNavItems: NavItem[] = [
-  { label: 'Mis Cursos', href: '/student', icon: BookOpen },
-  { label: 'Continuar', href: '/student/continue', icon: PlayCircle },
-  { label: 'Calendario', href: '/student/calendar', icon: Calendar },
-  { label: 'Mi Progreso', href: '/student/progress', icon: TrendingUp },
-  { label: 'Mis Datos', href: '/student/data', icon: User },
+  { label: 'Panel de Control', href: '/student', icon: LayoutDashboard },
+  { label: 'Mis Cursos', href: '/student/courses', icon: BookOpen },
+  { label: 'Mi Perfil', href: '/student/profile', icon: User },
 ]
 
 // Public navigation
