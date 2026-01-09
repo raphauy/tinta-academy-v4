@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { getStudentById, getStudentByUserId } from '@/services/student-service'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { canEducatorViewStudent } from '@/services/enrollment-service'
@@ -22,7 +23,15 @@ export async function resolveStudentForPage(
     return { authorized: false, reason: 'not_authenticated' }
   }
 
-  const { role, id: userId } = session.user
+  const userId = session.user.id
+
+  // Get role from database (JWT may be stale after role assignment)
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  })
+
+  const role = user?.role
 
   // If no viewAs param, get the current user's student profile
   if (!viewAsStudentId) {

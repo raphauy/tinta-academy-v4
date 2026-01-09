@@ -290,6 +290,76 @@ export async function markTransferAsSent(
 }
 
 /**
+ * Assign student role to user if they don't have one yet
+ * Creates Student record if needed
+ * Called when user marks their first transfer as sent
+ */
+export async function assignStudentRoleIfNeeded(userId: string): Promise<{
+  isNewStudent: boolean
+  roleAssigned: boolean
+  studentId: string
+}> {
+  // Get user info
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  })
+
+  if (!user) {
+    throw new Error('Usuario no encontrado')
+  }
+
+  const needsRoleAssignment = !user.role || user.role !== 'student'
+
+  // Check if user already has student record
+  const existingStudent = await prisma.student.findUnique({
+    where: { userId },
+  })
+
+  if (existingStudent) {
+    // Student record exists, but ensure user has student role
+    if (needsRoleAssignment) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { role: 'student' },
+      })
+    }
+    return {
+      isNewStudent: false,
+      roleAssigned: needsRoleAssignment,
+      studentId: existingStudent.id,
+    }
+  }
+
+  // Create student record and assign role in transaction
+  const result = await prisma.$transaction(async (tx) => {
+    // Create student record
+    const newStudent = await tx.student.create({
+      data: {
+        userId,
+        firstName: user.name?.split(' ')[0] || null,
+        lastName: user.name?.split(' ').slice(1).join(' ') || null,
+      },
+    })
+
+    // Assign student role
+    if (needsRoleAssignment) {
+      await tx.user.update({
+        where: { id: userId },
+        data: { role: 'student' },
+      })
+    }
+
+    return newStudent
+  })
+
+  return {
+    isNewStudent: true,
+    roleAssigned: needsRoleAssignment,
+    studentId: result.id,
+  }
+}
+
+/**
  * Link student to order after payment is confirmed
  */
 export async function linkStudentToOrder(orderId: string, studentId: string) {

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSession } from 'next-auth/react'
 import {
   Clock,
   Copy,
@@ -138,6 +139,7 @@ export function PendingTransferPage({
   order,
   bankAccounts,
 }: PendingTransferPageProps) {
+  const { update: updateSession } = useSession()
   const windowSize = useWindowSize()
   const [reference, setReference] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -246,6 +248,11 @@ export function PendingTransferPage({
         })
         setIsSubmitting(false)
         return
+      }
+
+      // Update session if a new role was assigned
+      if (result.data?.newRole) {
+        await updateSession({ role: result.data.newRole })
       }
 
       toast.success('Transferencia marcada como enviada')

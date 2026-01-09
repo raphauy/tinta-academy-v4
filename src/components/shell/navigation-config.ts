@@ -13,6 +13,7 @@ import {
   PlusCircle,
   BarChart3,
   User,
+  Receipt,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -58,6 +59,7 @@ export const educatorNavItems: NavItem[] = [
 export const studentNavItems: NavItem[] = [
   { label: 'Panel de Control', href: '/student', icon: LayoutDashboard },
   { label: 'Mis Cursos', href: '/student/courses', icon: BookOpen },
+  { label: 'Mis Ordenes', href: '/student/orders', icon: Receipt },
   { label: 'Mi Perfil', href: '/student/profile', icon: User },
 ]
 

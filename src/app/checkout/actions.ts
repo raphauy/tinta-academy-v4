@@ -12,7 +12,7 @@ import {
   type CheckoutContext,
 } from '@/services/checkout-service'
 import { validateCoupon, type ValidateCouponResult } from '@/services/coupon-service'
-import { getOrderById, markTransferAsSent } from '@/services/order-service'
+import { getOrderById, markTransferAsSent, assignStudentRoleIfNeeded } from '@/services/order-service'
 import { getCourseById } from '@/services/course-service'
 
 // ============================================
@@ -241,7 +241,7 @@ export async function markTransferSentAction(
   orderId: string,
   reference?: string,
   proofUrl?: string
-): Promise<ActionResult> {
+): Promise<ActionResult<{ newRole?: string }>> {
   const authResult = await getAuthenticatedUser()
 
   if ('error' in authResult) {
@@ -280,7 +280,15 @@ export async function markTransferSentAction(
 
     await markTransferAsSent(orderId, reference, proofUrl)
 
-    return { success: true }
+    // Assign student role if user doesn't have one yet
+    // This allows them to access the student panel immediately
+    const studentResult = await assignStudentRoleIfNeeded(authResult.user.id)
+
+    // Return newRole so client can update session
+    return {
+      success: true,
+      data: studentResult.roleAssigned ? { newRole: 'student' } : undefined,
+    }
   } catch (error) {
     console.error('Error marking transfer as sent:', error)
     return {

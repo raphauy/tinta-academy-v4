@@ -15,6 +15,8 @@ Scripts para migrar datos desde la base de datos de v3 a v4.
 | `migrate-courses.ts` | Migrar cursos con mapeo de tipos/status | ✅ Completado |
 | `migrate-students.ts` | Migrar estudiantes (crear Users + Students) | ✅ Completado |
 | `migrate-enrollments.ts` | Migrar enrollments desde Orders | ✅ Completado |
+| `migrate-checkout-data.ts` | Migrar BankData y Coupons | ✅ Completado |
+| `migrate-orders.ts` | Migrar Orders con historial de pagos | Nuevo |
 
 ## Archivos de mapeo generados
 

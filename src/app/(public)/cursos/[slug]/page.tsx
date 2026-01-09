@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { auth } from '@/lib/auth'
 import { getCourseBySlug } from '@/services/course-service'
+import { isUserEnrolledInCourse } from '@/services/enrollment-service'
 import { CourseDetailPage } from '@/components/course-detail'
 
 interface PageProps {
@@ -40,5 +42,11 @@ export default async function CoursePage({ params }: PageProps) {
     notFound()
   }
 
-  return <CourseDetailPage course={course} />
+  // Check if user is enrolled
+  const session = await auth()
+  const isEnrolled = session?.user?.id
+    ? await isUserEnrolledInCourse(session.user.id, course.id)
+    : false
+
+  return <CourseDetailPage course={course} isEnrolled={isEnrolled} />
 }

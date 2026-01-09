@@ -32,6 +32,7 @@ type CourseWithRelations = Course & {
 
 interface CourseDetailPageProps {
   course: CourseWithRelations
+  isEnrolled?: boolean
 }
 
 function formatMonthYear(date: Date | null): string {
@@ -139,7 +140,7 @@ const WSET_INCLUDED = [
   'PIN oficial WSET',
 ]
 
-export function CourseDetailPage({ course }: CourseDetailPageProps) {
+export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPageProps) {
   const router = useRouter()
   const isWset = course.type === 'wset'
 
@@ -148,7 +149,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
   const isEnrollable = enrollableStatuses.includes(course.status)
   const isFull = course.maxCapacity ? course.enrolledCount >= course.maxCapacity : false
   const isDeadlinePassed = course.registrationDeadline ? new Date() > new Date(course.registrationDeadline) : false
-  const canEnroll = isEnrollable && !isFull && !isDeadlinePassed
+  const canEnroll = isEnrollable && !isFull && !isDeadlinePassed && !isEnrolled
 
   const learningOutcomes = isWset && course.wsetLevel
     ? WSET_LEARNING_OUTCOMES[course.wsetLevel] || []
@@ -455,7 +456,14 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             {/* CTA Button */}
             {isEnrollable && (
               <>
-                {canEnroll ? (
+                {isEnrolled ? (
+                  <Button asChild variant="outline" size="lg" className="w-full">
+                    <Link href="/student">
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Ya estás inscrito
+                    </Link>
+                  </Button>
+                ) : canEnroll ? (
                   <Button asChild size="lg" className="w-full">
                     <Link href={`/checkout/${course.id}`}>
                       <ShoppingCart className="w-4 h-4 mr-2" />

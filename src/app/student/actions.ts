@@ -8,6 +8,7 @@ import {
   getStudentByUserId,
   updateStudentProfile,
 } from '@/services/student-service'
+import { getOrdersByUserId } from '@/services/order-service'
 
 // ============================================
 // TYPES
@@ -207,6 +208,31 @@ export async function updateStudentAvatarAction(
     return {
       success: false,
       error: 'Error al actualizar la foto de perfil',
+    }
+  }
+}
+
+/**
+ * Get orders for the authenticated user
+ * Note: This action allows users to view their orders even before they have the student role
+ */
+export async function getStudentOrdersAction(): Promise<
+  ActionResult<Awaited<ReturnType<typeof getOrdersByUserId>>>
+> {
+  const session = await auth()
+
+  if (!session?.user?.id) {
+    return { success: false, error: 'No autenticado' }
+  }
+
+  try {
+    const orders = await getOrdersByUserId(session.user.id)
+    return { success: true, data: orders }
+  } catch (error) {
+    console.error('Error fetching student orders:', error)
+    return {
+      success: false,
+      error: 'Error al obtener las órdenes',
     }
   }
 }

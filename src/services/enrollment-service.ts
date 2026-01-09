@@ -5,6 +5,29 @@ import { EnrollmentStatus } from '@prisma/client'
 // ENROLLMENT QUERIES
 // ============================================
 
+/**
+ * Check if a user is enrolled in a course (by userId)
+ * Returns true if the user has an active enrollment (not cancelled)
+ */
+export async function isUserEnrolledInCourse(
+  userId: string,
+  courseId: string
+): Promise<boolean> {
+  const enrollment = await prisma.enrollment.findFirst({
+    where: {
+      courseId,
+      student: {
+        userId,
+      },
+      status: {
+        not: EnrollmentStatus.cancelled,
+      },
+    },
+    select: { id: true },
+  })
+  return !!enrollment
+}
+
 export async function getEnrollmentsByCourse(courseId: string) {
   return prisma.enrollment.findMany({
     where: { courseId },

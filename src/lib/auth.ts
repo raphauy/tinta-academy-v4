@@ -71,6 +71,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (trigger === 'update' && session) {
         if (session.name !== undefined) token.name = session.name
         if (session.image !== undefined) token.image = session.image
+        if (session.role !== undefined) token.role = session.role
       }
 
       return token
