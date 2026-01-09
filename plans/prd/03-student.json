@@ -13,7 +13,7 @@
       "  - notifyCourseUpdates: Boolean @default(true)",
       "Run prisma generate",
       "Run prisma migrate dev --name extend_student_profile",
-      "Verify with pnpm tsc --noEmit"
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
     "passes": true
   },
@@ -49,7 +49,7 @@
       "Implement updateStudentProfile(studentId: string, data: UpdateStudentInput)",
       "Verify with pnpm lint, pnpm tsc --noEmit"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "3.04",

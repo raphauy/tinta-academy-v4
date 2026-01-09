@@ -806,3 +806,29 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create student-service for dashboard metrics (3.03)
 
 ---
+
+## 2026-01-09 - Student Service (3.03)
+
+**Completed (PRD item 3.03):**
+- Created src/services/student-service.ts with all required functions:
+  - getStudentByUserId(userId) - fetch student with user relation
+  - getStudentById(studentId) - fetch student by ID
+  - getStudentDashboardMetrics(studentId) - returns dashboard metrics:
+    - totalCourses, inProgressCourses, completedCourses, upcomingCoursesCount
+    - upcomingCourses (sorted by startDate, max 3)
+    - recentCourses (last 3 enrolled)
+  - getStudentProfile(studentId) - full student data for editing
+  - updateStudentProfile(studentId, data) - update student fields
+
+**Technical Notes:**
+- Follows same pattern as educator-service for consistency
+- Only counts confirmed enrollments for metrics
+- StudentCourseQuickAccess interface includes educator name for display
+- UpdateStudentInput includes all new billing/notification fields from PRD 3.01
+- Queries include educator relation for course cards
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Extend enrollment-service for student operations (3.04)
+
+---
