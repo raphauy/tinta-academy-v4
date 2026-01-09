@@ -130,6 +130,7 @@ model Course {
   maxCapacity          Int?
   enrolledCount        Int             @default(0)
   priceUSD             Float
+  priceUYU             Float? // price in Uruguayan pesos for MercadoPago
   location             String?
   address              String?
   imageUrl             String?

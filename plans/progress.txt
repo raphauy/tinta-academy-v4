@@ -1288,3 +1288,32 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Run migration and finalize schema changes (6.04)
 
 ---
+
+## 2026-01-09 - Checkout Schema Migration (6.04)
+
+**Completed (PRD item 6.04):**
+- Added priceUYU: Float? field to Course model (for MercadoPago pricing)
+- Ran prisma migrate dev --name add_checkout_models
+- Migration created all checkout tables and enums in a single SQL file
+
+**Migration Summary (20260109190018_add_checkout_models):**
+- Created 3 enums: OrderStatus, PaymentMethod, Currency
+- Created 3 tables: BankAccount, Coupon, Order
+- Added priceUYU column to Course table
+- Created all indexes for performance
+- Added all foreign key constraints
+
+**Technical Notes:**
+- Items 6.01-6.03 added schema changes without migrating (prisma generate only)
+- Item 6.04 consolidated all changes into a single migration
+- This approach avoids multiple small migrations and ensures atomicity
+- Database now fully supports checkout flow:
+  - Orders track purchases with MercadoPago or bank transfer
+  - BankAccounts store transfer destination info
+  - Coupons enable discount codes with restrictions
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create migration script for v3 BankData and Coupons (6.05)
+
+---

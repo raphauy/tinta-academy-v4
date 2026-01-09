@@ -103,7 +103,7 @@
       "Run prisma migrate dev --name add_checkout_models",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.05",
