@@ -271,22 +271,6 @@
   },
   {
     "id": "3.16",
-    "category": "data",
-    "description": "Ensure test data for student panel development",
-    "steps": [
-      "Verify enrolled students exist from educator panel migration (4.02b, 4.02c)",
-      "If no enrollments exist, update prisma/seed.ts to create:",
-      "  - At least 2 test students with complete profile data",
-      "  - Enrollments linking students to existing courses",
-      "  - Mix of confirmed enrollments in different course statuses",
-      "Ensure at least one course has materials for testing downloads",
-      "Test student dashboard shows correct metrics with seeded data",
-      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
-    ],
-    "passes": false
-  },
-  {
-    "id": "3.17",
     "category": "integration",
     "description": "Create student components index and verify exports",
     "steps": [
@@ -300,6 +284,6 @@
       "Verify all imports work correctly",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   }
 ]

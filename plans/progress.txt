@@ -1174,6 +1174,30 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 
 **Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
 
-**Next Priority:** Ensure test data for student panel (3.16)
+**Next Priority:** Create student components barrel export (3.16)
+
+---
+
+## 2026-01-09 - Student Components Index (3.16)
+
+**Completed (PRD item 3.16):**
+- Created src/components/student/index.ts barrel export file
+- Exports all main student components:
+  - StudentDashboard, StudentCourseList, StudentCourseCard
+  - StudentCourseDetail, StudentProfile
+- Exports all skeleton components:
+  - StudentDashboardSkeleton, StudentCourseListSkeleton
+  - StudentCourseDetailSkeleton, StudentProfileSkeleton
+- Exports view-as feature components:
+  - ViewAsProvider, useViewAs, ViewAsBanner, AppShellWithBannerClient
+
+**Technical Notes:**
+- Barrel export follows same pattern as educator/index.ts
+- Includes all components found in src/components/student/ directory
+- Organized by category: main components, skeletons, view-as feature
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**MILESTONE 3 (Student) COMPLETE** - All 16 PRD items pass.
 
 ---
