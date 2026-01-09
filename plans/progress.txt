@@ -857,3 +857,27 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create server actions for student operations (3.05)
 
 ---
+
+## 2026-01-09 - Student Server Actions (3.05)
+
+**Completed (PRD item 3.05):**
+- Created src/app/student/actions.ts with all required server actions:
+  - getAuthenticatedStudent() - helper to verify session and fetch student record
+  - updateStudentProfileAction(formData) - validates with Zod, updates profile fields
+  - updateNotificationPreferencesAction(preferences) - updates notification settings
+- Actions verify user role is 'student' before allowing mutations
+- Actions use student-service.ts updateStudentProfile function
+- revalidatePath called for /student/profile and /student after updates
+
+**Technical Notes:**
+- Follows same pattern as educator/actions.ts for consistency
+- Uses ActionResult<T> generic type for consistent success/error responses
+- Zod schemas validate profile data with Spanish error messages
+- Profile action filters undefined values to only update provided fields
+- Notification preferences action takes object directly (not FormData) for type safety
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create student dashboard page with metrics (3.06)
+
+---
