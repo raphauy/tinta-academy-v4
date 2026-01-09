@@ -589,3 +589,38 @@ This file tracks progress for Milestone 06. Each entry documents what was implem
 **Next Priority:** Create MercadoPago webhook endpoint (6.16)
 
 ---
+
+## 2026-01-09 - MercadoPago Webhook Endpoint (6.16)
+
+**Completed (PRD item 6.16):**
+- Created src/app/api/webhooks/mercadopago/route.ts with:
+  - POST handler for MercadoPago payment notifications
+  - Signature validation using validateWebhookSignature from mercadopago-service
+  - JSON parsing with error handling
+  - Non-payment webhook handling (returns { received: true })
+  - Payment fetching from MP API using getPayment
+  - Order lookup by multiple methods: orderId metadata, externalReference, mpPaymentId, mpPreferenceId
+  - Payment status processing:
+    - approved: calls completeCheckout, creates student/enrollment
+    - rejected: updates order status to rejected
+    - pending/in_process: updates to payment_processing
+    - cancelled: updates to cancelled with timestamp
+    - refunded: updates to refunded with timestamp
+  - Comprehensive logging with structured JSON output
+  - Error handling that returns 200 to prevent MP retries on internal errors
+  - HEAD method for MP health checks
+  - GET method for testing/debugging
+
+**Technical Notes:**
+- All errors return HTTP 200 to prevent MercadoPago from infinite retries
+- Order already paid check prevents duplicate processing
+- Saves mpPaymentId, mpStatus, mpStatusDetail to order before processing
+- Uses existing completeCheckout which handles student creation, enrollment, coupon increment, etc.
+- TODO comments added for email notifications (will be implemented in 6.22)
+- Follows same logging pattern used in v3 for debugging webhook issues
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout form component (6.17)
+
+---
