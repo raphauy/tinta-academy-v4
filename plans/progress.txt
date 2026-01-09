@@ -1317,3 +1317,36 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create migration script for v3 BankData and Coupons (6.05)
 
 ---
+
+## 2026-01-09 - Checkout Data Migration Script (6.05)
+
+**Completed (PRD item 6.05):**
+- Created scripts/migration/migrate-checkout-data.ts with:
+  - Connection to v3 PostgreSQL database via pg library
+  - BankData migration: parses v3 info string into structured BankAccount fields
+  - Coupon migration: transfers active coupons (not expired, uses < maxUses)
+  - Course ID mapping: builds slug-based mapping v3 → v4 for course restrictions
+  - Duplicate detection: skips already migrated records
+  - Detailed logging of migration progress
+- Added `migrate:checkout` script to package.json
+
+**Migration Features:**
+- parseBankInfo() function parses v3's multi-line info string into:
+  - bankName, accountHolder, accountType, accountNumber
+- Course-restricted coupons: maps v3 courseId to v4 by matching slugs
+- Preserves coupon usage counts (currentUses) from v3
+- Saves original v3 info as notes field for reference
+- Handles missing tables gracefully (checks table existence before querying)
+
+**Technical Notes:**
+- Follows same pattern as existing migration scripts (migrate-educators.ts)
+- Uses DIRECT_DATABASE_URL to bypass connection pooler
+- Table existence check prevents errors if v3 schema differs
+- Course mapping issues logged but don't block migration
+- Manual review recommended after migration for bank account details
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create order-service for order management (6.06)
+
+---

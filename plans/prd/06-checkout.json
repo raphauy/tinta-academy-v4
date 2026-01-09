@@ -123,7 +123,7 @@
       "Document manual steps needed (course ID mapping)",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.06",

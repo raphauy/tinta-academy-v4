@@ -15,7 +15,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "migrate:checkout": "tsx scripts/migration/migrate-checkout-data.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
