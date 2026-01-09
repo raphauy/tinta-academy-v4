@@ -37,13 +37,8 @@ interface StudentCourseDetailProps {
   viewAs?: string
 }
 
-// Same images as landing CourseCard
-const courseImages: Record<string, string> = {
-  wset: 'https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=600&q=80',
-  taller: 'https://images.unsplash.com/photo-1543418219-44e30b057fea?w=600&q=80',
-  cata: 'https://images.unsplash.com/photo-1474722883778-792e7990302f?w=600&q=80',
-  curso: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
-}
+// Default placeholder image (same as landing)
+const DEFAULT_COURSE_IMAGE = '/placeholder-course.jpg'
 
 function formatDate(date: Date | null): string {
   if (!date) return ''
@@ -150,7 +145,7 @@ export function StudentCourseDetail({ enrollment, viewAs }: StudentCourseDetailP
   const course = enrollment.course
   const educator = course.educator
   const materials = course.materials || []
-  const imageUrl = course.imageUrl || courseImages[course.type] || courseImages['curso']
+  const imageUrl = course.imageUrl || DEFAULT_COURSE_IMAGE
   const statusBadge = getStatusBadge(course)
 
   const backUrl = viewAs ? `/student/courses?viewAs=${viewAs}` : '/student/courses'

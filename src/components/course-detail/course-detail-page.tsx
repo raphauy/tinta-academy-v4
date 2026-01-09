@@ -197,17 +197,13 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
       {/* Hero Section */}
       <section className="relative bg-primary text-primary-foreground">
         <div className="absolute inset-0 overflow-hidden">
-          {course.imageUrl ? (
-            <Image
-              src={course.imageUrl}
-              alt={course.title}
-              fill
-              className="object-cover opacity-20"
-              priority
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/80" />
-          )}
+          <Image
+            src={course.imageUrl || '/placeholder-course.jpg'}
+            alt={course.title}
+            fill
+            className="object-cover opacity-20"
+            priority
+          />
         </div>
         <div className="relative container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl">
