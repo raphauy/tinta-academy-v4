@@ -32,7 +32,7 @@ const statusConfig: Record<
   { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
 > = {
   created: { label: 'Creada', variant: 'secondary' },
-  pending_payment: { label: 'Pendiente de pago', variant: 'outline' },
+  pending_payment: { label: 'Confirmación de pago pendiente', variant: 'outline' },
   payment_processing: { label: 'Procesando', variant: 'default' },
   paid: { label: 'Pagada', variant: 'default' },
   cancelled: { label: 'Cancelada', variant: 'destructive' },

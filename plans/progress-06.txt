@@ -679,3 +679,42 @@ This file tracks progress for Milestone 06. Each entry documents what was implem
 **Next Priority:** Create checkout summary component (6.18) - Already implemented inline
 
 ---
+
+## 2026-01-09 - Checkout Summary Component (6.18)
+
+**Completed (PRD item 6.18):**
+- Extracted CheckoutSummary to its own file: src/components/checkout/checkout-summary.tsx
+
+**Component Details:**
+- Props: course, pricing, coupon?, currency (UYU/USD)
+- CourseForSummary interface defines minimal course data needed
+- Course image with aspect-video ratio (if available)
+- Type badge (WSET, Taller, Cata, Curso) and WSET level badge
+- Educator name with User icon
+- Course details section: start date, duration, location
+- Price breakdown:
+  - Subtotal (strikethrough if discount applied)
+  - Discount line with coupon code and percentage (green color)
+  - Final total prominently displayed in verde-uva-700
+  - Currency label (Pesos uruguayos / Dolares americanos)
+- Uses Card component with sticky positioning (top-8)
+- formatDate helper for es-UY locale formatting
+
+**Refactoring done:**
+- Removed inline CheckoutSummary from checkout-form.tsx
+- Removed helper functions (formatDate, courseTypeLabels) from checkout-form.tsx
+- Updated checkout-form.tsx to import CheckoutSummary from new file
+- Updated barrel export in index.ts
+- Changed interface from context/selectedMethod to separate props for reusability
+
+**Technical Notes:**
+- Component is now reusable outside of checkout-form context
+- Currency prop determines which price to show (simpler than passing payment method)
+- Uses Prisma Coupon type directly for coupon prop
+- Maintains same visual design as inline version
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Create payment method selector component (6.19)
+
+---

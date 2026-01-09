@@ -612,8 +612,8 @@ export function PendingTransferPage({
                 </p>
               </div>
               <Button asChild variant="outline" className="mt-4">
-                <Link href="/student">
-                  Ir a mi panel
+                <Link href="/student/orders">
+                  Ver mis ordenes
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
