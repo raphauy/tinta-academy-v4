@@ -1201,3 +1201,31 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **MILESTONE 3 (Student) COMPLETE** - All 16 PRD items pass.
 
 ---
+
+## 2026-01-09 - Checkout Milestone Start (6.01)
+
+**Completed (PRD item 6.01):**
+- Added Order model to prisma/schema.prisma with all required fields:
+  - Identification: id, orderNumber (unique, format TA-YYYYMMDD-XXXX)
+  - Relations: userId, courseId, studentId?, couponId?, bankAccountId?
+  - Pricing: originalPriceUSD, originalPriceUYU?, discountPercent, discountAmount, finalAmount, currency
+  - Payment: paymentMethod, status
+  - MercadoPago: mpPreferenceId?, mpPaymentId?, mpStatus?, mpStatusDetail?
+  - Bank transfer: transferReference?
+  - Timestamps: createdAt, updatedAt, paidAt?, cancelledAt?, refundedAt?
+- Added enums: OrderStatus, PaymentMethod, Currency
+- Added orders relation to User, Student, and Course models
+- Added all required indexes
+
+**Technical Notes:**
+- Created branch `feature/06-checkout` for this milestone
+- couponId and bankAccountId fields are present but relations to Coupon and BankAccount models will be added in PRD 6.02 and 6.03
+- No migration run yet - will migrate after all schema changes (6.04)
+- Prisma generate successful with new types
+- Pre-existing lint warnings (4) are unrelated to this change
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Add BankAccount model (6.02)
+
+---

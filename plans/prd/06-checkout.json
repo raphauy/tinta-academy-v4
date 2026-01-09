@@ -31,7 +31,7 @@
       "Run prisma generate (do NOT run migrate yet, will migrate after all schema changes)",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.02",

@@ -23,6 +23,7 @@ model User {
   otpTokens OtpToken[]
   student   Student?
   educator  Educator?
+  orders    Order[]
 
   @@index([email])
   @@index([isActive])
@@ -71,6 +72,7 @@ model Student {
 
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   enrollments Enrollment[]
+  orders      Order[]
 
   @@index([userId])
 }
@@ -141,6 +143,7 @@ model Course {
   tags        Tag[]
   enrollments Enrollment[]
   materials   CourseMaterial[]
+  orders      Order[]
 
   @@index([slug])
   @@index([educatorId])
@@ -207,6 +210,57 @@ model Enrollment {
 }
 
 // ============================================
+// ORDERS
+// ============================================
+
+model Order {
+  id                String        @id @default(cuid())
+  orderNumber       String        @unique // format: TA-YYYYMMDD-XXXX
+  userId            String
+  courseId          String
+  studentId         String? // linked after payment confirmed
+  couponId          String? // linked to Coupon (added in 6.03)
+  // Pricing
+  originalPriceUSD  Float
+  originalPriceUYU  Float?
+  discountPercent   Float         @default(0)
+  discountAmount    Float         @default(0)
+  finalAmount       Float
+  currency          Currency      @default(USD)
+  // Payment
+  paymentMethod     PaymentMethod
+  status            OrderStatus   @default(created)
+  // MercadoPago fields
+  mpPreferenceId    String? // MercadoPago preference ID
+  mpPaymentId       String? // MercadoPago payment ID
+  mpStatus          String? // MercadoPago status
+  mpStatusDetail    String? // MercadoPago status detail
+  // Bank transfer fields
+  bankAccountId     String? // linked to BankAccount (added in 6.02)
+  transferReference String? // user reference/comment
+  // Timestamps
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  paidAt            DateTime?
+  cancelledAt       DateTime?
+  refundedAt        DateTime?
+
+  // Relations (user, course, student)
+  user    User     @relation(fields: [userId], references: [id])
+  course  Course   @relation(fields: [courseId], references: [id])
+  student Student? @relation(fields: [studentId], references: [id])
+  // Note: coupon and bankAccount relations added in 6.03 and 6.02
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([status])
+  @@index([paymentMethod])
+  @@index([orderNumber])
+  @@index([mpPreferenceId])
+  @@index([mpPaymentId])
+}
+
+// ============================================
 // ENUMS
 // ============================================
 
@@ -250,4 +304,25 @@ enum MaterialType {
   document
   video
   other
+}
+
+enum OrderStatus {
+  created
+  pending_payment
+  payment_processing
+  paid
+  cancelled
+  refunded
+  rejected
+}
+
+enum PaymentMethod {
+  mercadopago
+  bank_transfer
+  free
+}
+
+enum Currency {
+  USD
+  UYU
 }

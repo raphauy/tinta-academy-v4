@@ -13,7 +13,7 @@ Lee estos archivos para entender el contexto:
 - @plans/progress.txt - Historial de progreso entre sesiones
 - @plans/prd/$ARGUMENTS.json - PRD del milestone (ej: 02-landing)
 
-## ARGUMENTS por defecto: 03-student
+## ARGUMENTS por defecto: 06-checkout
 
 ## Tu tarea
 
