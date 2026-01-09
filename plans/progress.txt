@@ -1014,3 +1014,21 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Implement material download functionality (3.10)
 
 ---
+
+## 2026-01-09 - Material Download Functionality (3.10)
+
+**Completed (PRD item 3.10):**
+- Material download already implemented in StudentCourseDetail via direct links
+- Access control verified at page level (only confirmed enrollments can view course detail)
+- Materials open in new tab with appropriate icons (Download for files, ExternalLink for links/videos)
+
+**Technical Notes:**
+- No separate server action needed - access is implicitly verified by page-level auth
+- Direct `<a href={material.url}>` links provide better UX than action-based downloads
+- Security maintained because only enrolled students can access the course detail page
+
+**Verification:** Functionality already working from 3.09 implementation
+
+**Next Priority:** Create student profile page (3.11)
+
+---

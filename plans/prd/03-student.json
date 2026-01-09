@@ -175,7 +175,7 @@
       "Show loading state on download button during action",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "3.11",
