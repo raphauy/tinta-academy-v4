@@ -1257,3 +1257,34 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Add Coupon model (6.03)
 
 ---
+
+## 2026-01-09 - Coupon Model (6.03)
+
+**Completed (PRD item 6.03):**
+- Added Coupon model to prisma/schema.prisma with all required fields:
+  - id, code (unique)
+  - discountPercent (0-100)
+  - maxUses, currentUses (for usage tracking)
+  - restrictedToEmail?, restrictedToCourseId? (restrictions)
+  - minPurchaseAmount? (minimum purchase requirement)
+  - validFrom, expiresAt? (validity period)
+  - isActive (default true)
+  - description?, createdBy? (admin metadata)
+  - createdAt, updatedAt
+- Added coupon relation to Order model
+- Added coupons relation to Course model (for restricted coupons)
+- Added indexes on code, isActive, expiresAt, restrictedToEmail
+
+**Technical Notes:**
+- Coupons can be restricted to specific email addresses (personal coupons)
+- Coupons can be restricted to specific courses
+- minPurchaseAmount allows minimum cart value requirements
+- maxUses/currentUses track usage limits
+- All checkout models (Order, BankAccount, Coupon) now complete
+- No migration run yet - will migrate in 6.04
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Run migration and finalize schema changes (6.04)
+
+---

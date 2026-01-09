@@ -144,6 +144,7 @@ model Course {
   enrollments Enrollment[]
   materials   CourseMaterial[]
   orders      Order[]
+  coupons     Coupon[] // coupons restricted to this course
 
   @@index([slug])
   @@index([educatorId])
@@ -235,6 +236,36 @@ model BankAccount {
 }
 
 // ============================================
+// COUPONS
+// ============================================
+
+model Coupon {
+  id                   String    @id @default(cuid())
+  code                 String    @unique
+  discountPercent      Float // 0-100
+  maxUses              Int       @default(1)
+  currentUses          Int       @default(0)
+  restrictedToEmail    String? // if set, only this email can use
+  restrictedToCourseId String? // if set, only for this course
+  minPurchaseAmount    Float? // minimum purchase amount
+  validFrom            DateTime  @default(now())
+  expiresAt            DateTime?
+  isActive             Boolean   @default(true)
+  description          String? // internal description
+  createdBy            String? // admin user ID
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  orders           Order[]
+  restrictedCourse Course? @relation(fields: [restrictedToCourseId], references: [id])
+
+  @@index([code])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@index([restrictedToEmail])
+}
+
+// ============================================
 // ORDERS
 // ============================================
 
@@ -275,7 +306,7 @@ model Order {
   course      Course       @relation(fields: [courseId], references: [id])
   student     Student?     @relation(fields: [studentId], references: [id])
   bankAccount BankAccount? @relation(fields: [bankAccountId], references: [id])
-  // Note: coupon relation added in 6.03
+  coupon      Coupon?      @relation(fields: [couponId], references: [id])
 
   @@index([userId])
   @@index([courseId])
