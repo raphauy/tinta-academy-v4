@@ -204,6 +204,7 @@ export async function getStudentProfile(studentId: string) {
 export interface UpdateStudentInput {
   firstName?: string
   lastName?: string
+  identityDocument?: string
   phone?: string
   dateOfBirth?: Date | null
   address?: string
@@ -230,6 +231,7 @@ export async function updateStudentProfile(
     data: {
       firstName: data.firstName,
       lastName: data.lastName,
+      identityDocument: data.identityDocument,
       phone: data.phone,
       dateOfBirth: data.dateOfBirth,
       address: data.address,

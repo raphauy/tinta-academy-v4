@@ -47,16 +47,17 @@ model OtpToken {
 // ============================================
 
 model Student {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  firstName   String?
-  lastName    String?
-  dateOfBirth DateTime?
-  phone       String?
-  address     String?
-  city        String?
-  zip         String?
-  country     String?
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  firstName        String?
+  lastName         String?
+  identityDocument String?   // CI (Cédula de Identidad)
+  dateOfBirth      DateTime?
+  phone            String?
+  address          String?
+  city             String?
+  zip              String?
+  country          String?
   // Billing information
   billingName    String? // Nombre o razón social
   billingTaxId   String? // RUT/CI

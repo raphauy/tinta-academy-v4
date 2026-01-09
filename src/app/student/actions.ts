@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import {
   getStudentByUserId,
   updateStudentProfile,
@@ -54,6 +55,7 @@ async function getAuthenticatedStudent(): Promise<
 const updateProfileSchema = z.object({
   firstName: z.string().min(1, 'El nombre es requerido').optional(),
   lastName: z.string().min(1, 'El apellido es requerido').optional(),
+  identityDocument: z.string().optional(),
   phone: z.string().optional(),
   dateOfBirth: z.coerce.date().optional().nullable(),
   address: z.string().optional(),
@@ -92,6 +94,7 @@ export async function updateStudentProfileAction(
   const rawData = {
     firstName: (formData.get('firstName') as string) || undefined,
     lastName: (formData.get('lastName') as string) || undefined,
+    identityDocument: (formData.get('identityDocument') as string) || undefined,
     phone: (formData.get('phone') as string) || undefined,
     dateOfBirth: formData.get('dateOfBirth') || undefined,
     address: (formData.get('address') as string) || undefined,
@@ -171,6 +174,39 @@ export async function updateNotificationPreferencesAction(
     return {
       success: false,
       error: 'Error al actualizar las preferencias de notificación',
+    }
+  }
+}
+
+/**
+ * Update student avatar (User.image field)
+ */
+export async function updateStudentAvatarAction(
+  imageUrl: string | null
+): Promise<ActionResult<{ imageUrl: string | null }>> {
+  const authResult = await getAuthenticatedStudent()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { student } = authResult
+
+  try {
+    await prisma.user.update({
+      where: { id: student.userId },
+      data: { image: imageUrl },
+    })
+
+    revalidatePath('/student/profile')
+    revalidatePath('/student')
+
+    return { success: true, data: { imageUrl } }
+  } catch (error) {
+    console.error('Error updating student avatar:', error)
+    return {
+      success: false,
+      error: 'Error al actualizar la foto de perfil',
     }
   }
 }

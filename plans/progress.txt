@@ -1032,3 +1032,48 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create student profile page (3.11)
 
 ---
+
+## 2026-01-09 - Student Profile Page (3.11)
+
+**Completed (PRD item 3.11):**
+- Created src/app/student/profile/page.tsx as RSC with:
+  - Auth verification using resolveStudentForPage (supports view-as feature)
+  - Fetches profile using getStudentProfile
+  - Suspense boundary with ProfileSkeleton fallback
+  - Read-only mode when superadmin views another student's profile
+- Created src/components/student/student-profile.tsx with:
+  - Header with title and description
+  - Avatar section with ImageUpload component (rounded-full style)
+  - Personal Info section: firstName, lastName, email (disabled), phone, dateOfBirth
+  - Address section: address, city, zip, country
+  - Billing section: billingName, billingTaxId, billingAddress (new fields from 3.01)
+  - Notification preferences section with Switch toggles for each notification type
+  - Sticky save button that appears only when changes are made
+  - ProfileSection wrapper component with icon headers (verde-uva theme)
+- Added shadcn/ui Switch component for notification toggles
+- Form uses react-hook-form with Zod validation
+- Wired to updateStudentProfileAction and updateNotificationPreferencesAction
+- Shows toast on success/error using sonner
+
+**Technical Notes:**
+- ProfileSection component reuses verde-uva icon styling from educator panel
+- Form handles nullable firstName/lastName from Prisma schema (|| '' defaults)
+- Notification preferences use separate state to track dirty state independently
+- Read-only mode disables all inputs when superadmin views student profile
+- Avatar upload integrated but actual upload action will be in PRD 3.12
+- Session update called when name changes to reflect in header immediately
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Enhancement (post-3.11):**
+- Added identityDocument (CI) field to Student model
+- Created migration: 20260109151517_add_student_identity_document
+- Added CI field in Personal Info section
+- Added "Usar mis datos personales" switch in Billing section:
+  - When toggled ON, copies fullName, CI, and full address to billing fields
+  - Uses react-hook-form watch() and setValue() for real-time updates
+- Updated student-service.ts and actions.ts to handle identityDocument
+
+**Next Priority:** Implement avatar upload for student profile (3.12)
+
+---
