@@ -34,6 +34,16 @@ import type { Course, Tag } from '@prisma/client'
 
 const courseTypes = ['wset', 'taller', 'cata', 'curso'] as const
 
+// Default descriptions for WSET levels (outside component to avoid recreating on each render)
+const wsetDefaultDescriptions: Record<number, string> = {
+  1: `WSET Nivel 1 Cualificación en Vinos es la puerta de entrada ideal al mundo del vino, diseñado para ofrecer una introducción práctica y estructurada. Este curso cubre desde los estilos principales de vino hasta las técnicas de almacenamiento, servicio y maridaje, capacitando a los participantes a realizar recomendaciones informadas y ofrecer un servicio de alta calidad.
+
+Durante el curso, se explorarán los diferentes tipos y estilos de vino mediante la cata guiada, desarrollando habilidades clave para describir los vinos con precisión y conocer la recomendación con el tipo de comida adecuada. Al completar el curso con éxito, se recibirá un certificado WSET reconocido internacionalmente.`,
+  2: `El WSET Nivel 2 es una calificación intermedia diseñada para profundizar el conocimiento del vino. Este curso explora en detalle las variedades de uva, las regiones clave y cómo los factores ambientales influyen en el estilo y la calidad del vino.
+
+Al completar con éxito, recibirás un certificado internacional WSET. Este curso es ideal tanto para profesionales de la industria como para entusiastas avanzados que desean expandir sus conocimientos sobre el vino.`,
+}
+
 const courseFormSchema = z.object({
   title: z.string().min(3, 'El titulo debe tener al menos 3 caracteres'),
   slug: z
@@ -138,6 +148,8 @@ export function PresencialCourseForm({
   const watchType = watch('type')
   const watchSlug = watch('slug')
   const watchTitle = watch('title')
+  const watchWsetLevel = watch('wsetLevel')
+  const watchDescription = watch('description')
 
   // Check slug availability with debounce
   const checkSlugAvailability = useCallback(
@@ -171,6 +183,25 @@ export function PresencialCourseForm({
 
     return () => clearTimeout(timer)
   }, [watchSlug, checkSlugAvailability])
+
+  // Pre-fill description when WSET level changes (only if description is empty or matches another default)
+  useEffect(() => {
+    if (watchType !== 'wset' || !watchWsetLevel || typeof watchWsetLevel !== 'number') return
+
+    const defaultDescription = wsetDefaultDescriptions[watchWsetLevel] || ''
+    const currentDescription = watchDescription || ''
+
+    // Check if current description is empty or matches any other WSET default
+    const isEmptyOrDefault =
+      !currentDescription.trim() ||
+      Object.values(wsetDefaultDescriptions).some(
+        (desc) => currentDescription.trim() === desc.trim()
+      )
+
+    if (isEmptyOrDefault && defaultDescription) {
+      setValue('description', defaultDescription)
+    }
+  }, [watchType, watchWsetLevel, setValue, watchDescription])
 
   const handleGenerateSlug = () => {
     if (!watchTitle) {
@@ -408,17 +439,20 @@ export function PresencialCourseForm({
             )}
           </div>
 
-          {(watchType === 'taller' || watchType === 'cata' || watchType === 'curso') && (
-            <div className="space-y-2">
-              <Label htmlFor="description">Descripcion</Label>
-              <Textarea
-                id="description"
-                placeholder="Descripcion del curso..."
-                rows={8}
-                {...register('description')}
-              />
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="description">Descripcion</Label>
+            <Textarea
+              id="description"
+              placeholder="Descripcion del curso..."
+              rows={8}
+              {...register('description')}
+            />
+            {watchType === 'wset' && (
+              <p className="text-xs text-muted-foreground">
+                Para cursos WSET, se usa una descripcion por defecto segun el nivel. Puedes editarla si lo deseas.
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
