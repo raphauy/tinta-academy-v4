@@ -34,7 +34,8 @@ async function getAuthenticatedStudent(): Promise<
   }
 
   if (session.user.role !== 'student') {
-    return { error: 'No autorizado - solo estudiantes' }
+    // Block mutations when superadmin/educator is viewing as student
+    return { error: 'Las acciones no están disponibles en modo de visualización' }
   }
 
   const student = await getStudentByUserId(session.user.id)

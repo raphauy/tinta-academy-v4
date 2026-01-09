@@ -10,13 +10,18 @@ export type { NavItem }
 
 export interface MainNavProps {
   items: NavItem[]
+  viewAsStudentId?: string
 }
 
-export function MainNav({ items }: MainNavProps) {
+export function MainNav({ items, viewAsStudentId }: MainNavProps) {
   return (
     <nav className="space-y-1 px-3">
       {items.map((item) => (
-        <NavItemComponent key={item.href} item={item} />
+        <NavItemComponent
+          key={item.href}
+          item={item}
+          viewAsStudentId={viewAsStudentId}
+        />
       ))}
     </nav>
   )
@@ -25,9 +30,10 @@ export function MainNav({ items }: MainNavProps) {
 interface NavItemComponentProps {
   item: NavItem
   depth?: number
+  viewAsStudentId?: string
 }
 
-function NavItemComponent({ item, depth = 0 }: NavItemComponentProps) {
+function NavItemComponent({ item, depth = 0, viewAsStudentId }: NavItemComponentProps) {
   const pathname = usePathname()
   const isActive = pathname === item.href
   const hasActiveChild = item.children?.some(
@@ -39,6 +45,11 @@ function NavItemComponent({ item, depth = 0 }: NavItemComponentProps) {
   const [expanded, setExpanded] = useState(hasActiveChild ?? false)
   const hasChildren = item.children && item.children.length > 0
   const Icon = item.icon
+
+  // Build href with viewAs query param if present
+  const href = viewAsStudentId
+    ? `${item.href}?viewAs=${viewAsStudentId}`
+    : item.href
 
   if (hasChildren) {
     return (
@@ -68,7 +79,12 @@ function NavItemComponent({ item, depth = 0 }: NavItemComponentProps) {
         {expanded && (
           <div className="mt-1 space-y-1">
             {item.children!.map((child) => (
-              <NavItemComponent key={child.href} item={child} depth={depth + 1} />
+              <NavItemComponent
+                key={child.href}
+                item={child}
+                depth={depth + 1}
+                viewAsStudentId={viewAsStudentId}
+              />
             ))}
           </div>
         )}
@@ -78,7 +94,7 @@ function NavItemComponent({ item, depth = 0 }: NavItemComponentProps) {
 
   return (
     <Link
-      href={item.href}
+      href={href}
       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
         depth > 0 ? 'ml-6' : ''
       } ${

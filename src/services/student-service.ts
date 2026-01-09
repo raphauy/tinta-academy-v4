@@ -35,8 +35,18 @@ export interface StudentCourseQuickAccess {
   startDate: Date | null
   endDate: Date | null
   location: string | null
-  educatorName: string
   enrolledAt: Date
+  /** The most relevant date for display/sorting based on course type */
+  effectiveDate: Date | null
+  // Extended fields for richer card display
+  description: string | null
+  duration: string | null
+  wsetLevel: number | null
+  educator: {
+    name: string
+    imageUrl: string | null
+  }
+  tags: Array<{ id: string; name: string }>
 }
 
 export interface StudentDashboardMetrics {
@@ -56,7 +66,7 @@ export async function getStudentDashboardMetrics(
 ): Promise<StudentDashboardMetrics> {
   const now = new Date()
 
-  // Get all confirmed enrollments with course and educator data
+  // Get all confirmed enrollments with course, educator, and tags data
   const enrollments = await prisma.enrollment.findMany({
     where: {
       studentId,
@@ -66,6 +76,7 @@ export async function getStudentDashboardMetrics(
       course: {
         include: {
           educator: true,
+          tags: true,
         },
       },
     },
@@ -73,6 +84,21 @@ export async function getStudentDashboardMetrics(
       enrolledAt: 'desc',
     },
   })
+
+  /**
+   * Get the most relevant date for a course based on its type:
+   * - WSET: first classDate > examDate > startDate
+   * - Taller/Cata/Curso: first classDate > startDate
+   */
+  function getEffectiveDate(course: (typeof enrollments)[0]['course']): Date | null {
+    const firstClassDate = course.classDates?.[0] ?? null
+
+    if (course.type === 'wset') {
+      return firstClassDate ?? course.examDate ?? course.startDate
+    }
+
+    return firstClassDate ?? course.startDate
+  }
 
   // Calculate metrics
   const totalCourses = enrollments.length
@@ -88,10 +114,11 @@ export async function getStudentDashboardMetrics(
     (e) => e.course.status === 'finished'
   ).length
 
-  // Upcoming courses: startDate > now
-  const upcomingEnrollments = enrollments.filter(
-    (e) => e.course.startDate && e.course.startDate > now
-  )
+  // Upcoming courses: effectiveDate > now
+  const upcomingEnrollments = enrollments.filter((e) => {
+    const effectiveDate = getEffectiveDate(e.course)
+    return effectiveDate && effectiveDate > now
+  })
 
   const upcomingCoursesCount = upcomingEnrollments.length
 
@@ -107,21 +134,43 @@ export async function getStudentDashboardMetrics(
     startDate: enrollment.course.startDate,
     endDate: enrollment.course.endDate,
     location: enrollment.course.location,
-    educatorName: enrollment.course.educator.name,
     enrolledAt: enrollment.enrolledAt,
+    effectiveDate: getEffectiveDate(enrollment.course),
+    description: enrollment.course.description,
+    duration: enrollment.course.duration,
+    wsetLevel: enrollment.course.wsetLevel,
+    educator: {
+      name: enrollment.course.educator.name,
+      imageUrl: enrollment.course.educator.imageUrl,
+    },
+    tags: enrollment.course.tags.map((t) => ({ id: t.id, name: t.name })),
   })
 
-  // Upcoming courses sorted by startDate
+  // Upcoming courses sorted by effectiveDate (ascending - soonest first)
   const upcomingCourses = upcomingEnrollments
     .sort((a, b) => {
-      if (!a.course.startDate || !b.course.startDate) return 0
-      return a.course.startDate.getTime() - b.course.startDate.getTime()
+      const dateA = getEffectiveDate(a.course)
+      const dateB = getEffectiveDate(b.course)
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateA.getTime() - dateB.getTime()
     })
     .slice(0, 3)
     .map(mapToQuickAccess)
 
-  // Recent courses: last 3 enrolled (already sorted by enrolledAt desc)
-  const recentCourses = enrollments.slice(0, 3).map(mapToQuickAccess)
+  // Recent courses: sorted by effectiveDate desc (most recent/upcoming first)
+  const recentCourses = [...enrollments]
+    .sort((a, b) => {
+      const dateA = getEffectiveDate(a.course)
+      const dateB = getEffectiveDate(b.course)
+      if (!dateA && !dateB) return 0
+      if (!dateA) return 1
+      if (!dateB) return -1
+      return dateB.getTime() - dateA.getTime()
+    })
+    .slice(0, 3)
+    .map(mapToQuickAccess)
 
   return {
     totalCourses,
@@ -199,3 +248,26 @@ export async function updateStudentProfile(
     },
   })
 }
+
+/**
+ * Get all students with minimal data for selection (superadmin only)
+ */
+export async function getAllStudents() {
+  return prisma.student.findMany({
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        },
+      },
+    },
+    orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+  })
+}
+
+export type StudentForSelection = Awaited<ReturnType<typeof getAllStudents>>[number]

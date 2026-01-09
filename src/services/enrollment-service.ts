@@ -285,6 +285,26 @@ export async function getCourseEnrollmentStats(courseId: string) {
 }
 
 /**
+ * Check if an educator can view a specific student
+ * Returns true if student is enrolled in any of educator's courses
+ */
+export async function canEducatorViewStudent(
+  educatorId: string,
+  studentId: string
+): Promise<boolean> {
+  const enrollment = await prisma.enrollment.findFirst({
+    where: {
+      studentId,
+      course: {
+        educatorId,
+      },
+    },
+    select: { id: true },
+  })
+  return enrollment !== null
+}
+
+/**
  * Get all students enrolled in any course of an educator
  * Returns students with their enrollments in educator's courses
  */

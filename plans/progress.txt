@@ -881,3 +881,31 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create student dashboard page with metrics (3.06)
 
 ---
+
+## 2026-01-09 - Student Dashboard Page (3.06)
+
+**Completed (PRD item 3.06):**
+- Updated src/app/student/page.tsx as RSC with:
+  - Auth verification and student lookup
+  - Fetches metrics using getStudentDashboardMetrics
+  - Suspense boundary with inline skeleton fallback
+- Created src/components/student/student-dashboard.tsx with:
+  - Welcome message with student first name
+  - 4 MetricCards: Cursos Inscritos (highlight), En Curso, Completados, Próximos
+  - "Explorar Cursos" button linking to /#catalog
+  - Recent courses grid (max 3) with StudentCourseQuickCard
+  - Upcoming courses section (shows if different from recent)
+  - Empty state with friendly message and CTA for students with no courses
+
+**Technical Notes:**
+- Reuses MetricCard from educator components (same visual style)
+- StudentCourseQuickCard is a local component within dashboard (can be extracted later if needed)
+- Cards link to /student/courses/[id] (will be implemented in PRD 3.09)
+- Uses toLocalDate for proper timezone handling of dates
+- Uses Badge component with same variants as educator panel
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create student course list page with filters (3.07)
+
+---

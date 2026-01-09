@@ -28,11 +28,15 @@ export interface AppShellProps {
   children: React.ReactNode
   variant: ShellVariant
   user?: UserMenuUser
+  viewAsStudentId?: string
 }
 
-export function AppShell({ children, variant, user }: AppShellProps) {
+export function AppShell({ children, variant, user, viewAsStudentId }: AppShellProps) {
   const navigationItems = navItemsByVariant[variant]
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  // Only pass viewAs to student variant navigation
+  const navViewAsStudentId = variant === 'student' ? viewAsStudentId : undefined
 
   // Public shell uses simplified top navigation
   if (variant === 'public') {
@@ -78,7 +82,7 @@ export function AppShell({ children, variant, user }: AppShellProps) {
           </div>
 
           <div className="flex-1 overflow-y-auto py-4">
-            <MainNav items={navigationItems} />
+            <MainNav items={navigationItems} viewAsStudentId={navViewAsStudentId} />
           </div>
 
           {user && (
@@ -110,7 +114,7 @@ export function AppShell({ children, variant, user }: AppShellProps) {
               </div>
 
               <div className="flex-1 overflow-y-auto py-4">
-                <MainNav items={navigationItems} />
+                <MainNav items={navigationItems} viewAsStudentId={navViewAsStudentId} />
               </div>
 
               {user && (
