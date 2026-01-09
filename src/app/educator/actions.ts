@@ -50,6 +50,7 @@ const createCourseSchema = z.object({
   // Other fields
   maxCapacity: z.coerce.number().int().positive().optional(),
   priceUSD: z.coerce.number().nonnegative('El precio no puede ser negativo'),
+  priceUYU: z.coerce.number().nonnegative('El precio no puede ser negativo').optional(),
   location: z.string().optional(),
   address: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
@@ -154,6 +155,7 @@ export async function createCourseAction(
     // Other fields
     maxCapacity: formData.get('maxCapacity') || undefined,
     priceUSD: formData.get('priceUSD'),
+    priceUYU: formData.get('priceUYU') || undefined,
     location: (formData.get('location') as string) || undefined,
     address: (formData.get('address') as string) || undefined,
     imageUrl: (formData.get('imageUrl') as string) || undefined,
@@ -236,6 +238,7 @@ export async function updateCourseAction(
     // Other fields
     maxCapacity: formData.get('maxCapacity') || undefined,
     priceUSD: formData.get('priceUSD') || undefined,
+    priceUYU: formData.get('priceUYU') || undefined,
     location: formData.get('location') || undefined,
     address: formData.get('address') || undefined,
     imageUrl: formData.get('imageUrl') || undefined,

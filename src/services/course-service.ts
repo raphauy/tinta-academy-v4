@@ -30,6 +30,7 @@ export interface CreateCourseInput {
   // Capacity and other fields
   maxCapacity?: number
   priceUSD: number
+  priceUYU?: number
   location?: string
   address?: string
   imageUrl?: string
@@ -56,6 +57,7 @@ export interface UpdateCourseInput {
   // Capacity and other fields
   maxCapacity?: number
   priceUSD?: number
+  priceUYU?: number | null
   location?: string
   address?: string
   imageUrl?: string
@@ -221,6 +223,7 @@ export async function createCourse(data: CreateCourseInput) {
       // Other fields
       maxCapacity: data.maxCapacity,
       priceUSD: data.priceUSD,
+      priceUYU: data.priceUYU,
       location: data.location,
       address: data.address,
       imageUrl: data.imageUrl,
@@ -262,6 +265,7 @@ export async function updateCourse(id: string, data: UpdateCourseInput) {
       // Other fields
       ...(data.maxCapacity !== undefined && { maxCapacity: data.maxCapacity }),
       ...(data.priceUSD !== undefined && { priceUSD: data.priceUSD }),
+      ...(data.priceUYU !== undefined && { priceUYU: data.priceUYU }),
       ...(data.location !== undefined && { location: data.location }),
       ...(data.address !== undefined && { address: data.address }),
       ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),

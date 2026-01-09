@@ -72,6 +72,12 @@ const courseFormSchema = z.object({
     .or(z.literal(''))
     .transform((val) => (val === '' ? undefined : val)),
   priceUSD: z.coerce.number().nonnegative('El precio no puede ser negativo'),
+  priceUYU: z.coerce
+    .number()
+    .nonnegative('El precio no puede ser negativo')
+    .optional()
+    .or(z.literal(''))
+    .transform((val) => (val === '' ? undefined : val)),
   imageUrl: z.string().optional(),
 })
 
@@ -141,6 +147,7 @@ export function PresencialCourseForm({
       address: course?.address ?? '',
       maxCapacity: course?.maxCapacity ?? undefined,
       priceUSD: course?.priceUSD ?? 0,
+      priceUYU: course?.priceUYU ?? undefined,
       imageUrl: course?.imageUrl ?? '',
     },
   })
@@ -235,6 +242,9 @@ export function PresencialCourseForm({
       formData.append('slug', data.slug)
       formData.append('type', data.type)
       formData.append('priceUSD', data.priceUSD.toString())
+      if (data.priceUYU) {
+        formData.append('priceUYU', data.priceUYU.toString())
+      }
 
       if (data.wsetLevel && data.type === 'wset') {
         formData.append('wsetLevel', data.wsetLevel.toString())
@@ -556,7 +566,7 @@ export function PresencialCourseForm({
           <CardTitle>Capacidad y Precio</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="maxCapacity">Capacidad Maxima</Label>
               <Input
@@ -583,6 +593,21 @@ export function PresencialCourseForm({
                   {errors.priceUSD.message}
                 </p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="priceUYU">Precio (UYU)</Label>
+              <Input
+                id="priceUYU"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="Ej: 6300"
+                {...register('priceUYU')}
+              />
+              <p className="text-xs text-muted-foreground">
+                Opcional. Se calcula auto (USD × 42).
+              </p>
             </div>
           </div>
         </CardContent>

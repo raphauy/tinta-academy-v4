@@ -328,7 +328,7 @@
       "Create src/app/checkout/layout.tsx with minimal layout (no sidebar, centered content)",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.14",

@@ -14,7 +14,6 @@ import { subscribeToNewsletter } from '@/app/(public)/actions'
 import { toast } from 'sonner'
 import { toLocalDate } from '@/lib/utils'
 import {
-  CalendarDays,
   Clock,
   MapPin,
   Users,
@@ -23,6 +22,7 @@ import {
   ArrowLeft,
   BookOpen,
   AlertCircle,
+  ShoppingCart,
 } from 'lucide-react'
 
 type CourseWithRelations = Course & {
@@ -32,15 +32,6 @@ type CourseWithRelations = Course & {
 
 interface CourseDetailPageProps {
   course: CourseWithRelations
-}
-
-function formatDate(date: Date | null): string {
-  if (!date) return 'Por confirmar'
-  return new Intl.DateTimeFormat('es-AR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  }).format(toLocalDate(date))
 }
 
 function formatMonthYear(date: Date | null): string {
@@ -151,7 +142,14 @@ const WSET_INCLUDED = [
 export function CourseDetailPage({ course }: CourseDetailPageProps) {
   const router = useRouter()
   const isWset = course.type === 'wset'
-  const canEnroll = course.status === 'enrolling'
+
+  // Determine enrollment state
+  const enrollableStatuses = ['announced', 'enrolling', 'available']
+  const isEnrollable = enrollableStatuses.includes(course.status)
+  const isFull = course.maxCapacity ? course.enrolledCount >= course.maxCapacity : false
+  const isDeadlinePassed = course.registrationDeadline ? new Date() > new Date(course.registrationDeadline) : false
+  const canEnroll = isEnrollable && !isFull && !isDeadlinePassed
+
   const learningOutcomes = isWset && course.wsetLevel
     ? WSET_LEARNING_OUTCOMES[course.wsetLevel] || []
     : []
@@ -455,12 +453,27 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             )}
 
             {/* CTA Button */}
-            {canEnroll && (
-              <Button asChild size="lg" className="w-full">
-                <Link href={`/cursos/inscripcion/${course.id}`}>
-                  Inscribite ahora
-                </Link>
-              </Button>
+            {isEnrollable && (
+              <>
+                {canEnroll ? (
+                  <Button asChild size="lg" className="w-full">
+                    <Link href={`/checkout/${course.id}`}>
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Inscribite ahora
+                    </Link>
+                  </Button>
+                ) : isFull ? (
+                  <Button disabled size="lg" className="w-full">
+                    <Users className="w-4 h-4 mr-2" />
+                    Cupo completo
+                  </Button>
+                ) : isDeadlinePassed ? (
+                  <Button disabled size="lg" className="w-full">
+                    <AlertCircle className="w-4 h-4 mr-2" />
+                    Inscripciones cerradas
+                  </Button>
+                ) : null}
+              </>
             )}
 
             {/* Requirements Card (for WSET) */}

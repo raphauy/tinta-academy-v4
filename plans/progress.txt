@@ -1663,3 +1663,57 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create checkout page for course purchase (6.13)
 
 ---
+
+## 2026-01-09 - Checkout Page (6.13)
+
+**Completed (PRD item 6.13):**
+- Created src/app/checkout/layout.tsx with minimal layout:
+  - Logo header linking to home
+  - Centered content area with max-w-5xl
+  - Stone background for visual distinction from main app
+- Created src/app/checkout/[courseId]/page.tsx as RSC with:
+  - Authentication check - redirects to /login?returnUrl=/checkout/[courseId]
+  - Course existence check with notFound()
+  - Checkout context fetching with optional coupon from query params
+  - Dynamic metadata with course title
+  - Suspense boundary with loading spinner
+- Created src/components/checkout/cannot-enroll.tsx:
+  - Visual feedback for each enrollment block reason
+  - Different icons/colors for: already_enrolled, course_full, course_closed, deadline_passed
+  - CTA buttons: "Ir a mis cursos" or "Explorar otros cursos"
+- Created src/components/checkout/free-checkout.tsx:
+  - For courses with price=0 or 100% coupon
+  - Course summary card with image, details, and pricing
+  - Single "Inscribirme ahora" button that calls initiateCheckoutAction
+  - Loading state and error handling with toast notifications
+  - Redirects to success page on completion
+- Created src/components/checkout/checkout-form.tsx:
+  - Placeholder component for paid courses (full implementation in 6.17-6.20)
+  - 2-column layout: payment options (left) + order summary (right)
+  - Order summary shows course image, details, educator, and price breakdown
+- Created src/components/checkout/index.ts barrel export
+
+**Technical Notes:**
+- Checkout page supports ?coupon= query param to pre-apply discount code
+- Free checkout uses paymentMethod='free' and completes immediately
+- CannotEnroll component uses same visual patterns as other status pages
+- CheckoutForm is a placeholder - payment methods will be added in PRD 6.17-6.20
+- Layout uses minimal header (logo only) without sidebar for focused checkout experience
+
+**Additional changes:**
+- Updated course-detail-page.tsx to link "Inscribite ahora" button to /checkout/[courseId]
+- Added enrollment state logic: checks if enrollable, full, or deadline passed
+- Button now shows different states: "Inscribite ahora", "Cupo completo", "Inscripciones cerradas"
+- Removed unused imports (CalendarDays, formatDate)
+- Added priceUYU field to educator course form (presencial-course-form.tsx)
+- Added priceUYU to educator server actions schema (actions.ts)
+- Added priceUYU to CreateCourseInput and UpdateCourseInput in course-service.ts
+- Added priceUYU to createCourse() and updateCourse() Prisma calls
+- 3-column grid for Capacidad/PrecioUSD/PrecioUYU fields
+- Optional field with helper text explaining auto-calculation (USD × 42)
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout success page (6.14)
+
+---
