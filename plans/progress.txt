@@ -1555,3 +1555,41 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create checkout-service for checkout flow orchestration (6.10)
 
 ---
+
+## 2026-01-09 - Checkout Service (6.10)
+
+**Completed (PRD item 6.10):**
+- Created src/services/checkout-service.ts with all checkout flow orchestration:
+
+**Types:**
+- EnrollmentBlockReason: 'already_enrolled' | 'course_full' | 'course_closed' | 'deadline_passed'
+- Pricing: originalPriceUSD/UYU, discountPercent, discountAmount, finalPrice, isFree
+- CheckoutContext: user, course, coupon, bankAccounts, pricing, canEnroll, enrollmentBlockReason
+
+**Functions:**
+- getCheckoutContext(userId, courseId, couponCode?): CheckoutContext
+  - Validates user and course existence
+  - Checks enrollment eligibility (not already enrolled, course not full, deadline not passed)
+  - Validates coupon if provided
+  - Gets active bank accounts
+  - Calculates pricing with discounts
+- initiateCheckout(userId, courseId, paymentMethod, currency, couponCode?): creates Order
+- processCheckoutMercadoPago(orderId): creates MP preference, returns redirectUrl
+- processCheckoutBankTransfer(orderId, bankAccountId): sets pending_payment status
+- processFreeEnrollment(userId, courseId, couponCode?): immediate enrollment for free courses
+- completeCheckout(orderId): full transaction completing order, creating student/enrollment
+- hasExistingEnrollment(userId, courseId): utility check
+- getPendingOrderForCourse(userId, courseId): find incomplete orders
+
+**Technical Notes:**
+- Uses DEFAULT_USD_TO_UYU_RATE = 42 when course.priceUYU not set
+- completeCheckout runs in Prisma transaction for atomicity
+- Creates student record and assigns role on first purchase
+- Increments coupon usage within transaction
+- Increments course enrolledCount within transaction
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create server actions for checkout operations (6.11)
+
+---

@@ -270,7 +270,7 @@
       "    - Transaction: update order to paid, create student if needed, create enrollment, assign role, increment coupon usage",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.11",
