@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Mail } from 'lucide-react'
@@ -25,6 +26,7 @@ export type StudentEnrollment = {
     lastName: string | null
     user: {
       email: string
+      image?: string | null
     }
   }
   course?: {
@@ -102,9 +104,19 @@ export function StudentTable({ enrollments, showCourse = false }: StudentTablePr
               <TableRow key={enrollment.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="hidden sm:flex size-10 rounded-full bg-verde-uva-100 items-center justify-center text-sm font-semibold text-verde-uva-700 shrink-0">
-                      {initials}
-                    </div>
+                    {student.user.image ? (
+                      <Image
+                        src={student.user.image}
+                        alt={fullName}
+                        width={40}
+                        height={40}
+                        className="hidden sm:block size-10 rounded-full object-cover shrink-0"
+                      />
+                    ) : (
+                      <div className="hidden sm:flex size-10 rounded-full bg-verde-uva-100 items-center justify-center text-sm font-semibold text-verde-uva-700 shrink-0">
+                        {initials}
+                      </div>
+                    )}
                     <div className="flex flex-col min-w-0">
                       <span className="font-medium truncate">{fullName}</span>
                       <span className="text-sm text-muted-foreground truncate">

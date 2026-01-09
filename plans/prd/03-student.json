@@ -232,7 +232,7 @@
       "Verify empty states show correctly when no data",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "3.14",

@@ -1077,3 +1077,45 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Implement avatar upload for student profile (3.12)
 
 ---
+
+## 2026-01-09 - Student Loading Skeletons (3.13)
+
+**Completed (PRD item 3.13):**
+- Created src/components/student/skeletons.tsx with all skeleton components:
+  - StudentDashboardSkeleton - metrics grid (with highlight card), recent courses
+  - StudentCourseListSkeleton - header, filter chips, course cards
+  - StudentCourseDetailSkeleton - hero image, educator card, materials section
+  - StudentProfileSkeleton - header, avatar section, form sections
+- Updated all student pages to import skeletons from centralized file:
+  - src/app/student/page.tsx - uses StudentDashboardSkeleton
+  - src/app/student/courses/page.tsx - uses StudentCourseListSkeleton
+  - src/app/student/courses/[id]/page.tsx - uses StudentCourseDetailSkeleton
+  - src/app/student/profile/page.tsx - uses StudentProfileSkeleton
+- Verified existing empty states are properly implemented:
+  - StudentCourseList: "sin cursos" and "sin resultados de filtro"
+  - StudentDashboard: "sin cursos" with CTA
+  - StudentCourseDetail: "sin materiales" for empty materials section
+
+**Technical Notes:**
+- Skeletons follow same pattern as educator skeletons (animate-pulse, bg-muted)
+- Highlight metric card skeleton uses verde-uva colors to match the actual component
+- Pages still have Suspense boundaries wrapping async content components
+- Centralizing skeletons in a single file improves maintainability and reusability
+- All inline skeleton functions removed from pages in favor of imported components
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Enhancement (post-3.13):**
+- Added user.image to all enrollment service queries that return student data:
+  - getEnrollmentsByCourse, getEnrollmentWithCourseDetails, getEnrollmentById
+  - getStudentEnrollmentByCourse, createEnrollment, updateEnrollmentStatus
+  - getEducatorStudents
+- Updated StudentTable component to display student avatar images:
+  - Shows Image component when user.image exists
+  - Falls back to initials when no image
+- Updated AllStudentsList component with same avatar image pattern
+- Updated type definitions in student-list.tsx and all-students-list.tsx
+
+**Next Priority:** Ensure responsive design and mobile usability (3.14)
+
+---

@@ -3,39 +3,10 @@ import { redirect } from 'next/navigation'
 import { resolveStudentForPage } from '@/lib/view-as'
 import { getStudentEnrollments } from '@/services/enrollment-service'
 import { StudentCourseList } from '@/components/student/student-course-list'
+import { StudentCourseListSkeleton } from '@/components/student/skeletons'
 
 interface StudentCoursesPageProps {
   searchParams: Promise<{ viewAs?: string; status?: string }>
-}
-
-// Simple skeleton for loading state
-function CoursesListSkeleton() {
-  return (
-    <div className="space-y-6 animate-pulse">
-      {/* Header skeleton */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="h-7 w-32 bg-muted rounded mb-2" />
-          <div className="h-4 w-48 bg-muted rounded" />
-        </div>
-        <div className="h-10 w-36 bg-muted rounded" />
-      </div>
-
-      {/* Filter chips skeleton */}
-      <div className="flex gap-2">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-8 w-24 bg-muted rounded-full" />
-        ))}
-      </div>
-
-      {/* Course list skeleton */}
-      <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-48 bg-muted rounded-xl" />
-        ))}
-      </div>
-    </div>
-  )
 }
 
 async function CoursesContent({
@@ -82,7 +53,7 @@ export default async function StudentCoursesPage({
   const params = await searchParams
 
   return (
-    <Suspense fallback={<CoursesListSkeleton />}>
+    <Suspense fallback={<StudentCourseListSkeleton />}>
       <CoursesContent viewAs={params.viewAs} statusFilter={params.status} />
     </Suspense>
   )

@@ -15,6 +15,7 @@ export async function getEnrollmentsByCourse(courseId: string) {
             select: {
               email: true,
               name: true,
+              image: true,
             },
           },
         },
@@ -95,6 +96,7 @@ export async function getEnrollmentWithCourseDetails(enrollmentId: string) {
               id: true,
               email: true,
               name: true,
+              image: true,
             },
           },
         },
@@ -132,6 +134,7 @@ export async function getEnrollmentById(id: string) {
             select: {
               email: true,
               name: true,
+              image: true,
             },
           },
         },
@@ -164,6 +167,7 @@ export async function getStudentEnrollmentByCourse(
               id: true,
               email: true,
               name: true,
+              image: true,
             },
           },
         },
@@ -239,6 +243,7 @@ export async function createEnrollment(studentId: string, courseId: string) {
               select: {
                 email: true,
                 name: true,
+                image: true,
               },
             },
           },
@@ -280,6 +285,7 @@ export async function updateEnrollmentStatus(
               select: {
                 email: true,
                 name: true,
+                image: true,
               },
             },
           },
@@ -374,6 +380,7 @@ export async function getEducatorStudents(educatorId: string) {
         select: {
           email: true,
           name: true,
+          image: true,
         },
       },
       enrollments: {

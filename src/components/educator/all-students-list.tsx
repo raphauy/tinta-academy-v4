@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Search, Check, ChevronsUpDown, X, Mail } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -38,6 +39,7 @@ type StudentWithEnrollments = {
   user: {
     email: string
     name: string | null
+    image: string | null
   }
   enrollments: {
     id: string
@@ -251,9 +253,19 @@ export function AllStudentsList({ students, courses }: AllStudentsListProps) {
                   <TableRow key={student.id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="hidden sm:flex size-10 rounded-full bg-verde-uva-100 items-center justify-center text-sm font-semibold text-verde-uva-700 shrink-0">
-                          {initials}
-                        </div>
+                        {student.user.image ? (
+                          <Image
+                            src={student.user.image}
+                            alt={fullName}
+                            width={40}
+                            height={40}
+                            className="hidden sm:block size-10 rounded-full object-cover shrink-0"
+                          />
+                        ) : (
+                          <div className="hidden sm:flex size-10 rounded-full bg-verde-uva-100 items-center justify-center text-sm font-semibold text-verde-uva-700 shrink-0">
+                            {initials}
+                          </div>
+                        )}
                         <div className="flex flex-col min-w-0">
                           <span className="font-medium truncate">{fullName}</span>
                           <span className="text-sm text-muted-foreground truncate">

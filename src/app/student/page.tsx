@@ -3,42 +3,10 @@ import { redirect } from 'next/navigation'
 import { resolveStudentForPage } from '@/lib/view-as'
 import { getStudentDashboardMetrics } from '@/services/student-service'
 import { StudentDashboard } from '@/components/student/student-dashboard'
+import { StudentDashboardSkeleton } from '@/components/student/skeletons'
 
 interface StudentDashboardPageProps {
   searchParams: Promise<{ viewAs?: string }>
-}
-
-// Simple skeleton for loading state
-function DashboardSkeleton() {
-  return (
-    <div className="space-y-6 animate-pulse">
-      {/* Header skeleton */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="h-7 w-40 bg-muted rounded mb-2" />
-          <div className="h-4 w-64 bg-muted rounded" />
-        </div>
-        <div className="h-10 w-36 bg-muted rounded" />
-      </div>
-
-      {/* Metrics skeleton */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-24 bg-muted rounded-xl" />
-        ))}
-      </div>
-
-      {/* Courses skeleton */}
-      <div>
-        <div className="h-5 w-40 bg-muted rounded mb-3" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-32 bg-muted rounded-xl" />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
 }
 
 async function DashboardContent({ viewAs }: { viewAs: string | undefined }) {
@@ -75,7 +43,7 @@ export default async function StudentDashboardPage({
   const params = await searchParams
 
   return (
-    <Suspense fallback={<DashboardSkeleton />}>
+    <Suspense fallback={<StudentDashboardSkeleton />}>
       <DashboardContent viewAs={params.viewAs} />
     </Suspense>
   )
