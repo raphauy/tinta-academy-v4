@@ -118,7 +118,7 @@
       "Sort: in_progress first, then upcoming, then completed",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "3.08",

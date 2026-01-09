@@ -10,6 +10,7 @@ import type { StudentDashboardMetrics, StudentCourseQuickAccess } from '@/servic
 interface StudentDashboardProps {
   studentName: string
   metrics: StudentDashboardMetrics
+  viewAs?: string
 }
 
 function getStatusBadge(course: StudentCourseQuickAccess) {
@@ -31,9 +32,12 @@ function getStatusBadge(course: StudentCourseQuickAccess) {
   return undefined
 }
 
-export function StudentDashboard({ studentName, metrics }: StudentDashboardProps) {
+export function StudentDashboard({ studentName, metrics, viewAs }: StudentDashboardProps) {
   const hasAnyCourses = metrics.totalCourses > 0
   const firstName = studentName.split(' ')[0]
+
+  // Helper to build URLs with viewAs preserved
+  const buildUrl = (path: string) => viewAs ? `${path}?viewAs=${viewAs}` : path
 
   return (
     <div className="space-y-6">
@@ -90,7 +94,7 @@ export function StudentDashboard({ studentName, metrics }: StudentDashboardProps
               Tus Cursos Recientes
             </h2>
             <Link
-              href="/student/courses"
+              href={buildUrl('/student/courses')}
               className="inline-flex items-center gap-1 text-sm font-medium text-[#143F3B] dark:text-[#6B9B7A] hover:underline"
             >
               Ver todos
@@ -119,7 +123,7 @@ export function StudentDashboard({ studentName, metrics }: StudentDashboardProps
                     educator: course.educator,
                     tags: course.tags,
                   }}
-                  href={`/student/courses/${course.id}`}
+                  href={buildUrl(`/student/courses/${course.id}`)}
                   statusBadge={getStatusBadge(course)}
                 />
               ))}
@@ -177,7 +181,7 @@ export function StudentDashboard({ studentName, metrics }: StudentDashboardProps
                   educator: course.educator,
                   tags: course.tags,
                 }}
-                href={`/student/courses/${course.id}`}
+                href={buildUrl(`/student/courses/${course.id}`)}
                 statusBadge={{ label: 'Próximamente', variant: 'info' }}
               />
             ))}

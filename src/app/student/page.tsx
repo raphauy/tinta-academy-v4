@@ -66,7 +66,7 @@ async function DashboardContent({ viewAs }: { viewAs: string | undefined }) {
     ? `${student.firstName} ${student.lastName || ''}`.trim()
     : student.user?.name || 'Estudiante'
 
-  return <StudentDashboard studentName={studentName} metrics={metrics} />
+  return <StudentDashboard studentName={studentName} metrics={metrics} viewAs={viewAs} />
 }
 
 export default async function StudentDashboardPage({

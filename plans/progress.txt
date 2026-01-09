@@ -909,3 +909,43 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create student course list page with filters (3.07)
 
 ---
+
+## 2026-01-09 - Student Course List Page (3.07)
+
+**Completed (PRD item 3.07):**
+- Created src/app/student/courses/page.tsx as RSC with:
+  - Auth verification using resolveStudentForPage (supports view-as feature)
+  - Fetches confirmed enrollments using getStudentEnrollments
+  - Suspense boundary with inline skeleton fallback
+  - URL query param support for status filter (?status=in_progress)
+- Created src/components/student/student-course-list.tsx with:
+  - Header with BookOpen icon, course count, and "Explorar Cursos" CTA button
+  - Filter chips: Todos, En Progreso, Completados (rounded-full style)
+  - URL-based filtering using router.push with searchParams
+  - Sorted courses: in_progress first, then upcoming, then completed
+  - Empty state for no enrollments (dashed border, GraduationCap icon, CTA)
+  - Empty state for no filter results with "Ver todos los cursos" button
+- Created src/components/student/student-course-row.tsx with horizontal card layout:
+  - Image on the left (clickable to course detail)
+  - Badges layout: type + status on the left, location/modality on the right
+  - Title, educator name, tags (max 4, verde-uva style)
+  - Meta info row: date, duration, materials count
+  - "Ver detalles" button on the right
+  - Same styling as EducatorCourseRow for consistency
+
+**Technical Notes:**
+- StudentCourseRow follows same pattern as EducatorCourseRow (horizontal layout)
+- Badge layout matches CourseCard: type top-left, location top-right
+- Status badges: Completado (green), Próximamente (blue), En curso (amber)
+- Tags use verde-uva-100/800 colors (same as landing)
+- Shows materials count if course has materials attached
+- Only shows confirmed enrollments (students only see courses they're actually enrolled in)
+- Filter "En Progreso" includes both in_progress and upcoming courses
+- Uses same styling patterns as educator panel (rounded-2xl cards, stone colors)
+- Properly typed using Prisma return types from getStudentEnrollments
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create student course card component (3.08)
+
+---
