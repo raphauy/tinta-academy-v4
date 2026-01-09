@@ -183,7 +183,7 @@
       "  - deactivateCoupon(id): sets isActive=false",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.08",

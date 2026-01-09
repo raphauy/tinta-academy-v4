@@ -1396,3 +1396,47 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create coupon-service for discount validation (6.07)
 
 ---
+
+## 2026-01-09 - Coupon Service (6.07)
+
+**Completed (PRD item 6.07):**
+- Created src/services/coupon-service.ts with all required functions:
+
+**Types:**
+- CouponError: union type for all validation error codes
+- ValidateCouponResult: { valid, coupon?, error?, errorMessage?, discountPercent?, discountAmount?, finalAmount? }
+- CreateCouponInput, UpdateCouponInput: input types for mutations
+
+**Queries:**
+- getCouponByCode(code): Coupon | null (normalizes to uppercase)
+- getCouponById(id): Coupon | null
+- getAllCoupons(): Coupon[]
+- getActiveCoupons(): active coupons (isActive, not expired, validFrom passed)
+- getCoupons(filters?): admin list with search, isActive, courseId filters
+
+**Validation:**
+- validateCoupon(code, userEmail, courseId, originalAmount): ValidateCouponResult
+  - Checks: exists, isActive, validFrom, expiresAt, usage limit, email restriction, course restriction, min amount
+  - Calculates: discountPercent, discountAmount, finalAmount
+  - Returns Spanish error messages for each validation failure
+
+**Mutations:**
+- incrementCouponUsage(couponId): atomic increment of currentUses
+- createCoupon(input): admin creation (normalizes code to uppercase)
+- updateCoupon(id, input): admin update with partial fields
+- deactivateCoupon(id): soft delete (isActive=false)
+- reactivateCoupon(id): restore deactivated coupon
+- deleteCoupon(id): hard delete (only if no orders linked)
+
+**Technical Notes:**
+- All coupon codes normalized to uppercase for case-insensitive matching
+- Emails normalized to lowercase for consistent comparison
+- Discount calculations rounded to 2 decimal places
+- Error messages in Spanish for user-facing validation
+- deleteCoupon checks order count before deletion
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create bank-account-service for transfer payment data (6.08)
+
+---
