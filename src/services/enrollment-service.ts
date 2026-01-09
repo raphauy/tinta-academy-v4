@@ -141,6 +141,56 @@ export async function getEnrollmentById(id: string) {
   })
 }
 
+/**
+ * Get a student's enrollment in a specific course with full details
+ * Used for student course detail page where URL has courseId
+ */
+export async function getStudentEnrollmentByCourse(
+  studentId: string,
+  courseId: string
+) {
+  return prisma.enrollment.findUnique({
+    where: {
+      studentId_courseId: {
+        studentId,
+        courseId,
+      },
+    },
+    include: {
+      student: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+            },
+          },
+        },
+      },
+      course: {
+        include: {
+          educator: {
+            select: {
+              id: true,
+              name: true,
+              title: true,
+              bio: true,
+              imageUrl: true,
+            },
+          },
+          materials: {
+            orderBy: {
+              order: 'asc',
+            },
+          },
+          tags: true,
+        },
+      },
+    },
+  })
+}
+
 // ============================================
 // ENROLLMENT MUTATIONS
 // ============================================

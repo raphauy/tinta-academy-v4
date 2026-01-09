@@ -976,3 +976,41 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create presencial course detail page for student (3.09)
 
 ---
+
+## 2026-01-09 - Student Course Detail Page (3.09)
+
+**Completed (PRD item 3.09):**
+- Created src/app/student/courses/[id]/page.tsx as RSC with:
+  - Auth verification using resolveStudentForPage (supports view-as feature)
+  - Enrollment lookup using new getStudentEnrollmentByCourse function
+  - Suspense boundary with skeleton fallback
+  - Redirect to course list if not enrolled or enrollment not confirmed
+  - notFound() if enrollment doesn't exist
+- Added getStudentEnrollmentByCourse to enrollment-service.ts:
+  - Uses Prisma's unique compound key (studentId_courseId)
+  - Returns full course details with educator, materials, and tags
+- Created src/components/student/student-course-detail.tsx with:
+  - Hero header with course image, badges (type, status, modality), and title
+  - Tags display below hero
+  - Educator info card with avatar, name, title, and bio
+  - Event details card for presencial courses:
+    - Location with Google Maps link
+    - Start/end dates formatted in Spanish
+    - Duration
+  - WSET certification info card (for WSET courses)
+  - Materials section with download/open buttons per material type
+  - Empty state for no materials
+  - Back button to course list (preserves viewAs)
+
+**Technical Notes:**
+- Used getStudentEnrollmentByCourse instead of getEnrollmentWithCourseDetails because URL uses courseId, not enrollmentId
+- Google Maps link built with location + address for better search results
+- Materials show "Descargar" for files, "Abrir" for external links/videos
+- Educator avatar shows User icon fallback if no imageUrl
+- All dates use Spanish locale formatting
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Implement material download functionality (3.10)
+
+---
