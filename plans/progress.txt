@@ -1625,3 +1625,41 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create server actions for admin order management (6.12)
 
 ---
+
+## 2026-01-09 - Admin Order Server Actions (6.12)
+
+**Completed (PRD item 6.12):**
+- Created src/app/admin/orders/actions.ts with 'use server' directive
+
+**Helper Function:**
+- requireAdmin(): validates session and checks role === 'superadmin'
+
+**Server Actions:**
+- getOrdersAction(filters?): returns paginated list of orders with status/paymentMethod/courseId filters
+- getOrderDetailAction(orderId): returns full order details with all relations
+- confirmTransferPaymentAction(orderId):
+  - Validates order is bank_transfer and pending
+  - Calls completeCheckout to create student/enrollment
+  - Revalidates admin paths
+- cancelOrderAction(orderId):
+  - Validates order is not already paid/refunded
+  - Uses cancelOrderService from order-service
+- refundOrderAction(orderId):
+  - Validates order is paid
+  - Uses Prisma transaction to:
+    - Mark order as refunded with timestamp
+    - Cancel associated enrollment if exists
+    - Decrement course enrolledCount
+
+**Technical Notes:**
+- All actions require superadmin role
+- Uses revalidatePath for /admin/orders and /admin after mutations
+- refundOrderAction uses transaction for atomicity when cancelling enrollment
+- Returns consistent ActionResult<T> type for all actions
+- Error messages in Spanish for user-facing errors
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout page for course purchase (6.13)
+
+---
