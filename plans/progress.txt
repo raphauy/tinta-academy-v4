@@ -949,3 +949,30 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create student course card component (3.08)
 
 ---
+
+## 2026-01-09 - Student Course Card Component (3.08)
+
+**Completed (PRD item 3.08):**
+- Renamed student-course-row.tsx to student-course-card.tsx (per PRD naming)
+- Added expandable materials section with:
+  - Toggle button showing materials count with chevron icon
+  - Collapsible list of materials when clicked
+  - Icons per material type: document (FileText), image (Image), video (Video), link (Link2), other (File)
+  - Material name, type label, and optional description
+  - Download icon for documents/images, ExternalLink icon for links/videos
+  - All materials open in new tab
+- Updated StudentCourseList to use StudentCourseCard component
+
+**Technical Notes:**
+- Materials section uses useState for collapse state (client component)
+- Icons and labels mapped from Prisma MaterialType enum
+- External materials (link, video) show ExternalLink icon; downloadable (document, image, other) show Download icon
+- Material items have hover state with bg-muted background
+- PRD mentioned file sizes but model doesn't have that field; showing material type and description instead
+- Same verde-uva-100/700 colors for material type icons as educator panel
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Create presencial course detail page for student (3.09)
+
+---

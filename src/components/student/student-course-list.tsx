@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen, GraduationCap, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { StudentCourseRow } from './student-course-row'
+import { StudentCourseCard } from './student-course-card'
 import type { getStudentEnrollments } from '@/services/enrollment-service'
 
 type EnrollmentWithCourse = Awaited<ReturnType<typeof getStudentEnrollments>>[number]
@@ -143,7 +143,7 @@ export function StudentCourseList({ enrollments, currentFilter, viewAs }: Studen
         filteredEnrollments.length > 0 ? (
           <div className="space-y-4">
             {filteredEnrollments.map((enrollment) => (
-              <StudentCourseRow key={enrollment.id} enrollment={enrollment} viewAs={viewAs} />
+              <StudentCourseCard key={enrollment.id} enrollment={enrollment} viewAs={viewAs} />
             ))}
           </div>
         ) : (

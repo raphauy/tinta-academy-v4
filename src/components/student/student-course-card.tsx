@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -10,15 +11,24 @@ import {
   MapPin,
   Monitor,
   FileText,
-  ArrowRight
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  Download,
+  ExternalLink,
+  Image as ImageIcon,
+  Video,
+  Link2,
+  File
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toLocalDate } from '@/lib/utils'
 import type { getStudentEnrollments } from '@/services/enrollment-service'
+import type { MaterialType } from '@prisma/client'
 
 type EnrollmentWithCourse = Awaited<ReturnType<typeof getStudentEnrollments>>[number]
 
-interface StudentCourseRowProps {
+interface StudentCourseCardProps {
   enrollment: EnrollmentWithCourse
   viewAs?: string
 }
@@ -79,11 +89,37 @@ function getStatusBadge(course: EnrollmentWithCourse['course']): { label: string
   return { label: 'En curso', className: 'bg-amber-100 text-amber-800 border-amber-200' }
 }
 
-export function StudentCourseRow({ enrollment, viewAs }: StudentCourseRowProps) {
+// Get icon component for material type
+function getMaterialIcon(type: MaterialType) {
+  const icons: Record<MaterialType, typeof FileText> = {
+    document: FileText,
+    image: ImageIcon,
+    video: Video,
+    link: Link2,
+    other: File,
+  }
+  return icons[type] || File
+}
+
+// Get label for material type
+function getMaterialTypeLabel(type: MaterialType): string {
+  const labels: Record<MaterialType, string> = {
+    document: 'Documento',
+    image: 'Imagen',
+    video: 'Video',
+    link: 'Enlace',
+    other: 'Archivo',
+  }
+  return labels[type] || 'Archivo'
+}
+
+export function StudentCourseCard({ enrollment, viewAs }: StudentCourseCardProps) {
+  const [showMaterials, setShowMaterials] = useState(false)
   const course = enrollment.course
   const imageUrl = course.imageUrl || courseImages[course.type] || courseImages['curso']
   const statusBadge = getStatusBadge(course)
-  const materialsCount = course.materials?.length || 0
+  const materials = course.materials || []
+  const materialsCount = materials.length
 
   // Build course detail URL with viewAs if present
   const courseDetailUrl = viewAs
@@ -188,10 +224,14 @@ export function StudentCourseRow({ enrollment, viewAs }: StudentCourseRowProps) 
               )}
 
               {materialsCount > 0 && (
-                <span className="inline-flex items-center gap-1">
+                <button
+                  onClick={() => setShowMaterials(!showMaterials)}
+                  className="inline-flex items-center gap-1 hover:text-foreground transition-colors"
+                >
                   <FileText size={14} />
                   {materialsCount} {materialsCount === 1 ? 'material' : 'materiales'}
-                </span>
+                  {showMaterials ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
               )}
             </div>
 
@@ -204,6 +244,46 @@ export function StudentCourseRow({ enrollment, viewAs }: StudentCourseRowProps) 
           </div>
         </div>
       </div>
+
+      {/* Collapsible Materials Section */}
+      {materialsCount > 0 && showMaterials && (
+        <div className="mt-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-medium text-foreground mb-3">Materiales del curso</h4>
+          <ul className="space-y-2">
+            {materials.map((material) => {
+              const Icon = getMaterialIcon(material.type)
+              const isExternal = material.type === 'link' || material.type === 'video'
+
+              return (
+                <li key={material.id}>
+                  <a
+                    href={material.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors group"
+                  >
+                    <div className="shrink-0 size-8 rounded-lg bg-verde-uva-100 text-verde-uva-700 flex items-center justify-center">
+                      <Icon size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                        {material.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {getMaterialTypeLabel(material.type)}
+                        {material.description && ` · ${material.description}`}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-muted-foreground group-hover:text-primary transition-colors">
+                      {isExternal ? <ExternalLink size={16} /> : <Download size={16} />}
+                    </div>
+                  </a>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }

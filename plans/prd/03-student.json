@@ -138,7 +138,7 @@
       "Use same styling as educator cards: rounded-xl, border, hover:shadow",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "3.09",
