@@ -624,3 +624,58 @@ This file tracks progress for Milestone 06. Each entry documents what was implem
 **Next Priority:** Create checkout form component (6.17)
 
 ---
+
+## 2026-01-09 - Checkout Form Component (6.17)
+
+**Completed (PRD item 6.17):**
+- Completely rewrote src/components/checkout/checkout-form.tsx with full functionality:
+
+**PaymentMethodSelector component:**
+- Two selectable cards with radio-button style
+- MercadoPago: shows price in UYU, credit card icon, description
+- Bank Transfer: shows price in USD, building icon, description
+- Visual feedback with verde-uva colors on selection
+- Checkmark indicator on selected option
+
+**CouponInput component:**
+- Collapsible section "Tengo un cupon de descuento"
+- Input field with uppercase transformation
+- Applies coupon via applyCouponAction server action
+- Shows success badge when coupon applied (code + discount %)
+- X button to remove applied coupon
+- Error messages for invalid coupons
+- Loading state during validation
+
+**CheckoutSummary component:**
+- Course image, title, type badge, WSET level
+- Educator name with icon
+- Course details: date, duration, location
+- Price breakdown:
+  - Shows subtotal (strikethrough if discount)
+  - Discount line with coupon code
+  - Total prominently displayed
+- Currency label based on selected payment method
+- Sticky positioning on desktop
+
+**Main CheckoutForm:**
+- 2-column layout (60/40 split)
+- State management: paymentMethod, appliedCoupon, isSubmitting
+- Dynamic pricing recalculation when coupon changes
+- Form submission calls initiateCheckoutAction
+- Redirects to MP or pending page based on payment method
+- Toast notifications for success/error
+- Loading state with spinner during submission
+- Security notice at bottom
+
+**Technical Notes:**
+- Uses all existing server actions (initiateCheckoutAction, applyCouponAction)
+- Bank transfer uses first available bank account (simplified selection)
+- Currency automatically set based on payment method (UYU for MP, USD for transfer)
+- Pricing conversion uses ratio from original context
+- Note card appears when bank transfer selected explaining next steps
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Create checkout summary component (6.18) - Already implemented inline
+
+---

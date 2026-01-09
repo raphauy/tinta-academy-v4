@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
@@ -16,7 +16,11 @@ import {
   Loader2,
   BookOpen,
   ArrowRight,
+  Upload,
+  FileText,
+  X,
 } from 'lucide-react'
+import Confetti from 'react-confetti'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -46,6 +50,7 @@ interface OrderData {
   finalAmount: number
   currency: string
   transferReference: string | null
+  transferProofUrl: string | null
   course: {
     id: string
     title: string
@@ -79,6 +84,24 @@ const courseTypeLabels: Record<string, string> = {
   taller: 'Taller',
   cata: 'Cata',
   curso: 'Curso',
+}
+
+// Hook to get window dimensions using useSyncExternalStore
+function useWindowSize() {
+  const getSnapshot = () =>
+    typeof window !== 'undefined'
+      ? JSON.stringify({ width: window.innerWidth, height: window.innerHeight })
+      : JSON.stringify({ width: 0, height: 0 })
+
+  const getServerSnapshot = () => JSON.stringify({ width: 0, height: 0 })
+
+  const subscribe = (callback: () => void) => {
+    window.addEventListener('resize', callback)
+    return () => window.removeEventListener('resize', callback)
+  }
+
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  return JSON.parse(snapshot) as { width: number; height: number }
 }
 
 function CopyButton({ text, label }: { text: string; label: string }) {
@@ -115,16 +138,107 @@ export function PendingTransferPage({
   order,
   bankAccounts,
 }: PendingTransferPageProps) {
+  const windowSize = useWindowSize()
   const [reference, setReference] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [transferMarked, setTransferMarked] = useState(!!order.transferReference)
+  const [isUploading, setIsUploading] = useState(false)
+  const [transferMarked, setTransferMarked] = useState(
+    !!order.transferReference || !!order.transferProofUrl
+  )
+  const [showConfetti, setShowConfetti] = useState(false)
+  const [uploadedFile, setUploadedFile] = useState<{
+    name: string
+    url: string
+  } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { course } = order
+
+  // Stop confetti after 5 seconds
+  useEffect(() => {
+    if (showConfetti) {
+      const timer = setTimeout(() => {
+        setShowConfetti(false)
+      }, 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [showConfetti])
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('El archivo es demasiado grande', {
+        description: 'El tamaño máximo es 10MB',
+      })
+      return
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'application/pdf',
+    ]
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Tipo de archivo no permitido', {
+        description: 'Usa JPG, PNG, GIF, WebP o PDF',
+      })
+      return
+    }
+
+    setIsUploading(true)
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('orderId', order.id)
+
+      const response = await fetch('/api/upload/transfer-proof', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al subir el archivo')
+      }
+
+      setUploadedFile({
+        name: file.name,
+        url: data.url,
+      })
+      toast.success('Comprobante subido correctamente')
+    } catch (error) {
+      toast.error('Error al subir el comprobante', {
+        description: error instanceof Error ? error.message : 'Intenta de nuevo',
+      })
+    } finally {
+      setIsUploading(false)
+      // Reset input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleRemoveFile = () => {
+    setUploadedFile(null)
+  }
 
   const handleMarkTransferSent = async () => {
     setIsSubmitting(true)
 
     try {
-      const result = await markTransferSentAction(order.id, reference || undefined)
+      const result = await markTransferSentAction(
+        order.id,
+        reference || undefined,
+        uploadedFile?.url
+      )
 
       if (!result.success) {
         toast.error('Error al marcar la transferencia', {
@@ -136,6 +250,7 @@ export function PendingTransferPage({
 
       toast.success('Transferencia marcada como enviada')
       setTransferMarked(true)
+      setShowConfetti(true)
     } catch {
       toast.error('Error inesperado', {
         description: 'Por favor intenta de nuevo',
@@ -151,7 +266,19 @@ export function PendingTransferPage({
   )
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
+    <div className="relative max-w-3xl mx-auto py-8 px-4 space-y-6">
+      {/* Confetti Effect */}
+      {showConfetti && (
+        <Confetti
+          width={windowSize.width}
+          height={windowSize.height}
+          recycle={false}
+          numberOfPieces={200}
+          gravity={0.3}
+          style={{ position: 'fixed', top: 0, left: 0, zIndex: 50 }}
+        />
+      )}
+
       {/* Header */}
       <div className="text-center space-y-4">
         <div className="mx-auto w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center">
@@ -353,26 +480,97 @@ export function PendingTransferPage({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Reference Number */}
             <div className="space-y-2">
               <Label htmlFor="reference">
-                Numero de referencia o comprobante (opcional)
+                Numero de referencia (opcional)
               </Label>
               <Input
                 id="reference"
                 placeholder="Ej: 123456789"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isUploading}
               />
               <p className="text-xs text-muted-foreground">
-                Si tu banco te proporciono un numero de comprobante, incluyelo
-                aqui para agilizar la verificacion
+                Si tu banco te proporciono un numero de comprobante
               </p>
+            </div>
+
+            {/* File Upload */}
+            <div className="space-y-2">
+              <Label>Comprobante de transferencia (opcional)</Label>
+
+              {uploadedFile ? (
+                <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <FileText className="w-5 h-5 text-green-600 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-green-800 truncate">
+                      {uploadedFile.name}
+                    </p>
+                    <p className="text-xs text-green-600">Archivo subido</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-100"
+                    onClick={handleRemoveFile}
+                    disabled={isSubmitting}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                    isUploading
+                      ? 'border-verde-uva-300 bg-verde-uva-50/50'
+                      : 'border-muted-foreground/25 hover:border-verde-uva-400 hover:bg-muted/50'
+                  }`}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={handleFileSelect}
+                    disabled={isSubmitting || isUploading}
+                    className="hidden"
+                    id="proof-upload"
+                  />
+                  <label
+                    htmlFor="proof-upload"
+                    className={`cursor-pointer ${isUploading ? 'pointer-events-none' : ''}`}
+                  >
+                    {isUploading ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="w-8 h-8 text-verde-uva-600 animate-spin" />
+                        <p className="text-sm text-verde-uva-600 font-medium">
+                          Subiendo archivo...
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2">
+                        <Upload className="w-8 h-8 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-medium text-verde-uva-600">
+                            Click para subir
+                          </span>{' '}
+                          o arrastra el archivo
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          PDF, JPG, PNG o GIF (max. 10MB)
+                        </p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              )}
             </div>
 
             <Button
               onClick={handleMarkTransferSent}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploading}
               className="w-full"
               size="lg"
             >

@@ -54,6 +54,7 @@ const initiateCheckoutSchema = z.object({
 const markTransferSentSchema = z.object({
   orderId: z.string().min(1, 'ID de orden requerido'),
   reference: z.string().optional(),
+  proofUrl: z.string().url().optional(),
 })
 
 // ============================================
@@ -238,7 +239,8 @@ export async function initiateCheckoutAction(
  */
 export async function markTransferSentAction(
   orderId: string,
-  reference?: string
+  reference?: string,
+  proofUrl?: string
 ): Promise<ActionResult> {
   const authResult = await getAuthenticatedUser()
 
@@ -247,7 +249,7 @@ export async function markTransferSentAction(
   }
 
   // Validate input
-  const validated = markTransferSentSchema.safeParse({ orderId, reference })
+  const validated = markTransferSentSchema.safeParse({ orderId, reference, proofUrl })
 
   if (!validated.success) {
     return {
@@ -276,7 +278,7 @@ export async function markTransferSentAction(
       return { success: false, error: 'Esta orden no está pendiente de pago' }
     }
 
-    await markTransferAsSent(orderId, reference)
+    await markTransferAsSent(orderId, reference, proofUrl)
 
     return { success: true }
   } catch (error) {

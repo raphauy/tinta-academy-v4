@@ -295,6 +295,7 @@ model Order {
   // Bank transfer fields
   bankAccountId     String? // linked to BankAccount (added in 6.02)
   transferReference String? // user reference/comment
+  transferProofUrl  String? // URL of uploaded transfer proof (image/pdf)
   // Timestamps
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt

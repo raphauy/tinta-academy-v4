@@ -62,6 +62,7 @@ export default async function CheckoutPendingPage({ params }: PageProps) {
     finalAmount: order.finalAmount,
     currency: order.currency,
     transferReference: order.transferReference,
+    transferProofUrl: order.transferProofUrl,
     course: {
       id: order.course.id,
       title: order.course.title,

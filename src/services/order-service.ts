@@ -282,9 +282,8 @@ export async function markTransferAsSent(
   return prisma.order.update({
     where: { id: orderId },
     data: {
-      transferReference: reference || proofUrl
-        ? [reference, proofUrl].filter(Boolean).join(' | ')
-        : undefined,
+      ...(reference && { transferReference: reference }),
+      ...(proofUrl && { transferProofUrl: proofUrl }),
     },
     include: orderWithRelations,
   })
