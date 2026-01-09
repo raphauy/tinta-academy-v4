@@ -210,6 +210,31 @@ model Enrollment {
 }
 
 // ============================================
+// BANK ACCOUNTS
+// ============================================
+
+model BankAccount {
+  id            String   @id @default(cuid())
+  bankName      String
+  accountHolder String // titular de la cuenta
+  accountType   String // Caja de ahorro, Cuenta corriente, etc
+  accountNumber String
+  currency      Currency
+  swiftCode     String? // for international transfers
+  routingNumber String?
+  displayOrder  Int      @default(0)
+  notes         String? // internal notes
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([currency])
+  @@index([isActive])
+}
+
+// ============================================
 // ORDERS
 // ============================================
 
@@ -245,11 +270,12 @@ model Order {
   cancelledAt       DateTime?
   refundedAt        DateTime?
 
-  // Relations (user, course, student)
-  user    User     @relation(fields: [userId], references: [id])
-  course  Course   @relation(fields: [courseId], references: [id])
-  student Student? @relation(fields: [studentId], references: [id])
-  // Note: coupon and bankAccount relations added in 6.03 and 6.02
+  // Relations
+  user        User         @relation(fields: [userId], references: [id])
+  course      Course       @relation(fields: [courseId], references: [id])
+  student     Student?     @relation(fields: [studentId], references: [id])
+  bankAccount BankAccount? @relation(fields: [bankAccountId], references: [id])
+  // Note: coupon relation added in 6.03
 
   @@index([userId])
   @@index([courseId])

@@ -1229,3 +1229,31 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Add BankAccount model (6.02)
 
 ---
+
+## 2026-01-09 - BankAccount Model (6.02)
+
+**Completed (PRD item 6.02):**
+- Added BankAccount model to prisma/schema.prisma with all required fields:
+  - id, bankName, accountHolder, accountType, accountNumber
+  - currency (uses Currency enum)
+  - swiftCode?, routingNumber? (for international transfers)
+  - displayOrder (for ordering in UI)
+  - notes? (internal notes)
+  - isActive (default true)
+  - createdAt, updatedAt
+- Added orders relation (Order[]) to BankAccount
+- Added bankAccount relation to Order model
+- Added indexes on currency and isActive
+
+**Technical Notes:**
+- BankAccount supports multiple currencies (USD, UYU) using existing Currency enum
+- displayOrder allows admin to control which accounts appear first
+- isActive flag for soft-disabling accounts without deleting
+- Relation from Order to BankAccount now fully connected (was placeholder in 6.01)
+- No migration run yet - will migrate after all schema changes (6.04)
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Add Coupon model (6.03)
+
+---
