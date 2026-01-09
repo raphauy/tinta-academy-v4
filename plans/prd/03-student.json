@@ -212,7 +212,7 @@
       "In student-profile.tsx add avatar upload button with loading state",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "3.13",
