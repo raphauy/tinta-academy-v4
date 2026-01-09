@@ -764,3 +764,24 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **MILESTONE 4 COMPLETE** - All PRD items pass.
 
 ---
+
+## 2026-01-09 - Student Milestone Start (3.01)
+
+**Completed (PRD item 3.01):**
+- Extended Student model in Prisma schema with new fields:
+  - Billing: billingName, billingTaxId, billingAddress (all optional String)
+  - Notifications: notifyNewCourses (default true), notifyPromotions (default false), notifyCourseUpdates (default true)
+- Created migration: 20260109115802_extend_student_profile
+- Generated Prisma client with new types
+
+**Technical Notes:**
+- Created branch `feature/03-student` for this milestone
+- All billing fields are optional to avoid breaking existing student records
+- Notification preferences have sensible defaults (no marketing spam by default)
+- Pre-existing lint warnings (3) are unrelated to this change
+
+**Verification:** typecheck ✓, lint ✓ (3 warnings, pre-existing), build ✓
+
+**Next Priority:** Update student sidebar navigation (3.02)
+
+---

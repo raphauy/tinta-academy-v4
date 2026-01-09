@@ -13,6 +13,8 @@ Lee estos archivos para entender el contexto:
 - @plans/progress.txt - Historial de progreso entre sesiones
 - @plans/prd/$ARGUMENTS.json - PRD del milestone (ej: 02-landing)
 
+## ARGUMENTS por defecto: 03-student
+
 ## Tu tarea
 
 1. **Lee el PRD** del milestone `$ARGUMENTS` (ej: `plans/prd/02-landing.json`)

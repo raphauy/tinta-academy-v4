@@ -1,0 +1,305 @@
+[
+  {
+    "id": "3.01",
+    "category": "schema",
+    "description": "Extend Student model with billing and notification preferences",
+    "steps": [
+      "Update Student model in prisma/schema.prisma adding fields:",
+      "  - billingName: String? (nombre o razon social)",
+      "  - billingTaxId: String? (RUT/CI)",
+      "  - billingAddress: String? (direccion de facturacion)",
+      "  - notifyNewCourses: Boolean @default(true)",
+      "  - notifyPromotions: Boolean @default(false)",
+      "  - notifyCourseUpdates: Boolean @default(true)",
+      "Run prisma generate",
+      "Run prisma migrate dev --name extend_student_profile",
+      "Verify with pnpm tsc --noEmit"
+    ],
+    "passes": true
+  },
+  {
+    "id": "3.02",
+    "category": "navigation",
+    "description": "Update student sidebar navigation",
+    "steps": [
+      "Update src/components/shell/navigation-config.ts studentNavItems:",
+      "  - Dashboard (/student) with LayoutDashboard icon - 'Panel de Control'",
+      "  - Mis Cursos (/student/courses) with BookOpen icon",
+      "  - Mi Perfil (/student/profile) with User icon",
+      "Remove obsolete entries: Continuar, Calendario, Mi Progreso, Mis Datos",
+      "Keep consistent with educator sidebar structure (avatar at bottom already handled by AppShell)",
+      "Verify with pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.03",
+    "category": "api",
+    "description": "Create student-service for dashboard metrics and student data",
+    "steps": [
+      "Create src/services/student-service.ts",
+      "Implement getStudentByUserId(userId: string) - fetch Student with user relation",
+      "Implement getStudentDashboardMetrics(studentId: string) returning:",
+      "  - totalCourses: count of confirmed enrollments",
+      "  - inProgressCourses: count of courses with status in_progress/enrolling",
+      "  - completedCourses: count of courses with status finished where student was enrolled",
+      "  - upcomingCourses: courses with startDate > now where student is enrolled",
+      "  - recentCourses: last 3 enrolled courses with basic info for quick access",
+      "Implement getStudentProfile(studentId: string) - full student data for profile editing",
+      "Implement updateStudentProfile(studentId: string, data: UpdateStudentInput)",
+      "Verify with pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.04",
+    "category": "api",
+    "description": "Extend enrollment-service for student-specific operations",
+    "steps": [
+      "Add getStudentEnrollments(studentId: string, filters?: { status? }) to enrollment-service.ts",
+      "Return enrollments with full course data including:",
+      "  - Course: title, slug, type, modality, imageUrl, startDate, endDate",
+      "  - Course: location, address, status, educatorId",
+      "  - Educator: name (via course.educator)",
+      "  - CourseMaterial: all materials for the course",
+      "Add getEnrollmentWithCourseDetails(enrollmentId: string) for single enrollment detail",
+      "Verify with pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.05",
+    "category": "actions",
+    "description": "Create server actions for student operations",
+    "steps": [
+      "Create src/app/student/actions.ts",
+      "Implement getAuthenticatedStudent() helper - get student from session",
+      "Implement updateStudentProfileAction(formData) - validate with Zod, call student-service",
+      "Implement updateNotificationPreferencesAction(preferences) - update notification fields",
+      "All actions must verify user owns the student record",
+      "Use revalidatePath after mutations",
+      "Verify with pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.06",
+    "category": "ui",
+    "description": "Create student dashboard page with metrics",
+    "steps": [
+      "Update src/app/student/page.tsx as RSC to be the dashboard",
+      "Fetch student data using getStudentByUserId from session",
+      "Fetch dashboard metrics using getStudentDashboardMetrics",
+      "Create src/components/student/student-dashboard.tsx with:",
+      "  - Welcome message with student name",
+      "  - MetricCards: Cursos Inscritos, En Curso, Completados, Proximos",
+      "  - Quick action button: 'Explorar Cursos' linking to landing catalog",
+      "  - List of recent courses (max 3) with links to course detail",
+      "  - Empty state if no courses: friendly message + CTA to explore courses",
+      "Reuse metric-card pattern from educator components",
+      "Use same color scheme: #143F3B primary, stone colors for text",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.07",
+    "category": "ui",
+    "description": "Create student course list page with filters",
+    "steps": [
+      "Create src/app/student/courses/page.tsx as RSC",
+      "Fetch student's enrollments using getStudentEnrollments",
+      "Support URL query params for filters: ?status=in_progress",
+      "Create src/components/student/student-course-list.tsx with:",
+      "  - Header: 'Mis Cursos' with count and icon (following educator pattern)",
+      "  - Filter bar: status chips (Todos, En Progreso, Completados)",
+      "  - Empty state: 'Aun no estas inscrito en ningun curso' with CTA",
+      "  - Vertical list of student-course-card components (not grid, per design)",
+      "Sort: in_progress first, then upcoming, then completed",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.08",
+    "category": "ui",
+    "description": "Create student course card component",
+    "steps": [
+      "Create src/components/student/student-course-card.tsx following design reference:",
+      "  - Horizontal card layout (full width)",
+      "  - Course type badge (WSET/TALLER/CATA/CURSO) with colored background",
+      "  - Modality badge (Presencial/Online)",
+      "  - Status badge on right: En Progreso (blue), Completado (green), Proximamente (outline)",
+      "  - Title, educator name",
+      "  - For presencial: location icon + venue, calendar icon + date/schedule",
+      "  - For online (future): progress bar with X de Y lecciones, percentage",
+      "  - Materials section if course has materials: list with download icons and file sizes",
+      "  - Action button: 'Ver detalles' for presencial, 'Continuar curso' for online (future)",
+      "Use same styling as educator cards: rounded-xl, border, hover:shadow",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.09",
+    "category": "ui",
+    "description": "Create presencial course detail page for student",
+    "steps": [
+      "Create src/app/student/courses/[id]/page.tsx as RSC",
+      "Fetch enrollment with course details using getEnrollmentWithCourseDetails",
+      "Verify student is enrolled in this course, redirect to /student/courses if not",
+      "Create src/components/student/course-detail.tsx with:",
+      "  - Course header: title, type badge, status badge",
+      "  - Educator info: name, possibly avatar",
+      "  - Event details card: location, address (with map link), dates, schedule",
+      "  - If WSET and has exam: show exam date, result if available",
+      "  - Materials section: downloadable resources with icons, size, download button",
+      "  - Back button to course list",
+      "Handle empty materials state gracefully",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.10",
+    "category": "feature",
+    "description": "Implement material download functionality",
+    "steps": [
+      "Create download action in src/app/student/actions.ts:",
+      "  - downloadMaterialAction(materialId: string) - verify student has access",
+      "  - Return material URL if student is enrolled in the course",
+      "  - Log download if needed for analytics (optional)",
+      "In course-detail.tsx wire download buttons to action",
+      "For Vercel blob URLs, generate presigned URL or redirect",
+      "For external URLs, open in new tab",
+      "Show loading state on download button during action",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.11",
+    "category": "ui",
+    "description": "Create student profile page",
+    "steps": [
+      "Create src/app/student/profile/page.tsx as RSC",
+      "Fetch student profile using getStudentProfile",
+      "Create src/components/student/student-profile.tsx following design reference:",
+      "  - Section cards with icon headers (same pattern as educator)",
+      "  - Personal Info section: avatar with upload, firstName, lastName, email (disabled), phone, dateOfBirth",
+      "  - Address section: address, city, zip, country",
+      "  - Billing section: billingName, billingTaxId, billingAddress",
+      "  - Notification preferences section: toggles for each notification type",
+      "  - Sticky save button that appears when changes are made",
+      "Use react-hook-form with Zod validation",
+      "Wire to updateStudentProfileAction and updateNotificationPreferencesAction",
+      "Show toast on success/error using sonner",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.12",
+    "category": "feature",
+    "description": "Implement avatar upload for student profile",
+    "steps": [
+      "Create uploadStudentAvatarAction in src/app/student/actions.ts",
+      "Use Vercel Blob for storage (same pattern as educator/user profile)",
+      "Accept image file, validate type and size (max 2MB)",
+      "Upload to blob, get URL",
+      "Update User.image field (student avatar stored on User, not Student)",
+      "Return new URL for immediate UI update",
+      "In student-profile.tsx add avatar upload button with loading state",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.13",
+    "category": "polish",
+    "description": "Add empty states and loading skeletons to student pages",
+    "steps": [
+      "Create src/components/student/skeletons.tsx with:",
+      "  - StudentDashboardSkeleton (metrics + recent courses)",
+      "  - StudentCourseListSkeleton (filters + course cards)",
+      "  - StudentCourseDetailSkeleton (header + event info + materials)",
+      "  - StudentProfileSkeleton (section cards)",
+      "Add Suspense boundaries around data-fetching sections in pages",
+      "Create empty state components for:",
+      "  - No enrolled courses",
+      "  - No materials available",
+      "All skeletons follow same pattern as educator skeletons (animate-pulse, bg-muted)",
+      "Verify empty states show correctly when no data",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.14",
+    "category": "polish",
+    "description": "Ensure responsive design and mobile usability",
+    "steps": [
+      "Test all student pages at 375px viewport width",
+      "Course cards should stack properly on mobile (already vertical list)",
+      "Profile form sections should be full width on mobile",
+      "Metric cards: 2 columns on mobile, 4 on desktop",
+      "Material download buttons should be touch-friendly (min 44px)",
+      "Navigation sidebar collapse handled by AppShell",
+      "Fix any overflow or spacing issues",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.15",
+    "category": "cleanup",
+    "description": "Remove obsolete student pages and finalize structure",
+    "steps": [
+      "Remove src/app/student/continue/page.tsx (obsolete)",
+      "Remove src/app/student/calendar/page.tsx (obsolete)",
+      "Remove src/app/student/progress/page.tsx (obsolete)",
+      "Remove src/app/student/data/page.tsx (obsolete, replaced by /student/profile)",
+      "Update any internal links that referenced old routes",
+      "Verify all routes work correctly:",
+      "  - /student -> dashboard",
+      "  - /student/courses -> course list",
+      "  - /student/courses/[id] -> course detail",
+      "  - /student/profile -> student profile",
+      "Run pnpm lint, pnpm tsc --noEmit, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.16",
+    "category": "data",
+    "description": "Ensure test data for student panel development",
+    "steps": [
+      "Verify enrolled students exist from educator panel migration (4.02b, 4.02c)",
+      "If no enrollments exist, update prisma/seed.ts to create:",
+      "  - At least 2 test students with complete profile data",
+      "  - Enrollments linking students to existing courses",
+      "  - Mix of confirmed enrollments in different course statuses",
+      "Ensure at least one course has materials for testing downloads",
+      "Test student dashboard shows correct metrics with seeded data",
+      "Run pnpm lint, pnpm tsc --noEmit"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.17",
+    "category": "integration",
+    "description": "Create student components index and verify exports",
+    "steps": [
+      "Create src/components/student/index.ts exporting all components:",
+      "  - StudentDashboard",
+      "  - StudentCourseList",
+      "  - StudentCourseCard",
+      "  - CourseDetail",
+      "  - StudentProfile",
+      "  - All skeleton components",
+      "Verify all imports work correctly",
+      "Run pnpm lint, pnpm tsc --noEmit, pnpm build in sequence"
+    ],
+    "passes": false
+  }
+]

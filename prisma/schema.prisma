@@ -57,6 +57,14 @@ model Student {
   city        String?
   zip         String?
   country     String?
+  // Billing information
+  billingName    String? // Nombre o razón social
+  billingTaxId   String? // RUT/CI
+  billingAddress String? // Dirección de facturación
+  // Notification preferences
+  notifyNewCourses    Boolean @default(true)
+  notifyPromotions    Boolean @default(false)
+  notifyCourseUpdates Boolean @default(true)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
