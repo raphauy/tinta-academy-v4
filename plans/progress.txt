@@ -1593,3 +1593,35 @@ Next: Start implementing Milestone 2 - Landing & Catalog
 **Next Priority:** Create server actions for checkout operations (6.11)
 
 ---
+
+## 2026-01-09 - Checkout Server Actions (6.11)
+
+**Completed (PRD item 6.11):**
+- Created src/app/checkout/actions.ts with 'use server' directive
+- Created checkout directory for checkout-related pages
+
+**Helper Function:**
+- getAuthenticatedUser(): validates session, returns user { id, email } or error
+
+**Server Actions:**
+- getCheckoutContextAction(courseId, couponCode?): returns CheckoutContext or error
+- applyCouponAction(courseId, couponCode): validates coupon, returns ValidateCouponResult
+- initiateCheckoutAction(courseId, paymentMethod, currency, couponCode?, bankAccountId?):
+  - For mercadopago: creates order, creates MP preference, returns { orderId, redirectUrl }
+  - For bank_transfer: creates order, returns { orderId }
+  - For free: completes enrollment immediately, returns { orderId }
+- markTransferSentAction(orderId, reference?): marks bank transfer as sent by user
+- getOrderStatusAction(orderId): returns order status and details for success/pending pages
+
+**Technical Notes:**
+- All actions verify user authentication before processing
+- Uses Zod schemas for input validation (initiateCheckoutSchema, markTransferSentSchema)
+- Validates order ownership before allowing mutations
+- Returns consistent ActionResult<T> type for all actions
+- Error messages in Spanish for user-facing errors
+
+**Verification:** typecheck ✓, lint ✓ (4 warnings, pre-existing), build ✓
+
+**Next Priority:** Create server actions for admin order management (6.12)
+
+---
