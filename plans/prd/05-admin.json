@@ -420,7 +420,7 @@
       "Handle onView/onEdit callbacks with router navigation or modal",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.25",

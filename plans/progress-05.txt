@@ -304,3 +304,37 @@ Item 5.23: Implement admin courses page
 
 ### Next step suggestion
 Item 5.24: Implement admin students page
+
+## 2026-01-10 - Item 5.24: Admin Students Page
+
+### Completed Item
+
+#### 5.24: Implement admin students page
+- Updated `src/app/admin/users/students/page.tsx` as RSC
+- Fetches students and stats using getAllStudentsWithStats and getStudentStats from student-service
+- Created `admin-students-client.tsx` for client-side modal handling
+- Wraps in Suspense with AdminStudentsSkeleton fallback
+- Added metadata: title 'Estudiantes - Admin'
+- Created `StudentDetailDialog` component for viewing and editing student info
+- onView opens modal in view mode, onEdit opens in edit mode
+- Calls updateStudentAction on save
+
+### Technical Decisions
+- Separated RSC (page.tsx) from client logic (admin-students-client.tsx)
+- Created StudentDetailDialog without tabs (tabs component not available) - used simple layout with stats at top and info below
+- Dialog supports view/edit modes with toggle button
+- Edit form updates firstName, lastName, phone, city, country, identityDocument
+- Added StudentDetailDialog export to components/admin/index.ts
+- Changed StudentWithStats.totalSpent to totalSpentUSD and totalSpentUYU for accurate currency display
+- Updated student-row.tsx to show both currencies when applicable (e.g. "USD 350 / $ 54.580")
+- StudentDetailDialog uses Wallet icon instead of DollarSign to avoid confusion with UYU's $ symbol
+- Search input and action buttons use shadcn components consistently
+- Student name is clickable to open detail dialog
+
+### Verification
+- TypeCheck: PASS
+- Lint: PASS (pre-existing warnings only)
+- Build: PASS
+
+### Next step suggestion
+Item 5.25: Implement admin educators page

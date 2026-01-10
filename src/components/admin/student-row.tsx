@@ -8,6 +8,7 @@ import {
   GraduationCap,
   CheckCircle,
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { StudentWithStats } from '@/services/student-service'
 
 interface StudentRowProps {
@@ -43,13 +44,18 @@ function Avatar({ src, name, initials }: AvatarProps) {
   )
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+function formatNumber(amount: number): string {
+  return new Intl.NumberFormat('es-UY', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount)
+}
+
+function formatSpent(usd: number, uyu: number): string {
+  const parts: string[] = []
+  if (usd > 0) parts.push(`USD ${formatNumber(usd)}`)
+  if (uyu > 0) parts.push(`$ ${formatNumber(uyu)}`)
+  return parts.length > 0 ? parts.join(' / ') : '-'
 }
 
 function formatRelativeDate(date: Date | null): string {
@@ -97,9 +103,12 @@ export function StudentRow({ student, onView, onEdit }: StudentRowProps) {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-medium text-stone-900 dark:text-stone-100 truncate">
+              <button
+                onClick={onView}
+                className="font-medium text-stone-900 dark:text-stone-100 truncate hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:underline transition-colors text-left"
+              >
                 {fullName}
-              </h3>
+              </button>
               {isRecentlyActive && (
                 <span className="w-2 h-2 rounded-full bg-[#143F3B] dark:bg-[#6B9B7A] flex-shrink-0" title="Activo recientemente" />
               )}
@@ -116,20 +125,22 @@ export function StudentRow({ student, onView, onEdit }: StudentRowProps) {
           </div>
 
           <div className="flex items-center gap-1">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onView}
-              className="p-2 text-stone-400 hover:text-[#143F3B] dark:text-stone-500 dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-lg transition-colors"
               title="Ver detalles"
             >
               <Eye className="w-4 h-4" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onEdit}
-              className="p-2 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-lg transition-colors"
               title="Editar"
             >
               <Edit className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -146,7 +157,7 @@ export function StudentRow({ student, onView, onEdit }: StudentRowProps) {
             )}
           </div>
           <div className="text-xs font-medium text-stone-900 dark:text-stone-100">
-            {formatCurrency(student.totalSpent)}
+            {formatSpent(student.totalSpentUSD, student.totalSpentUYU)}
           </div>
         </div>
       </div>
@@ -161,9 +172,12 @@ export function StudentRow({ student, onView, onEdit }: StudentRowProps) {
           />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-medium text-stone-900 dark:text-stone-100 truncate">
+              <button
+                onClick={onView}
+                className="font-medium text-stone-900 dark:text-stone-100 truncate hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:underline transition-colors text-left"
+              >
                 {fullName}
-              </h3>
+              </button>
               {isRecentlyActive && (
                 <span className="w-2 h-2 rounded-full bg-[#143F3B] dark:bg-[#6B9B7A] flex-shrink-0" title="Activo recientemente" />
               )}
@@ -214,28 +228,32 @@ export function StudentRow({ student, onView, onEdit }: StudentRowProps) {
 
         <div className="col-span-2 text-center">
           <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">
-            {formatCurrency(student.totalSpent)}
+            {formatSpent(student.totalSpentUSD, student.totalSpentUYU)}
           </p>
-          <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">
-            USD total
-          </p>
+          {(student.totalSpentUSD > 0 || student.totalSpentUYU > 0) && (
+            <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">
+              total
+            </p>
+          )}
         </div>
 
         <div className="col-span-2 flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onView}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#143F3B] dark:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-lg transition-colors"
           >
-            <Eye className="w-3.5 h-3.5" />
+            <Eye className="w-3.5 h-3.5 mr-1.5" />
             Ver
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onEdit}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-lg transition-colors"
           >
-            <Edit className="w-3.5 h-3.5" />
+            <Edit className="w-3.5 h-3.5 mr-1.5" />
             Editar
-          </button>
+          </Button>
         </div>
       </div>
     </div>

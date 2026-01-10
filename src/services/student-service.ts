@@ -298,7 +298,8 @@ export interface StudentWithStats {
   }
   enrollmentsCount: number
   completedCourses: number
-  totalSpent: number
+  totalSpentUSD: number
+  totalSpentUYU: number
   lastActivityAt: Date | null
 }
 
@@ -341,6 +342,7 @@ export async function getAllStudentsWithStats(): Promise<StudentWithStats[]> {
         where: { status: 'paid' },
         select: {
           finalAmount: true,
+          currency: true,
           paidAt: true,
         },
       },
@@ -353,7 +355,13 @@ export async function getAllStudentsWithStats(): Promise<StudentWithStats[]> {
     const completedCourses = confirmedEnrollments.filter(
       (e) => e.course.status === 'finished'
     ).length
-    const totalSpent = student.orders.reduce((sum, order) => sum + order.finalAmount, 0)
+    // Calculate total spent by currency
+    const totalSpentUSD = student.orders
+      .filter((o) => o.currency === 'USD')
+      .reduce((sum, order) => sum + order.finalAmount, 0)
+    const totalSpentUYU = student.orders
+      .filter((o) => o.currency === 'UYU')
+      .reduce((sum, order) => sum + order.finalAmount, 0)
 
     // Find last activity (most recent enrollment or payment)
     const enrollmentDates = student.enrollments.map((e) => e.enrolledAt)
@@ -376,7 +384,8 @@ export async function getAllStudentsWithStats(): Promise<StudentWithStats[]> {
       user: student.user,
       enrollmentsCount: confirmedEnrollments.length,
       completedCourses,
-      totalSpent,
+      totalSpentUSD,
+      totalSpentUYU,
       lastActivityAt,
     }
   })
@@ -478,6 +487,7 @@ export async function getStudentByIdWithStats(
         where: { status: 'paid' },
         select: {
           finalAmount: true,
+          currency: true,
           paidAt: true,
         },
       },
@@ -490,7 +500,13 @@ export async function getStudentByIdWithStats(
   const completedCourses = confirmedEnrollments.filter(
     (e) => e.course.status === 'finished'
   ).length
-  const totalSpent = student.orders.reduce((sum, order) => sum + order.finalAmount, 0)
+  // Calculate total spent by currency
+  const totalSpentUSD = student.orders
+    .filter((o) => o.currency === 'USD')
+    .reduce((sum, order) => sum + order.finalAmount, 0)
+  const totalSpentUYU = student.orders
+    .filter((o) => o.currency === 'UYU')
+    .reduce((sum, order) => sum + order.finalAmount, 0)
 
   const enrollmentDates = student.enrollments.map((e) => e.enrolledAt)
   const paymentDates = student.orders.map((o) => o.paidAt).filter(Boolean) as Date[]
@@ -512,7 +528,8 @@ export async function getStudentByIdWithStats(
     user: student.user,
     enrollmentsCount: confirmedEnrollments.length,
     completedCourses,
-    totalSpent,
+    totalSpentUSD,
+    totalSpentUYU,
     lastActivityAt,
   }
 }
@@ -606,6 +623,7 @@ export async function getStudentsByActivity(days: number): Promise<StudentWithSt
         where: { status: 'paid' },
         select: {
           finalAmount: true,
+          currency: true,
           paidAt: true,
         },
       },
@@ -618,7 +636,13 @@ export async function getStudentsByActivity(days: number): Promise<StudentWithSt
     const completedCourses = confirmedEnrollments.filter(
       (e) => e.course.status === 'finished'
     ).length
-    const totalSpent = student.orders.reduce((sum, order) => sum + order.finalAmount, 0)
+    // Calculate total spent by currency
+    const totalSpentUSD = student.orders
+      .filter((o) => o.currency === 'USD')
+      .reduce((sum, order) => sum + order.finalAmount, 0)
+    const totalSpentUYU = student.orders
+      .filter((o) => o.currency === 'UYU')
+      .reduce((sum, order) => sum + order.finalAmount, 0)
 
     const enrollmentDates = student.enrollments.map((e) => e.enrolledAt)
     const paymentDates = student.orders.map((o) => o.paidAt).filter(Boolean) as Date[]
@@ -640,7 +664,8 @@ export async function getStudentsByActivity(days: number): Promise<StudentWithSt
       user: student.user,
       enrollmentsCount: confirmedEnrollments.length,
       completedCourses,
-      totalSpent,
+      totalSpentUSD,
+      totalSpentUYU,
       lastActivityAt,
     }
   })

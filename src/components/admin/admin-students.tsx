@@ -65,7 +65,7 @@ export function AdminStudents({
           comparison = a.enrollmentsCount - b.enrollmentsCount
           break
         case 'spent':
-          comparison = a.totalSpent - b.totalSpent
+          comparison = (a.totalSpentUSD + a.totalSpentUYU) - (b.totalSpentUSD + b.totalSpentUYU)
           break
         case 'lastActivity':
           const dateA = a.lastActivityAt ? new Date(a.lastActivityAt).getTime() : 0
@@ -169,21 +169,23 @@ export function AdminStudents({
       </div>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 dark:text-stone-500" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
           type="text"
           placeholder="Buscar por nombre, email o ciudad..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 pr-10"
+          className="pl-10 pr-10 bg-background"
         />
         {searchQuery && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
           >
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         )}
       </div>
 

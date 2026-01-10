@@ -57,6 +57,7 @@ export { CouponFormDialog } from './coupon-form-dialog'
 export { BankAccountFormDialog } from './bank-account-form-dialog'
 export { UserRoleDialog } from './user-role-dialog'
 export { OrderDetailDialog } from './order-detail-dialog'
+export { StudentDetailDialog } from './student-detail-dialog'
 
 // Confirmation Dialogs
 export {
