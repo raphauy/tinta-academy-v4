@@ -25,8 +25,9 @@ export default async function proxy(request: NextRequest) {
     cookieName,
   })
 
-  // Redirect authenticated users away from login page
-  if (pathname === '/login' && token) {
+  // Redirect authenticated users away from login page (only for GET requests)
+  // Allow POST requests for server actions (e.g., updateUserNameAction)
+  if (pathname === '/login' && token && request.method === 'GET') {
     const role = token.role as string
     const redirectMap: Record<string, string> = {
       superadmin: '/admin',

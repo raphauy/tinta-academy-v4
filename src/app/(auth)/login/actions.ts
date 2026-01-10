@@ -1,7 +1,7 @@
 'use server'
 
 import { signIn } from '@/lib/auth'
-import { getOrCreateUser, getUserByEmail } from '@/services/user-service'
+import { getOrCreateUser, getUserByEmail, updateUser } from '@/services/user-service'
 import { generateOtp, createOtpToken } from '@/services/auth-service'
 import { sendOtpEmail } from '@/services/email-service'
 import { z } from 'zod'
@@ -13,6 +13,8 @@ type ActionResult = {
   error?: string
   message?: string
   redirectUrl?: string
+  hasName?: boolean
+  name?: string
 }
 
 export async function checkEmailAction(email: string): Promise<ActionResult> {
@@ -120,12 +122,56 @@ export async function verifyOtpAction(
         redirectUrl = '/'
     }
 
-    return { success: true, redirectUrl }
+    return { success: true, redirectUrl, hasName: !!user.name }
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { success: false, error: 'Email inválido' }
     }
     console.error('Error verifying OTP:', error)
     return { success: false, error: 'Error al verificar el código' }
+  }
+}
+
+export async function updateUserNameAction(
+  email: string,
+  name: string
+): Promise<ActionResult> {
+  try {
+    const validatedEmail = emailSchema.parse(email)
+
+    const trimmedName = name.trim()
+    if (!trimmedName) {
+      return { success: false, error: 'El nombre es requerido' }
+    }
+
+    const user = await getUserByEmail(validatedEmail)
+    if (!user) {
+      return { success: false, error: 'Usuario no encontrado' }
+    }
+
+    await updateUser(user.id, { name: trimmedName })
+
+    let redirectUrl = '/'
+    switch (user.role) {
+      case 'superadmin':
+        redirectUrl = '/admin'
+        break
+      case 'educator':
+        redirectUrl = '/educator'
+        break
+      case 'student':
+        redirectUrl = '/student'
+        break
+      default:
+        redirectUrl = '/'
+    }
+
+    return { success: true, redirectUrl, name: trimmedName }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: 'Email inválido' }
+    }
+    console.error('Error updating user name:', error)
+    return { success: false, error: 'Error al guardar el nombre' }
   }
 }
