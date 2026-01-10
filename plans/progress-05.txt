@@ -415,3 +415,37 @@ Item 5.26: Implement admin users page
 
 ### Next step suggestion
 Item 5.27: Implement admin orders page
+
+## 2026-01-10 - Item 5.28: Admin Coupons Page
+
+### Completed Item
+
+#### 5.28: Implement admin coupons page
+- Updated `src/app/admin/coupons/page.tsx` as RSC
+- Fetches coupons using Prisma directly in server component
+- Created `admin-coupons-client.tsx` for client-side modal handling
+- Wraps in Suspense with AdminCouponsSkeleton fallback
+- Added metadata: title 'Cupones - Admin'
+
+### Functionality
+- Create new coupons with form dialog
+- Edit existing coupons
+- Toggle coupon active/inactive status
+- Delete coupons (with confirmation dialog)
+- Search and filter by status
+- Sort by code, discount, uses, date
+
+### Technical Decisions
+- Separated RSC (page.tsx) from client logic (admin-coupons-client.tsx)
+- Used existing CouponFormDialog for create/edit
+- Used ConfirmationDialog with type="delete" for deletion
+- Server actions handle create, update, toggle, delete
+- Router refresh after mutations for immediate UI updates
+
+### Verification
+- TypeCheck: PASS
+- Lint: PASS (pre-existing warnings only)
+- Build: PASS
+
+### Next step suggestion
+Item 5.29: Implement admin bank data page

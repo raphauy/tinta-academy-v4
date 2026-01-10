@@ -242,7 +242,7 @@ function CouponInput({
       >
         <span className="flex items-center gap-2 text-muted-foreground">
           <Tag className="w-4 h-4" />
-          Tengo un cupon de descuento
+          Tengo un cupon
         </span>
         <ChevronDown
           className={`w-4 h-4 text-muted-foreground transition-transform ${

@@ -17,6 +17,7 @@ import {
   ToggleRight,
 } from 'lucide-react'
 import type { Coupon } from '@prisma/client'
+import { Button } from '@/components/ui/button'
 
 interface CouponRowProps {
   coupon: Coupon
@@ -124,9 +125,13 @@ export function CouponRow({
             </div>
 
             <div className="min-w-0">
-              <p className="font-mono font-bold text-sm text-stone-900 dark:text-stone-100">
+              <Button
+                variant="link"
+                onClick={onEdit}
+                className="h-auto p-0 font-mono font-bold text-sm text-stone-900 dark:text-stone-100 hover:text-[#143F3B] dark:hover:text-[#6B9B7A]"
+              >
                 {coupon.code}
-              </p>
+              </Button>
               <p className="text-lg font-bold text-[#143F3B] dark:text-[#6B9B7A]">
                 -{coupon.discountPercent}%
               </p>
@@ -184,9 +189,11 @@ export function CouponRow({
         )}
 
         <div className="flex items-center justify-end gap-1">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onToggleActive}
-            className={`p-1.5 rounded-md transition-colors ${
+            className={`h-8 w-8 ${
               coupon.isActive
                 ? 'text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
@@ -198,22 +205,26 @@ export function CouponRow({
             ) : (
               <ToggleLeft className="w-4 h-4" />
             )}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onEdit}
-            className="p-1.5 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-md transition-colors"
+            className="h-8 w-8 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20"
             title="Editar"
           >
             <Pencil className="w-4 h-4" />
-          </button>
+          </Button>
           {coupon.currentUses === 0 && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onDelete}
-              className="p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-md transition-colors"
+              className="h-8 w-8 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50"
               title="Eliminar"
             >
               <Trash2 className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -231,9 +242,13 @@ export function CouponRow({
             <Ticket className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <p className="font-mono font-bold text-sm text-stone-900 dark:text-stone-100">
+            <Button
+              variant="link"
+              onClick={onEdit}
+              className="h-auto p-0 font-mono font-bold text-sm text-stone-900 dark:text-stone-100 hover:text-[#143F3B] dark:hover:text-[#6B9B7A]"
+            >
               {coupon.code}
-            </p>
+            </Button>
             {coupon.description && (
               <p
                 className="text-xs text-stone-500 dark:text-stone-400 truncate"
@@ -317,9 +332,11 @@ export function CouponRow({
         </div>
 
         <div className="col-span-2 flex items-center justify-end gap-1">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onToggleActive}
-            className={`p-1.5 rounded-md transition-colors opacity-0 group-hover:opacity-100 ${
+            className={`h-8 w-8 opacity-0 group-hover:opacity-100 ${
               coupon.isActive
                 ? 'text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
                 : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
@@ -331,22 +348,26 @@ export function CouponRow({
             ) : (
               <ToggleLeft className="w-4 h-4" />
             )}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onEdit}
-            className="p-1.5 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+            className="h-8 w-8 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 opacity-0 group-hover:opacity-100"
             title="Editar"
           >
             <Pencil className="w-4 h-4" />
-          </button>
+          </Button>
           {coupon.currentUses === 0 && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onDelete}
-              className="p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+              className="h-8 w-8 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 opacity-0 group-hover:opacity-100"
               title="Eliminar"
             >
               <Trash2 className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
       </div>

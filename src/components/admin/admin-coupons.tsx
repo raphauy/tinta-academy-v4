@@ -133,10 +133,12 @@ export function AdminCoupons({
   }
 
   const renderSortButton = (field: SortField, label: string) => (
-    <button
+    <Button
       key={field}
+      variant="ghost"
+      size="sm"
       onClick={() => handleSort(field)}
-      className={`inline-flex items-center gap-1 text-xs font-medium transition-colors ${
+      className={`h-auto px-2 py-1 text-xs font-medium ${
         sortField === field
           ? 'text-[#143F3B] dark:text-[#6B9B7A]'
           : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300'
@@ -145,12 +147,12 @@ export function AdminCoupons({
       {label}
       {sortField === field && (
         <ChevronDown
-          className={`w-3 h-3 transition-transform ${
+          className={`w-3 h-3 ml-1 transition-transform ${
             sortDirection === 'asc' ? 'rotate-180' : ''
           }`}
         />
       )}
-    </button>
+    </Button>
   )
 
   return (
@@ -205,15 +207,17 @@ export function AdminCoupons({
             placeholder="Buscar por codigo o descripcion..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 bg-white dark:bg-stone-900"
           />
           {searchQuery && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -221,7 +225,7 @@ export function AdminCoupons({
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as StatusFilter)}
         >
-          <SelectTrigger className="w-full sm:w-40">
+          <SelectTrigger className="w-full sm:w-40 bg-white dark:bg-stone-900">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>

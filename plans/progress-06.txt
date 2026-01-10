@@ -638,7 +638,7 @@ This file tracks progress for Milestone 06. Each entry documents what was implem
 - Checkmark indicator on selected option
 
 **CouponInput component:**
-- Collapsible section "Tengo un cupon de descuento"
+- Collapsible section "Tengo un cupon"
 - Input field with uppercase transformation
 - Applies coupon via applyCouponAction server action
 - Shows success badge when coupon applied (code + discount %)

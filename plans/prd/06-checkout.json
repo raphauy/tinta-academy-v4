@@ -476,7 +476,7 @@
       "Props: onApply (callback), appliedCoupon?, isLoading?",
       "State: couponCode, validationError, isValidating",
       "Display:",
-      "  - Collapsible section 'Tengo un cupon de descuento'",
+      "  - Collapsible section 'Tengo un cupon'",
       "  - When expanded: input field + 'Aplicar' button",
       "  - If coupon applied: show success badge with code and discount %, X button to remove",
       "  - If error: show error message below input",
