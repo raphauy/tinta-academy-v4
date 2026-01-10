@@ -103,12 +103,13 @@ export function StudentRow({ student, onView, onEdit }: StudentRowProps) {
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant="link"
                 onClick={onView}
-                className="font-medium text-stone-900 dark:text-stone-100 truncate hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:underline transition-colors text-left"
+                className="h-auto p-0 font-medium text-stone-900 dark:text-stone-100 truncate hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:underline transition-colors text-left justify-start"
               >
                 {fullName}
-              </button>
+              </Button>
               {isRecentlyActive && (
                 <span className="w-2 h-2 rounded-full bg-[#143F3B] dark:bg-[#6B9B7A] flex-shrink-0" title="Activo recientemente" />
               )}
@@ -172,12 +173,13 @@ export function StudentRow({ student, onView, onEdit }: StudentRowProps) {
           />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <button
+              <Button
+                variant="link"
                 onClick={onView}
-                className="font-medium text-stone-900 dark:text-stone-100 truncate hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:underline transition-colors text-left"
+                className="h-auto p-0 font-medium text-stone-900 dark:text-stone-100 truncate hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:underline transition-colors text-left justify-start"
               >
                 {fullName}
-              </button>
+              </Button>
               {isRecentlyActive && (
                 <span className="w-2 h-2 rounded-full bg-[#143F3B] dark:bg-[#6B9B7A] flex-shrink-0" title="Activo recientemente" />
               )}

@@ -89,10 +89,12 @@ export function AdminStudents({
   }
 
   const renderSortButton = (field: SortField, label: string) => (
-    <button
+    <Button
       key={field}
+      variant="ghost"
+      size="sm"
       onClick={() => handleSort(field)}
-      className={`inline-flex items-center gap-1 text-xs font-medium transition-colors ${
+      className={`h-auto px-2 py-1 inline-flex items-center gap-1 text-xs font-medium transition-colors ${
         sortField === field
           ? 'text-[#143F3B] dark:text-[#6B9B7A]'
           : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300'
@@ -106,7 +108,7 @@ export function AdminStudents({
           }`}
         />
       )}
-    </button>
+    </Button>
   )
 
   return (

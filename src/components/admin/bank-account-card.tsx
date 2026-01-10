@@ -12,6 +12,7 @@ import {
   Globe,
 } from 'lucide-react'
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import type { BankAccount, Currency } from '@prisma/client'
 
 interface BankAccountCardProps {
@@ -50,12 +51,14 @@ export function BankAccountCard({
   }
 
   const renderCopyButton = (value: string, field: string) => (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={(e) => {
         e.stopPropagation()
         copyToClipboard(value, field)
       }}
-      className="p-1 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] rounded transition-colors"
+      className="h-7 w-7 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A]"
       title="Copiar"
     >
       {copiedField === field ? (
@@ -63,7 +66,7 @@ export function BankAccountCard({
       ) : (
         <Copy className="w-3.5 h-3.5" />
       )}
-    </button>
+    </Button>
   )
 
   return (
@@ -174,9 +177,11 @@ export function BankAccountCard({
           </div>
 
           <div className="flex items-center gap-1">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onToggleActive}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`h-8 w-8 ${
                 account.isActive
                   ? 'text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50'
                   : 'text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700'
@@ -188,21 +193,25 @@ export function BankAccountCard({
               ) : (
                 <ToggleLeft className="w-4 h-4" />
               )}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onEdit}
-              className="p-1.5 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-md transition-colors"
+              className="h-8 w-8 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20"
               title="Editar"
             >
               <Pencil className="w-4 h-4" />
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onDelete}
-              className="p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-md transition-colors"
+              className="h-8 w-8 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50"
               title="Eliminar"
             >
               <Trash2 className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

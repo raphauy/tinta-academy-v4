@@ -174,9 +174,10 @@ export function AdminCourseCard({ course, onEducatorClick }: AdminCourseCardProp
       <div className="bg-card rounded-2xl border border-border p-4 hover:shadow-md transition-shadow">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Image - square, full height */}
-          <button
+          <Button
+            variant="ghost"
             onClick={handleViewDetails}
-            className="shrink-0 relative w-full sm:w-36 h-44 sm:h-auto sm:aspect-square rounded-xl overflow-hidden bg-muted hover:opacity-90 transition-opacity cursor-pointer self-stretch"
+            className="shrink-0 relative w-full sm:w-36 h-44 sm:h-auto sm:aspect-square rounded-xl overflow-hidden bg-muted hover:opacity-90 transition-opacity cursor-pointer self-stretch p-0"
           >
             <Image
               src={imageUrl}
@@ -185,7 +186,7 @@ export function AdminCourseCard({ course, onEducatorClick }: AdminCourseCardProp
               sizes="(max-width: 640px) 100vw, 144px"
               className="object-cover"
             />
-          </button>
+          </Button>
 
           {/* Content */}
           <div className="flex-1 min-w-0 flex flex-col">
@@ -222,12 +223,13 @@ export function AdminCourseCard({ course, onEducatorClick }: AdminCourseCardProp
                 </div>
 
                 {/* Title */}
-                <button
+                <Button
+                  variant="link"
                   onClick={handleViewDetails}
-                  className="font-semibold text-foreground mb-1 line-clamp-1 hover:text-primary transition-colors block text-left cursor-pointer"
+                  className="h-auto p-0 font-semibold text-foreground mb-1 line-clamp-1 hover:text-primary transition-colors block text-left cursor-pointer justify-start"
                 >
                   {course.title}
-                </button>
+                </Button>
 
                 {/* Educator */}
                 <p className="text-sm text-muted-foreground mb-2">

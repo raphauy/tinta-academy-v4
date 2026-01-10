@@ -449,3 +449,39 @@ Item 5.27: Implement admin orders page
 
 ### Next step suggestion
 Item 5.29: Implement admin bank data page
+
+## 2026-01-10 - Item 5.29: Admin Bank Data Page
+
+### Completed Item
+
+#### 5.29: Implement admin bank data page
+- Updated `src/app/admin/bank-data/page.tsx` as RSC
+- Fetches bank accounts using Prisma directly in server component
+- Created `admin-bank-data-client.tsx` for client-side modal handling
+- Wraps in Suspense with AdminBankDataSkeleton fallback
+- Added metadata: title 'Datos Bancarios - Admin'
+
+### Functionality
+- Create new bank accounts with form dialog
+- Edit existing bank accounts
+- Toggle account active/inactive status
+- Delete accounts (soft delete if has associated orders)
+- Filter by currency (USD, UYU)
+- Filter by status (active, inactive)
+- Copy account details to clipboard
+
+### Technical Decisions
+- Separated RSC (page.tsx) from client logic (admin-bank-data-client.tsx)
+- Used existing BankAccountFormDialog for create/edit
+- Used ConfirmationDialog with type="delete" for deletion
+- Server actions handle create, update, toggle, delete
+- Soft delete: accounts with orders are deactivated instead of deleted
+- Router refresh after mutations for immediate UI updates
+
+### Verification
+- TypeCheck: PASS
+- Lint: PASS (pre-existing warnings only)
+- Build: PASS
+
+### Next step suggestion
+Item 5.30: Create coupon form component (already exists as CouponFormDialog) - or next pending UI item

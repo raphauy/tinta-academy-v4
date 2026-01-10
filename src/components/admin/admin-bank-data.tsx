@@ -129,7 +129,7 @@ export function AdminBankData({
           value={currencyFilter}
           onValueChange={(value) => setCurrencyFilter(value as CurrencyFilter)}
         >
-          <SelectTrigger className="w-full sm:w-44">
+          <SelectTrigger className="w-full sm:w-44 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700">
             <SelectValue placeholder="Moneda" />
           </SelectTrigger>
           <SelectContent>
@@ -158,7 +158,7 @@ export function AdminBankData({
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as StatusFilter)}
         >
-          <SelectTrigger className="w-full sm:w-40">
+          <SelectTrigger className="w-full sm:w-40 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>

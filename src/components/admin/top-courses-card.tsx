@@ -1,6 +1,7 @@
 'use client'
 
 import { Trophy, TrendingUp, Users } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { TopCourse } from '@/services/admin-service'
 
 export interface TopCoursesCardProps {
@@ -56,12 +57,13 @@ export function TopCoursesCard({ courses, onViewCourse }: TopCoursesCardProps) {
         {courses.map((course, index) => {
           const rankStyles = getRankStyles(index)
           return (
-            <button
+            <Button
               key={course.id}
+              variant="ghost"
               onClick={() => onViewCourse?.(course.id)}
-              className="w-full px-4 py-3 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors text-left"
+              className="w-full h-auto px-4 py-3 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors text-left justify-start rounded-none"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-3 w-full">
                 <div
                   className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${rankStyles.badge}`}
                 >
@@ -84,7 +86,7 @@ export function TopCoursesCard({ courses, onViewCourse }: TopCoursesCardProps) {
                   </div>
                 </div>
               </div>
-            </button>
+            </Button>
           )
         })}
       </div>

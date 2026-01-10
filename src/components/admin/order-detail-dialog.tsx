@@ -169,16 +169,18 @@ export function OrderDetailDialog({
             <div>
               <DialogTitle className="flex items-center gap-2">
                 Orden {order.orderNumber}
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => copyToClipboard(order.orderNumber, 'orderNumber')}
-                  className="p-1 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 rounded"
+                  className="h-7 w-7 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300"
                 >
                   {copiedField === 'orderNumber' ? (
                     <Check className="w-3.5 h-3.5 text-emerald-500" />
                   ) : (
                     <Copy className="w-3.5 h-3.5" />
                   )}
-                </button>
+                </Button>
               </DialogTitle>
               <DialogDescription>
                 Creada el {formatDate(order.createdAt)}
