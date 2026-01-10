@@ -154,6 +154,7 @@ export async function confirmTransferPaymentAction(
     }
 
     // Complete checkout (creates student, enrollment, updates order)
+    // Note: completeCheckout sends the order confirmation email automatically
     const result = await completeCheckout(orderId)
 
     revalidatePath('/admin/orders')

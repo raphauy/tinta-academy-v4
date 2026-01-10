@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { auth } from '@/lib/auth'
 import { PaymentMethod, Currency } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import {
   getCheckoutContext,
   initiateCheckout,
@@ -14,6 +15,7 @@ import {
 import { validateCoupon, type ValidateCouponResult } from '@/services/coupon-service'
 import { getOrderById, markTransferAsSent, assignStudentRoleIfNeeded } from '@/services/order-service'
 import { getCourseById } from '@/services/course-service'
+import { sendAdminTransferNotificationEmail } from '@/services/email-service'
 
 // ============================================
 // TYPES
@@ -279,6 +281,37 @@ export async function markTransferSentAction(
     }
 
     await markTransferAsSent(orderId, reference, proofUrl)
+
+    // Get updated order for email
+    const updatedOrder = await getOrderById(orderId)
+
+    // Send notification to admins (async, don't wait)
+    if (updatedOrder) {
+      // Get all superadmin emails
+      const admins = await prisma.user.findMany({
+        where: { role: 'superadmin' },
+        select: { email: true },
+      })
+      const adminEmails = admins.map((a) => a.email)
+
+      if (adminEmails.length > 0) {
+        sendAdminTransferNotificationEmail({
+          adminEmails,
+          buyerName: updatedOrder.user.name || 'Sin nombre',
+          buyerEmail: updatedOrder.user.email,
+          courseName: updatedOrder.course.title,
+          amount: updatedOrder.finalAmount.toFixed(2),
+          currency: updatedOrder.currency,
+          orderNumber: updatedOrder.orderNumber,
+          transferReference: reference || updatedOrder.transferReference,
+          transferProofUrl: proofUrl || updatedOrder.transferProofUrl,
+          couponCode: updatedOrder.coupon?.code || null,
+          couponDiscount: updatedOrder.coupon?.discountPercent || null,
+        }).catch((error) => {
+          console.error('Error sending admin transfer notification:', error)
+        })
+      }
+    }
 
     // Assign student role if user doesn't have one yet
     // This allows them to access the student panel immediately

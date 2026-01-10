@@ -5,6 +5,12 @@ import { validateCoupon, ValidateCouponResult } from './coupon-service'
 import { getActiveBankAccounts } from './bank-account-service'
 import { createPreference } from './mercadopago-service'
 import { createEnrollment } from './enrollment-service'
+import {
+  sendOrderConfirmationEmail,
+  sendTransferInstructionsEmail,
+  sendWsetDataReminderEmail,
+  sendAdminPaymentNotificationEmail,
+} from './email-service'
 
 // ============================================
 // TYPES
@@ -51,9 +57,38 @@ export interface CheckoutContext {
 // Default USD to UYU exchange rate (can be overridden by course.priceUYU)
 const DEFAULT_USD_TO_UYU_RATE = 42
 
+// Course type labels for emails
+const courseTypeLabels: Record<string, string> = {
+  wset: 'Curso WSET',
+  taller: 'Taller',
+  cata: 'Cata',
+  curso: 'Curso',
+}
+
+// Payment method labels for emails
+const paymentMethodLabels: Record<string, string> = {
+  mercadopago: 'MercadoPago',
+  bank_transfer: 'Transferencia Bancaria',
+  free: 'Gratuito',
+}
+
 // ============================================
 // HELPERS
 // ============================================
+
+function formatDate(date: Date | null): string {
+  if (!date) return 'Por confirmar'
+  return date.toLocaleDateString('es-UY', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+function getCourseLocation(course: Course): string {
+  if (course.modality === 'online') return 'Online'
+  return course.address || 'Por confirmar'
+}
 
 function calculatePricing(
   priceUSD: number,
@@ -308,6 +343,29 @@ export async function processCheckoutBankTransfer(
     bankAccountId,
   })
 
+  // Get bank accounts for email
+  const bankAccounts = await getActiveBankAccounts()
+  const usdBankAccounts = bankAccounts.filter((ba) => ba.currency === 'USD')
+
+  // Send transfer instructions email (async, don't wait)
+  sendTransferInstructionsEmail({
+    to: order.user.email,
+    customerName: order.user.name || 'Estudiante',
+    orderNumber: order.orderNumber,
+    courseName: order.course.title,
+    amount: order.finalAmount.toFixed(2),
+    bankAccounts: usdBankAccounts.map((ba) => ({
+      bankName: ba.bankName,
+      accountHolder: ba.accountHolder,
+      accountType: ba.accountType,
+      accountNumber: ba.accountNumber,
+      currency: ba.currency,
+      swiftCode: ba.swiftCode,
+    })),
+  }).catch((error) => {
+    console.error('Error sending transfer instructions email:', error)
+  })
+
   return getOrderById(orderId)
 }
 
@@ -463,6 +521,75 @@ export async function completeCheckout(orderId: string): Promise<{
   // This is handled above
 
   const updatedOrder = await getOrderById(orderId)
+
+  // Send confirmation email (async, don't wait)
+  if (updatedOrder) {
+    const course = updatedOrder.course
+    const courseType = courseTypeLabels[course.type] || 'Curso'
+    const wsetLevel = course.wsetLevel ? `WSET Nivel ${course.wsetLevel}` : ''
+
+    sendOrderConfirmationEmail({
+      to: updatedOrder.user.email,
+      customerName: updatedOrder.user.name || 'Estudiante',
+      orderNumber: updatedOrder.orderNumber,
+      courseName: course.title,
+      courseType: wsetLevel || courseType,
+      educatorName: course.educator.name,
+      startDate: formatDate(course.startDate),
+      location: getCourseLocation(course),
+      paymentMethod: paymentMethodLabels[updatedOrder.paymentMethod] || updatedOrder.paymentMethod,
+      amount: updatedOrder.finalAmount.toFixed(2),
+      currency: updatedOrder.currency,
+      courseSlug: course.slug,
+    }).catch((error) => {
+      console.error('Error sending order confirmation email:', error)
+    })
+
+    // Send WSET data reminder if course is WSET and profile is incomplete
+    if (course.type === 'wset' && result.enrollment.student) {
+      const student = result.enrollment.student
+      const profileIncomplete =
+        !student.firstName ||
+        !student.lastName ||
+        !student.dateOfBirth ||
+        !student.identityDocument
+
+      if (profileIncomplete) {
+        sendWsetDataReminderEmail({
+          to: updatedOrder.user.email,
+          customerName: updatedOrder.user.name || 'Estudiante',
+          courseName: course.title,
+          courseLevel: course.wsetLevel?.toString() || '1',
+        }).catch((error) => {
+          console.error('Error sending WSET data reminder email:', error)
+        })
+      }
+    }
+
+    // Send payment notification to admins
+    const admins = await prisma.user.findMany({
+      where: { role: 'superadmin' },
+      select: { email: true },
+    })
+    const adminEmails = admins.map((a) => a.email)
+
+    if (adminEmails.length > 0) {
+      sendAdminPaymentNotificationEmail({
+        adminEmails,
+        buyerName: updatedOrder.user.name || 'Sin nombre',
+        buyerEmail: updatedOrder.user.email,
+        courseName: course.title,
+        amount: updatedOrder.finalAmount.toFixed(2),
+        currency: updatedOrder.currency,
+        paymentMethod: paymentMethodLabels[updatedOrder.paymentMethod] || updatedOrder.paymentMethod,
+        orderNumber: updatedOrder.orderNumber,
+        couponCode: updatedOrder.coupon?.code || null,
+        couponDiscount: updatedOrder.coupon?.discountPercent || null,
+      }).catch((error) => {
+        console.error('Error sending admin payment notification:', error)
+      })
+    }
+  }
 
   return {
     order: updatedOrder,

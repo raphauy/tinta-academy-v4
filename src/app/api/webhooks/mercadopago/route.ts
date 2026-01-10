@@ -4,6 +4,7 @@ import { OrderStatus } from '@prisma/client'
 import { validateWebhookSignature, getPayment } from '@/services/mercadopago-service'
 import { getOrderById, getOrderByMpPaymentId, getOrderByMpPreferenceId, updateOrderStatus } from '@/services/order-service'
 import { completeCheckout } from '@/services/checkout-service'
+import { sendPaymentRejectedEmail, getMercadoPagoRejectionReason } from '@/services/email-service'
 
 // ============================================
 // TYPES
@@ -136,35 +137,52 @@ export async function POST(request: NextRequest) {
     })
 
     // Find order by various methods
-    let order = null
+    let orderId: string | null = null
 
     // Try orderId from metadata first
     if (paymentInfo.orderId) {
-      order = await getOrderById(paymentInfo.orderId)
+      orderId = paymentInfo.orderId
     }
 
     // Try external_reference (also orderId)
-    if (!order && paymentInfo.externalReference) {
-      order = await getOrderById(paymentInfo.externalReference)
+    if (!orderId && paymentInfo.externalReference) {
+      orderId = paymentInfo.externalReference
     }
 
     // Try mpPaymentId
-    if (!order) {
-      order = await getOrderByMpPaymentId(String(paymentInfo.id))
+    if (!orderId) {
+      const orderByMpPaymentId = await getOrderByMpPaymentId(String(paymentInfo.id))
+      if (orderByMpPaymentId) {
+        orderId = orderByMpPaymentId.id
+      }
     }
 
     // Try mpPreferenceId if available
-    if (!order && paymentInfo.preferenceId) {
-      order = await getOrderByMpPreferenceId(paymentInfo.preferenceId)
+    if (!orderId && paymentInfo.preferenceId) {
+      const orderByMpPreferenceId = await getOrderByMpPreferenceId(paymentInfo.preferenceId)
+      if (orderByMpPreferenceId) {
+        orderId = orderByMpPreferenceId.id
+      }
     }
 
-    if (!order) {
+    if (!orderId) {
       logWebhook('error', 'Order not found for payment', {
         paymentId: paymentInfo.id,
         externalReference: paymentInfo.externalReference,
         orderId: paymentInfo.orderId,
       })
       // Return 200 to prevent MP retries - order may have been deleted
+      return NextResponse.json({
+        received: true,
+        error: 'Order not found',
+      })
+    }
+
+    // Now fetch the full order with all relations
+    const order = await getOrderById(orderId)
+
+    if (!order) {
+      logWebhook('error', 'Order not found by ID', { orderId })
       return NextResponse.json({
         received: true,
         error: 'Order not found',
@@ -218,9 +236,7 @@ export async function POST(request: NextRequest) {
             isNewStudent: checkoutResult.isNewStudent,
             enrollmentId: checkoutResult.enrollment.id,
           })
-
-          // TODO: Send confirmation email (6.22)
-          // await sendOrderConfirmationEmail(checkoutResult.order)
+          // Note: Confirmation email is sent from completeCheckout
         } catch (error) {
           logWebhook('error', 'Failed to complete checkout', {
             orderId: order.id,
@@ -242,8 +258,31 @@ export async function POST(request: NextRequest) {
           statusDetail: paymentInfo.statusDetail,
         })
 
-        // TODO: Send rejection email (6.22)
-        // await sendPaymentRejectedEmail(order, paymentInfo.statusDetail)
+        // Send rejection email
+        const courseType =
+          order.course.type === 'wset'
+            ? `WSET Nivel ${order.course.wsetLevel || 1}`
+            : order.course.type
+        const rejectionReason = getMercadoPagoRejectionReason(
+          paymentInfo.statusDetail || ''
+        )
+
+        sendPaymentRejectedEmail({
+          to: order.user.email,
+          customerName: order.user.name || 'Estudiante',
+          orderNumber: order.orderNumber,
+          courseName: order.course.title,
+          courseType,
+          amount: order.finalAmount.toFixed(2),
+          currency: order.currency,
+          reason: rejectionReason,
+          courseId: order.courseId,
+        }).catch((error) => {
+          logWebhook('error', 'Failed to send rejection email', {
+            orderId: order.id,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          })
+        })
         break
       }
 

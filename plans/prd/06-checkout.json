@@ -465,7 +465,7 @@
       "Show checkmark on selected option",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.20",
@@ -487,7 +487,7 @@
       "Transform input to uppercase automatically",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.21",
@@ -516,7 +516,7 @@
       "Create src/components/checkout/cannot-enroll.tsx for blocked enrollments",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.22",
@@ -538,7 +538,7 @@
       "Call appropriate email functions from checkout-service and webhook handler",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.23",

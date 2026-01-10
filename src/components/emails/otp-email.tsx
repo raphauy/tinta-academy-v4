@@ -9,21 +9,20 @@ import {
   Text,
 } from '@react-email/components'
 import { emailTheme } from './email-theme'
+import { EmailHeader } from './email-header'
 
 interface OtpEmailProps {
-  otp: string
+  otp?: string
 }
 
-export default function OtpEmail({ otp }: OtpEmailProps) {
+export default function OtpEmail({ otp = '847291' }: OtpEmailProps) {
   return (
     <Html>
       <Head />
       <Preview>Tu código de verificación: {otp}</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
-          <Section style={styles.header}>
-            <Heading style={styles.logo}>Tinta Academy</Heading>
-          </Section>
+          <EmailHeader />
 
           <Section style={styles.content}>
             <Heading style={styles.title}>Código de verificación</Heading>
@@ -65,18 +64,6 @@ const styles = {
     margin: '0 auto',
     maxWidth: '480px',
     padding: 0,
-  },
-  header: {
-    backgroundColor: emailTheme.colors.primary,
-    borderRadius: `${emailTheme.borderRadius} ${emailTheme.borderRadius} 0 0`,
-    padding: '24px 32px',
-    textAlign: 'center' as const,
-  },
-  logo: {
-    color: emailTheme.colors.primaryForeground,
-    fontSize: '24px',
-    fontWeight: '700',
-    margin: 0,
   },
   content: {
     padding: '32px',

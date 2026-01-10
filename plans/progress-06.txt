@@ -718,3 +718,51 @@ This file tracks progress for Milestone 06. Each entry documents what was implem
 **Next Priority:** Create payment method selector component (6.19)
 
 ---
+
+## 2026-01-10 - Checkout Email Notifications (6.22)
+
+**Completed (PRD item 6.22):**
+- Created 5 email templates in src/components/emails/:
+  - order-confirmation.tsx: purchase confirmation with order details
+  - transfer-instructions.tsx: bank account details for transfer payment
+  - transfer-confirmed.tsx: sent when admin confirms bank transfer
+  - payment-rejected.tsx: sent when MercadoPago rejects payment
+  - wset-data-reminder.tsx: reminder to complete WSET certification data
+
+**Email Templates Features:**
+- All templates follow existing email-theme.ts styling
+- Consistent branding with Tinta Academy verde-uva colors
+- Spanish language for Uruguay market
+- Mobile-responsive layouts
+- Informative content with CTAs
+
+**Email Service Functions Added:**
+- sendOrderConfirmationEmail(): for completed purchases (MP/free)
+- sendTransferInstructionsEmail(): bank details after initiating transfer
+- sendTransferConfirmedEmail(): after admin confirms transfer
+- sendPaymentRejectedEmail(): with rejection reason from MP
+- sendWsetDataReminderEmail(): for WSET courses with incomplete profiles
+- getMercadoPagoRejectionReason(): maps MP status codes to Spanish messages
+
+**Integration Points:**
+1. checkout-service.ts:
+   - processCheckoutBankTransfer: sends transfer instructions
+   - completeCheckout: sends confirmation + WSET reminder if needed
+2. mercadopago webhook:
+   - approved: confirmation sent via completeCheckout
+   - rejected: sends rejection email with reason
+3. admin/orders/actions.ts:
+   - confirmTransferPaymentAction: sends transfer confirmed email
+
+**Technical Notes:**
+- Emails are sent asynchronously (fire-and-forget) to not block user flow
+- Error handling with .catch() to prevent email failures from affecting transactions
+- Development mode logs emails to console instead of sending
+- WSET data reminder only sent if profile is incomplete (missing firstName/lastName/dateOfBirth/identityDocument)
+- Fixed webhook order lookup to always use getOrderById for full relations
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** Add checkout button to course detail page (6.23)
+
+---
