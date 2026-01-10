@@ -36,8 +36,8 @@ export default function AdminTransferNotificationEmail({
   currency = 'USD',
   orderNumber = 'TA-20260110-0005',
   transferReference = 'Banco Santander - Transferencia #12345',
-  transferProofUrl = 'https://example.com/comprobante.pdf',
-  couponCode = 'WSET2024',
+  transferProofUrl,
+  couponCode,
   couponDiscount = 15,
   adminUrl = 'https://academy.tinta.wine/admin/orders',
 }: AdminTransferNotificationEmailProps) {
