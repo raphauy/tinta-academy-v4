@@ -29,6 +29,8 @@ import type { Course, Educator, Tag } from '@prisma/client'
 type CourseWithRelations = Course & {
   educator: Educator
   tags: Tag[]
+  totalRevenueUSD: number
+  totalRevenueUYU: number
   _count: {
     enrollments: number
   }

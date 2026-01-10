@@ -209,20 +209,30 @@ export function EducatorCourseRow({
                 {course.duration}
               </span>
             )}
+
+            {course.priceUSD > 0 ? (
+              <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                USD {formatNumber(course.priceUSD)}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                Gratis
+              </span>
+            )}
           </div>
         </div>
 
         {/* Right side: Revenue + Actions */}
-        <div className="shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-between gap-2">
-          {/* Revenue */}
+        <div className="shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-end sm:justify-between gap-2">
+          {/* Revenue - at top on desktop */}
           {formatRevenue(course.totalRevenueUSD, course.totalRevenueUYU) && (
-            <span className="text-lg font-bold text-primary">
+            <span className="text-lg font-bold text-primary order-1 sm:order-none">
               {formatRevenue(course.totalRevenueUSD, course.totalRevenueUYU)}
             </span>
           )}
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
+          {/* Action buttons - always at bottom */}
+          <div className="flex items-center gap-2 order-2 sm:order-none sm:mt-auto">
             {/* Ver estudiantes button */}
             <Button variant="outline" size="sm" asChild className="gap-2">
               <Link href={`/educator/courses/${course.id}/students`}>
