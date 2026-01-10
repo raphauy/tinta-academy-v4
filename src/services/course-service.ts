@@ -369,7 +369,9 @@ export interface AdminCourse {
   tags: Array<{ id: string; name: string }>
   enrolledCount: number
   observersCount: number
-  totalRevenue: number
+  totalRevenue: number // deprecated: mantener por compatibilidad
+  totalRevenueUSD: number
+  totalRevenueUYU: number
   completionRate: number
   averageProgress: number
 }
@@ -432,7 +434,7 @@ export async function getAllCoursesForAdmin(): Promise<AdminCourse[]> {
       },
       orders: {
         where: { status: 'paid' },
-        select: { finalAmount: true },
+        select: { finalAmount: true, currency: true },
       },
       _count: {
         select: {
@@ -444,7 +446,20 @@ export async function getAllCoursesForAdmin(): Promise<AdminCourse[]> {
   })
 
   return courses.map((course) => {
-    const totalRevenue = course.orders.reduce((sum, order) => sum + order.finalAmount, 0)
+    // Calculate revenue by currency
+    let totalRevenueUSD = 0
+    let totalRevenueUYU = 0
+    
+    course.orders.forEach((order) => {
+      if (order.currency === 'USD') {
+        totalRevenueUSD += order.finalAmount
+      } else if (order.currency === 'UYU') {
+        totalRevenueUYU += order.finalAmount
+      }
+    })
+
+    // Keep totalRevenue for backward compatibility (sum of both currencies)
+    const totalRevenue = totalRevenueUSD + totalRevenueUYU
 
     // Placeholder for observers (users interested but not enrolled)
     // In a real implementation, this would come from a separate CourseObserver model
@@ -477,6 +492,8 @@ export async function getAllCoursesForAdmin(): Promise<AdminCourse[]> {
       enrolledCount: course._count.enrollments,
       observersCount,
       totalRevenue,
+      totalRevenueUSD,
+      totalRevenueUYU,
       completionRate,
       averageProgress,
     }

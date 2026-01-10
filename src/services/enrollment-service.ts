@@ -29,7 +29,7 @@ export async function isUserEnrolledInCourse(
 }
 
 export async function getEnrollmentsByCourse(courseId: string) {
-  return prisma.enrollment.findMany({
+  const enrollments = await prisma.enrollment.findMany({
     where: { courseId },
     include: {
       student: {
@@ -41,12 +41,38 @@ export async function getEnrollmentsByCourse(courseId: string) {
               image: true,
             },
           },
+          orders: {
+            where: {
+              courseId,
+              status: 'paid',
+            },
+            select: {
+              finalAmount: true,
+              currency: true,
+            },
+          },
         },
       },
     },
     orderBy: {
       enrolledAt: 'desc',
     },
+  })
+
+  // Calculate course spending for each enrollment
+  return enrollments.map((enrollment) => {
+    const courseSpentUSD = enrollment.student.orders
+      .filter((o) => o.currency === 'USD')
+      .reduce((sum, order) => sum + order.finalAmount, 0)
+    const courseSpentUYU = enrollment.student.orders
+      .filter((o) => o.currency === 'UYU')
+      .reduce((sum, order) => sum + order.finalAmount, 0)
+
+    return {
+      ...enrollment,
+      courseSpentUSD,
+      courseSpentUYU,
+    }
   })
 }
 

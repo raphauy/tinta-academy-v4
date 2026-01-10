@@ -8,7 +8,7 @@ import {
   MapPin,
   Monitor,
   Users,
-  DollarSign,
+  Wallet,
   Calendar,
   GraduationCap,
   ExternalLink,
@@ -56,13 +56,13 @@ function formatDate(date: Date | null): string {
   }
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+function formatCurrencyAmount(amount: number, currency: 'USD' | 'UYU'): string {
+  // Format number with thousands separator, no currency symbol
+  const formatted = new Intl.NumberFormat('es-UY', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount)
+  return `${currency} ${formatted}`
 }
 
 function getTypeLabel(type: string, wsetLevel?: number | null): string {
@@ -259,24 +259,33 @@ export function AdminCourseCard({ course, onEducatorClick }: AdminCourseCardProp
               {/* Right: Info boxes side by side (square) */}
               <div className="shrink-0 flex gap-2">
                 {/* Capacity box */}
-                <div className="flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-muted/50 border border-border">
-                  <Users className="w-3.5 h-3.5 text-muted-foreground mb-0.5" />
-                  <p className="text-sm font-semibold text-foreground leading-tight">
+                <div className="flex flex-col items-center justify-center w-28 h-28 rounded-lg bg-muted/50 border border-border">
+                  <Users className="w-4 h-4 text-muted-foreground mb-1" />
+                  <p className="text-base font-semibold text-foreground leading-tight">
                     {course.enrolledCount}
                     {course.maxCapacity && (
-                      <span className="text-[10px] text-muted-foreground">/{course.maxCapacity}</span>
+                      <span className="text-xs text-muted-foreground">/{course.maxCapacity}</span>
                     )}
                   </p>
-                  <p className="text-[9px] text-muted-foreground">Inscritos</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Inscritos</p>
                 </div>
 
-                {/* Revenue box */}
-                <div className="flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-muted/50 border border-border">
-                  <DollarSign className="w-3.5 h-3.5 text-muted-foreground mb-0.5" />
-                  <p className="text-sm font-semibold text-foreground leading-tight">
-                    {formatCurrency(course.totalRevenue)}
+                {/* Revenue USD box */}
+                <div className="flex flex-col items-center justify-center w-28 h-28 rounded-lg bg-muted/50 border border-border px-1">
+                  <Wallet className="w-4 h-4 text-muted-foreground mb-1" />
+                  <p className="text-sm font-semibold text-foreground leading-tight text-center break-word">
+                    {formatCurrencyAmount(course.totalRevenueUSD, 'USD')}
                   </p>
-                  <p className="text-[9px] text-muted-foreground">Ingresos</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Ingresos</p>
+                </div>
+
+                {/* Revenue UYU box */}
+                <div className="flex flex-col items-center justify-center w-28 h-28 rounded-lg bg-muted/50 border border-border px-1">
+                  <Wallet className="w-4 h-4 text-muted-foreground mb-1" />
+                  <p className="text-sm font-semibold text-foreground leading-tight text-center break-word">
+                    {formatCurrencyAmount(course.totalRevenueUYU, 'UYU')}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Ingresos</p>
                 </div>
               </div>
             </div>

@@ -21,6 +21,8 @@ export type StudentEnrollment = {
   id: string
   enrolledAt: Date
   status: EnrollmentStatus
+  courseSpentUSD?: number
+  courseSpentUYU?: number
   student: {
     firstName: string | null
     lastName: string | null
@@ -64,6 +66,20 @@ function getInitials(firstName: string | null, lastName: string | null): string 
   return first + last || '??'
 }
 
+function formatNumber(amount: number): string {
+  return new Intl.NumberFormat('es-UY', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
+function formatSpent(usd: number, uyu: number): string {
+  const parts: string[] = []
+  if (usd > 0) parts.push(`USD ${formatNumber(usd)}`)
+  if (uyu > 0) parts.push(`UYU ${formatNumber(uyu)}`)
+  return parts.length > 0 ? parts.join(' / ') : '-'
+}
+
 export function StudentTable({ enrollments, showCourse = false }: StudentTableProps) {
   if (enrollments.length === 0) {
     return (
@@ -89,6 +105,7 @@ export function StudentTable({ enrollments, showCourse = false }: StudentTablePr
               <TableHead className="hidden xl:table-cell">Curso</TableHead>
             )}
             <TableHead className="hidden md:table-cell">Inscripción</TableHead>
+            <TableHead className="hidden lg:table-cell text-center">Gastado</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead className="w-[50px]"></TableHead>
           </TableRow>
@@ -147,6 +164,14 @@ export function StudentTable({ enrollments, showCourse = false }: StudentTablePr
                 )}
                 <TableCell className="hidden md:table-cell text-muted-foreground">
                   {formatDate(enrollment.enrolledAt)}
+                </TableCell>
+                <TableCell className="hidden lg:table-cell text-center">
+                  <p className="text-sm font-semibold text-foreground">
+                    {formatSpent(
+                      enrollment.courseSpentUSD || 0,
+                      enrollment.courseSpentUYU || 0
+                    )}
+                  </p>
                 </TableCell>
                 <TableCell>
                   <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${statusBadge.className}`}>

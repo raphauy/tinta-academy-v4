@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Users, UserCheck, Clock, UserX, Search } from 'lucide-react'
+import { Users, UserCheck, Clock, UserX, Search, Wallet } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { StudentTable, type StudentEnrollment } from './student-table'
@@ -16,6 +16,8 @@ type EnrollmentWithStudent = {
   status: EnrollmentStatus
   createdAt: Date
   updatedAt: Date
+  courseSpentUSD: number
+  courseSpentUYU: number
   student: {
     id: string
     firstName: string | null
@@ -39,7 +41,7 @@ interface StudentListProps {
 
 interface MetricCardProps {
   icon: React.ReactNode
-  value: number
+  value: number | string
   label: string
   iconBgClass?: string
 }
@@ -48,16 +50,30 @@ function MetricCard({ icon, value, label, iconBgClass = 'bg-muted' }: MetricCard
   return (
     <Card>
       <CardContent className="flex items-center gap-4 p-4">
-        <div className={`p-3 rounded-xl ${iconBgClass}`}>
+        <div className={`p-3 rounded-xl ${iconBgClass} shrink-0`}>
           {icon}
         </div>
-        <div>
-          <p className="text-2xl font-bold text-foreground">{value}</p>
-          <p className="text-sm text-muted-foreground">{label}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-lg md:text-xl font-bold text-foreground break-words leading-tight">{value}</p>
+          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">{label}</p>
         </div>
       </CardContent>
     </Card>
   )
+}
+
+function formatNumber(amount: number): string {
+  return new Intl.NumberFormat('es-UY', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
+function formatTotalSpent(usd: number, uyu: number): string {
+  const parts: string[] = []
+  if (usd > 0) parts.push(`USD ${formatNumber(usd)}`)
+  if (uyu > 0) parts.push(`UYU ${formatNumber(uyu)}`)
+  return parts.length > 0 ? parts.join(' / ') : 'USD 0'
 }
 
 export function StudentList({ course, enrollments }: StudentListProps) {
@@ -68,7 +84,19 @@ export function StudentList({ course, enrollments }: StudentListProps) {
     const confirmed = enrollments.filter(e => e.status === 'confirmed').length
     const pending = enrollments.filter(e => e.status === 'pending').length
     const cancelled = enrollments.filter(e => e.status === 'cancelled').length
-    return { total: enrollments.length, confirmed, pending, cancelled }
+    
+    // Calculate total spent for the course
+    const totalSpentUSD = enrollments.reduce((sum, e) => sum + e.courseSpentUSD, 0)
+    const totalSpentUYU = enrollments.reduce((sum, e) => sum + e.courseSpentUYU, 0)
+    
+    return { 
+      total: enrollments.length, 
+      confirmed, 
+      pending, 
+      cancelled,
+      totalSpentUSD,
+      totalSpentUYU,
+    }
   }, [enrollments])
 
   // Filter enrollments by search
@@ -89,6 +117,8 @@ export function StudentList({ course, enrollments }: StudentListProps) {
     enrolledAt: e.enrolledAt,
     status: e.status,
     student: e.student,
+    courseSpentUSD: e.courseSpentUSD,
+    courseSpentUYU: e.courseSpentUYU,
   }))
 
   return (
@@ -104,7 +134,7 @@ export function StudentList({ course, enrollments }: StudentListProps) {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         <MetricCard
           icon={<Users className="size-5 text-primary" />}
           value={metrics.total}
@@ -128,6 +158,18 @@ export function StudentList({ course, enrollments }: StudentListProps) {
           value={metrics.cancelled}
           label="Cancelados"
           iconBgClass="bg-gray-100"
+        />
+        <MetricCard
+          icon={<Wallet className="size-5 text-blue-600" />}
+          value={`USD ${formatNumber(metrics.totalSpentUSD)}`}
+          label="Total gastado USD"
+          iconBgClass="bg-blue-100"
+        />
+        <MetricCard
+          icon={<Wallet className="size-5 text-blue-600" />}
+          value={`UYU ${formatNumber(metrics.totalSpentUYU)}`}
+          label="Total gastado UYU"
+          iconBgClass="bg-blue-100"
         />
       </div>
 
