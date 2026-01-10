@@ -13,7 +13,7 @@ Lee estos archivos para entender el contexto:
 - @plans/progress-XX.txt - Progreso del milestone actual (XX = número del PRD, ej: progress-06.txt para 06-checkout)
 - @plans/prd/$ARGUMENTS.json - PRD del milestone (ej: 06-checkout)
 
-## ARGUMENTS por defecto: 05-admin
+## ARGUMENTS si no se ingresa milestone, utiliza este: 05-admin
 
 ## Tu tarea
 
