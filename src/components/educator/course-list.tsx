@@ -39,8 +39,17 @@ interface CourseListProps {
   tags: Tag[]
 }
 
-type StatusFilter = 'all' | 'draft' | 'published' | 'finished'
+type StatusFilter = 'all' | 'draft' | 'enrolling' | 'full' | 'in_progress' | 'finished'
 type TypeFilter = 'all' | 'wset' | 'taller' | 'cata' | 'curso'
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'Todos' },
+  { value: 'draft', label: 'Borrador' },
+  { value: 'enrolling', label: 'Inscribiendo' },
+  { value: 'full', label: 'Completo' },
+  { value: 'in_progress', label: 'En curso' },
+  { value: 'finished', label: 'Finalizado' },
+]
 
 export function CourseList({ courses, tags }: CourseListProps) {
   const router = useRouter()
@@ -57,13 +66,16 @@ export function CourseList({ courses, tags }: CourseListProps) {
   // Get filters from URL
   const statusParam = searchParams.get('status') as StatusFilter | null
   const typeParam = searchParams.get('type') as TypeFilter | null
+  const modalityParam = searchParams.get('modality')
   const currentStatus: StatusFilter = statusParam || 'all'
   const currentType: TypeFilter = typeParam || 'all'
+  const currentModality = modalityParam || undefined
 
   // Calculate active filters count
   const activeFiltersCount =
     (currentStatus !== 'all' ? 1 : 0) +
     (currentType !== 'all' ? 1 : 0) +
+    (currentModality ? 1 : 0) +
     selectedTagIds.length
 
   const hasActiveFilters = activeFiltersCount > 0
@@ -82,20 +94,17 @@ export function CourseList({ courses, tags }: CourseListProps) {
       }
 
       // Status filter
-      if (currentStatus !== 'all') {
-        if (currentStatus === 'published') {
-          if (course.status === 'draft' || course.status === 'finished') {
-            return false
-          }
-        } else if (currentStatus === 'draft') {
-          if (course.status !== 'draft') return false
-        } else if (currentStatus === 'finished') {
-          if (course.status !== 'finished') return false
-        }
+      if (currentStatus !== 'all' && course.status !== currentStatus) {
+        return false
       }
 
       // Type filter
       if (currentType !== 'all' && course.type !== currentType) {
+        return false
+      }
+
+      // Modality filter
+      if (currentModality && course.modality !== currentModality) {
         return false
       }
 
@@ -109,18 +118,19 @@ export function CourseList({ courses, tags }: CourseListProps) {
 
       return true
     })
-  }, [courses, searchQuery, currentStatus, currentType, selectedTagIds])
+  }, [courses, searchQuery, currentStatus, currentType, currentModality, selectedTagIds])
 
-  const updateFilters = (status: StatusFilter, type: TypeFilter) => {
+  const updateFilters = (status: StatusFilter, type: TypeFilter, modality: string | undefined) => {
     const params = new URLSearchParams()
     if (status !== 'all') params.set('status', status)
     if (type !== 'all') params.set('type', type)
+    if (modality) params.set('modality', modality)
     const queryString = params.toString()
     router.push(`/educator/courses${queryString ? `?${queryString}` : ''}`)
   }
 
   const clearFilters = () => {
-    updateFilters('all', 'all')
+    updateFilters('all', 'all', undefined)
     setSearchQuery('')
     setSelectedTagIds([])
   }
@@ -219,16 +229,20 @@ export function CourseList({ courses, tags }: CourseListProps) {
       {/* Filters Panel */}
       {showFilters && (
         <FiltersPanel
-          showStatus={true}
-          currentStatus={currentStatus}
-          onStatusChange={(status) => updateFilters(status as StatusFilter, currentType)}
+          showModality={true}
+          currentModality={currentModality}
+          onModalityChange={(modality) => updateFilters(currentStatus, currentType, modality)}
           showType={true}
           currentType={currentType}
-          onTypeChange={(type) => updateFilters(currentStatus, type as TypeFilter)}
+          onTypeChange={(type) => updateFilters(currentStatus, type as TypeFilter, currentModality)}
           showTags={tags.length > 0}
           tags={tags}
           selectedTagIds={selectedTagIds}
           onTagToggle={handleTagToggle}
+          showStatus={true}
+          currentStatus={currentStatus}
+          onStatusChange={(status) => updateFilters(status as StatusFilter, currentType, currentModality)}
+          statusOptions={STATUS_OPTIONS}
           hasActiveFilters={hasActiveFilters}
           onClearFilters={clearFilters}
         />

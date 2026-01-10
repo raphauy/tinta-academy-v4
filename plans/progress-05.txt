@@ -269,3 +269,38 @@ Item 5.22-5.29: Create admin page routes and integrate components
 
 ### Next step suggestion
 Item 5.23: Implement admin courses page
+
+## 2026-01-10 - Item 5.23: Admin Courses Page
+
+### Completed Item
+
+#### 5.23: Implement admin courses page
+- Updated `src/app/admin/courses/page.tsx` as RSC
+- Fetches courses using getAllCoursesForAdmin from course-service
+- Created `admin-courses-client.tsx` for client-side navigation handling
+- Wraps in Suspense with AdminCoursesSkeleton fallback
+- Added metadata: title 'Cursos - Admin'
+- onViewDetails navigates to `/educator/courses/[id]/edit`
+- onViewEnrollments navigates to `/educator/courses/[id]/students`
+
+### Technical Decisions
+- Separated RSC (page.tsx) from client logic (admin-courses-client.tsx)
+- Reused educator routes for course viewing/editing (no need for separate admin routes)
+- Unified filters between educator and admin courses:
+  - Both have: Modalidad, Tipo, Temas, Estado (in that order)
+  - Admin has granular status options (all course states)
+  - Educator has simplified status (draft, published, finished)
+- Refactored to use shared components:
+  - SearchFilterBar for search input and filter toggle
+  - FiltersPanel for filter controls (extended with statusOptions prop)
+  - AdminMetricCard for stats cards
+- Filters use query params (?status=draft&modality=online&type=wset)
+- FiltersPanel uses 2-column grid layout for 4 filters
+
+### Verification
+- TypeCheck: PASS
+- Lint: PASS (pre-existing warnings only)
+- Build: PASS
+
+### Next step suggestion
+Item 5.24: Implement admin students page

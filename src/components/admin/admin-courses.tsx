@@ -1,51 +1,63 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Search, Filter, Laptop, MapPin, BookOpen, Users } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Laptop, MapPin, BookOpen, Users } from 'lucide-react'
+import { SearchFilterBar } from '@/components/shared/search-filter-bar'
+import { FiltersPanel } from '@/components/shared/filters-panel'
 import type { AdminCourse } from '@/services/course-service'
+import type { Tag } from '@prisma/client'
 import { AdminCourseCard } from './admin-course-card'
+import { AdminMetricCard } from './admin-metric-card'
 
-type ModalityFilter = 'all' | 'online' | 'presencial'
-type StatusFilter =
-  | 'all'
-  | 'announced'
-  | 'enrolling'
-  | 'full'
-  | 'in_progress'
-  | 'available'
-  | 'finished'
-  | 'draft'
-type SortOption = 'recent' | 'revenue' | 'enrolled' | 'title'
+const ADMIN_STATUS_OPTIONS = [
+  { value: 'all', label: 'Todos' },
+  { value: 'draft', label: 'Borrador' },
+  { value: 'enrolling', label: 'Inscribiendo' },
+  { value: 'full', label: 'Completo' },
+  { value: 'in_progress', label: 'En curso' },
+  { value: 'finished', label: 'Finalizado' },
+]
+
+type TypeFilter = 'all' | 'wset' | 'taller' | 'cata' | 'curso'
 
 export interface AdminCoursesProps {
   courses: AdminCourse[]
-  onViewDetails?: (id: string) => void
-  onViewEnrollments?: (id: string) => void
+  tags: Tag[]
 }
 
 export function AdminCourses({
   courses,
-  onViewDetails,
-  onViewEnrollments,
+  tags,
 }: AdminCoursesProps) {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [modalityFilter, setModalityFilter] = useState<ModalityFilter>('all')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
-  const [sortBy, setSortBy] = useState<SortOption>('recent')
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [showFilters, setShowFilters] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
 
+  // Get filters from URL
+  const statusParam = searchParams.get('status')
+  const modalityParam = searchParams.get('modality')
+  const typeParam = searchParams.get('type') as TypeFilter | null
+  const currentStatus = statusParam || 'all'
+  const currentModality = modalityParam || undefined
+  const currentType: TypeFilter = typeParam || 'all'
+
+  // Calculate active filters count
+  const activeFiltersCount =
+    (currentStatus !== 'all' ? 1 : 0) +
+    (currentModality ? 1 : 0) +
+    (currentType !== 'all' ? 1 : 0) +
+    selectedTagIds.length
+
+  const hasActiveFilters = activeFiltersCount > 0 || searchQuery.length > 0
+
+  // Filter and search courses
   const filteredCourses = useMemo(() => {
     let result = [...courses]
 
+    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
       result = result.filter(
@@ -55,31 +67,30 @@ export function AdminCourses({
       )
     }
 
-    if (modalityFilter !== 'all') {
-      result = result.filter((c) => c.modality === modalityFilter)
+    // Status filter
+    if (currentStatus !== 'all') {
+      result = result.filter((c) => c.status === currentStatus)
     }
 
-    if (statusFilter !== 'all') {
-      result = result.filter((c) => c.status === statusFilter)
+    // Modality filter
+    if (currentModality) {
+      result = result.filter((c) => c.modality === currentModality)
     }
 
-    switch (sortBy) {
-      case 'revenue':
-        result.sort((a, b) => b.totalRevenue - a.totalRevenue)
-        break
-      case 'enrolled':
-        result.sort((a, b) => b.enrolledCount - a.enrolledCount)
-        break
-      case 'title':
-        result.sort((a, b) => a.title.localeCompare(b.title))
-        break
-      case 'recent':
-      default:
-        break
+    // Type filter
+    if (currentType !== 'all') {
+      result = result.filter((c) => c.type === currentType)
+    }
+
+    // Tags filter
+    if (selectedTagIds.length > 0) {
+      result = result.filter((c) =>
+        selectedTagIds.some((tagId) => c.tags.some((tag) => tag.id === tagId))
+      )
     }
 
     return result
-  }, [courses, searchQuery, modalityFilter, statusFilter, sortBy])
+  }, [courses, searchQuery, currentStatus, currentModality, currentType, selectedTagIds])
 
   const stats = useMemo(() => {
     const online = courses.filter((c) => c.modality === 'online').length
@@ -88,202 +99,123 @@ export function AdminCourses({
     return { online, presencial, totalEnrolled }
   }, [courses])
 
-  const activeFiltersCount =
-    (modalityFilter !== 'all' ? 1 : 0) + (statusFilter !== 'all' ? 1 : 0)
+  const updateFilters = (
+    status: string,
+    modality: string | undefined,
+    type: TypeFilter
+  ) => {
+    const params = new URLSearchParams()
+    if (status !== 'all') params.set('status', status)
+    if (modality) params.set('modality', modality)
+    if (type !== 'all') params.set('type', type)
+    const queryString = params.toString()
+    router.push(`/admin/courses${queryString ? `?${queryString}` : ''}`)
+  }
+
+  const clearFilters = () => {
+    setSearchQuery('')
+    setSelectedTagIds([])
+    router.push('/admin/courses')
+  }
+
+  const handleTagToggle = (tagId: string) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
+    )
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-1">
-          Cursos
-        </h1>
-        <p className="text-sm text-stone-500 dark:text-stone-400">
+        <h1 className="text-3xl font-bold tracking-tight">Cursos</h1>
+        <p className="text-muted-foreground mt-1">
           Gestiona y visualiza el rendimiento de todos los cursos
         </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-stone-500 dark:text-stone-400 mb-2">
-            <BookOpen className="w-4 h-4" />
-            <span className="text-xs font-medium">Total Cursos</span>
-          </div>
-          <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">
-            {courses.length}
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-blue-500 dark:text-blue-400 mb-2">
-            <Laptop className="w-4 h-4" />
-            <span className="text-xs font-medium">Online</span>
-          </div>
-          <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">
-            {stats.online}
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-amber-500 dark:text-amber-400 mb-2">
-            <MapPin className="w-4 h-4" />
-            <span className="text-xs font-medium">Presenciales</span>
-          </div>
-          <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">
-            {stats.presencial}
-          </p>
-        </div>
-
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-[#143F3B] dark:text-[#6B9B7A] mb-2">
-            <Users className="w-4 h-4" />
-            <span className="text-xs font-medium">Total Inscritos</span>
-          </div>
-          <p className="text-2xl font-bold text-stone-900 dark:text-stone-100">
-            {stats.totalEnrolled}
-          </p>
-        </div>
+        <AdminMetricCard
+          label="Total Cursos"
+          value={courses.length}
+          icon={<BookOpen className="w-4 h-4" />}
+          size="compact"
+        />
+        <AdminMetricCard
+          label="Online"
+          value={stats.online}
+          icon={<Laptop className="w-4 h-4" />}
+          size="compact"
+        />
+        <AdminMetricCard
+          label="Presenciales"
+          value={stats.presencial}
+          icon={<MapPin className="w-4 h-4" />}
+          size="compact"
+        />
+        <AdminMetricCard
+          label="Total Inscritos"
+          value={stats.totalEnrolled}
+          icon={<Users className="w-4 h-4" />}
+          size="compact"
+        />
       </div>
 
-      <div className="space-y-3">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-            <Input
-              type="text"
-              placeholder="Buscar por nombre o educador..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+      <SearchFilterBar
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Buscar por nombre o educador..."
+        showFilters={showFilters}
+        onToggleFilters={() => setShowFilters(!showFilters)}
+        activeFiltersCount={activeFiltersCount}
+      />
 
-          <Button
-            variant={
-              showFilters || activeFiltersCount > 0 ? 'default' : 'outline'
-            }
-            onClick={() => setShowFilters(!showFilters)}
-            className="relative"
-          >
-            <Filter className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Filtros</span>
-            {activeFiltersCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-[#143F3B] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                {activeFiltersCount}
-              </span>
-            )}
-          </Button>
-        </div>
+      {showFilters && (
+        <FiltersPanel
+          showModality={true}
+          currentModality={currentModality}
+          onModalityChange={(modality) =>
+            updateFilters(currentStatus, modality, currentType)
+          }
+          showType={true}
+          currentType={currentType}
+          onTypeChange={(type) =>
+            updateFilters(currentStatus, currentModality, type as TypeFilter)
+          }
+          showTags={tags.length > 0}
+          tags={tags}
+          selectedTagIds={selectedTagIds}
+          onTagToggle={handleTagToggle}
+          showStatus={true}
+          currentStatus={currentStatus}
+          onStatusChange={(status) =>
+            updateFilters(status, currentModality, currentType)
+          }
+          statusOptions={ADMIN_STATUS_OPTIONS}
+          hasActiveFilters={hasActiveFilters}
+          onClearFilters={clearFilters}
+        />
+      )}
 
-        {showFilters && (
-          <div className="flex flex-wrap gap-4 p-4 bg-stone-50 dark:bg-stone-900/50 rounded-xl border border-stone-200 dark:border-stone-700">
-            <div className="flex-1 min-w-[160px]">
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">
-                Modalidad
-              </label>
-              <Select
-                value={modalityFilter}
-                onValueChange={(v) => setModalityFilter(v as ModalityFilter)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Todas las modalidades" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  <SelectItem value="online">Online</SelectItem>
-                  <SelectItem value="presencial">Presencial</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex-1 min-w-[160px]">
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">
-                Estado
-              </label>
-              <Select
-                value={statusFilter}
-                onValueChange={(v) => setStatusFilter(v as StatusFilter)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Todos los estados" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="announced">Anunciado</SelectItem>
-                  <SelectItem value="enrolling">Inscribiendo</SelectItem>
-                  <SelectItem value="full">Completo</SelectItem>
-                  <SelectItem value="in_progress">En curso</SelectItem>
-                  <SelectItem value="available">Disponible</SelectItem>
-                  <SelectItem value="finished">Finalizado</SelectItem>
-                  <SelectItem value="draft">Borrador</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex-1 min-w-[160px]">
-              <label className="block text-[10px] font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-1.5">
-                Ordenar por
-              </label>
-              <Select
-                value={sortBy}
-                onValueChange={(v) => setSortBy(v as SortOption)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Ordenar por..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recent">Mas recientes</SelectItem>
-                  <SelectItem value="revenue">Mayor ingreso</SelectItem>
-                  <SelectItem value="enrolled">Mas inscritos</SelectItem>
-                  <SelectItem value="title">Alfabetico</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {activeFiltersCount > 0 && (
-              <div className="flex items-end">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setModalityFilter('all')
-                    setStatusFilter('all')
-                  }}
-                >
-                  Limpiar filtros
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-stone-500 dark:text-stone-400">
-          {filteredCourses.length === courses.length
-            ? `${courses.length} cursos`
-            : `${filteredCourses.length} de ${courses.length} cursos`}
-        </p>
-      </div>
+      <p className="text-sm text-muted-foreground">
+        {filteredCourses.length === courses.length
+          ? `${courses.length} cursos`
+          : `${filteredCourses.length} de ${courses.length} cursos`}
+      </p>
 
       {filteredCourses.length === 0 ? (
-        <div className="text-center py-12 bg-stone-50 dark:bg-stone-850 rounded-xl border border-stone-200 dark:border-stone-700">
-          <BookOpen className="w-12 h-12 text-stone-300 dark:text-stone-600 mx-auto mb-3" />
-          <h3 className="text-sm font-medium text-stone-900 dark:text-stone-100 mb-1">
+        <div className="text-center py-16 bg-card rounded-2xl border border-border">
+          <BookOpen className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
+          <h3 className="text-xl font-semibold text-foreground mb-2">
             No se encontraron cursos
           </h3>
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            Intenta ajustar los filtros o la busqueda
+          <p className="text-muted-foreground">
+            Intenta ajustar los filtros o la búsqueda
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="space-y-4">
           {filteredCourses.map((course) => (
-            <AdminCourseCard
-              key={course.id}
-              course={course}
-              onViewDetails={() => onViewDetails?.(course.id)}
-              onViewEnrollments={() => onViewEnrollments?.(course.id)}
-            />
+            <AdminCourseCard key={course.id} course={course} />
           ))}
         </div>
       )}

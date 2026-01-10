@@ -405,7 +405,7 @@
       "Handle onViewObservers to show modal (client-side state)",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.24",

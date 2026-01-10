@@ -4,11 +4,17 @@ import { X, Monitor, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FilterButton } from './filter-button'
 
+export interface StatusOption {
+  value: string
+  label: string
+}
+
 export interface FiltersPanelConfig {
   // Status filter (for educator)
   showStatus?: boolean
   currentStatus?: string
   onStatusChange?: (status: string) => void
+  statusOptions?: StatusOption[] // Custom status options, defaults to educator statuses
 
   // Modality filter
   showModality?: boolean
@@ -31,10 +37,18 @@ export interface FiltersPanelConfig {
   onClearFilters: () => void
 }
 
+const DEFAULT_STATUS_OPTIONS: StatusOption[] = [
+  { value: 'all', label: 'Todos' },
+  { value: 'draft', label: 'Borrador' },
+  { value: 'published', label: 'Publicado' },
+  { value: 'finished', label: 'Finalizado' },
+]
+
 export function FiltersPanel({
   showStatus = false,
   currentStatus = 'all',
   onStatusChange,
+  statusOptions = DEFAULT_STATUS_OPTIONS,
 
   showModality = false,
   currentModality,
@@ -52,48 +66,13 @@ export function FiltersPanel({
   hasActiveFilters,
   onClearFilters,
 }: FiltersPanelConfig) {
-  // Calculate grid columns based on visible filters
+  // Calculate grid columns based on visible filters (2 columns for better readability)
   const visibleFilters = [showStatus, showModality, showType, showTags].filter(Boolean).length
-  const gridCols = visibleFilters <= 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'
+  const gridCols = visibleFilters <= 2 ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-2'
 
   return (
     <div className="bg-card rounded-2xl p-6 shadow-sm border border-border">
       <div className={`grid grid-cols-1 ${gridCols} gap-6`}>
-        {/* Status filter (educator specific) */}
-        {showStatus && onStatusChange && (
-          <div>
-            <label className="block text-sm font-semibold text-foreground mb-3">
-              Estado
-            </label>
-            <div className="flex flex-wrap gap-2">
-              <FilterButton
-                active={currentStatus === 'all'}
-                onClick={() => onStatusChange('all')}
-              >
-                Todos
-              </FilterButton>
-              <FilterButton
-                active={currentStatus === 'draft'}
-                onClick={() => onStatusChange('draft')}
-              >
-                Borrador
-              </FilterButton>
-              <FilterButton
-                active={currentStatus === 'published'}
-                onClick={() => onStatusChange('published')}
-              >
-                Publicado
-              </FilterButton>
-              <FilterButton
-                active={currentStatus === 'finished'}
-                onClick={() => onStatusChange('finished')}
-              >
-                Finalizado
-              </FilterButton>
-            </div>
-          </div>
-        )}
-
         {/* Modality filter */}
         {showModality && onModalityChange && (
           <div>
@@ -183,6 +162,26 @@ export function FiltersPanel({
                 >
                   {tag.name}
                 </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Status filter */}
+        {showStatus && onStatusChange && (
+          <div>
+            <label className="block text-sm font-semibold text-foreground mb-3">
+              Estado
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {statusOptions.map((option) => (
+                <FilterButton
+                  key={option.value}
+                  active={currentStatus === option.value}
+                  onClick={() => onStatusChange(option.value)}
+                >
+                  {option.label}
+                </FilterButton>
               ))}
             </div>
           </div>

@@ -1,10 +1,12 @@
 'use server'
 
 import { auth } from '@/lib/auth'
+import { revalidatePath } from 'next/cache'
 import {
   getAllCoursesForAdmin,
   getCourseObservers,
   getCourseEnrollmentsWithDetails,
+  deleteCourse,
   type AdminCourse,
   type CourseObserver,
   type CourseEnrollmentWithDetails,
@@ -116,6 +118,39 @@ export async function getCourseEnrollmentsAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error al obtener las inscripciones del curso',
+    }
+  }
+}
+
+/**
+ * Delete a course (admin only, no enrollments)
+ */
+export async function deleteCourseAsAdminAction(
+  courseId: string
+): Promise<ActionResult<void>> {
+  const authResult = await requireSuperAdmin()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  if (!courseId) {
+    return { success: false, error: 'ID de curso requerido' }
+  }
+
+  try {
+    await deleteCourse(courseId)
+
+    revalidatePath('/admin/courses')
+    revalidatePath('/cursos')
+    revalidatePath('/')
+
+    return { success: true, data: undefined }
+  } catch (error) {
+    console.error('Error deleting course:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error al eliminar el curso',
     }
   }
 }

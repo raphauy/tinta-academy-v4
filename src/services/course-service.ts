@@ -358,6 +358,7 @@ export interface AdminCourse {
   startDate: Date | null
   endDate: Date | null
   maxCapacity: number | null
+  wsetLevel: number | null
   imageUrl: string | null
   createdAt: Date
   educator: {
@@ -433,9 +434,9 @@ export async function getAllCoursesForAdmin(): Promise<AdminCourse[]> {
         where: { status: 'paid' },
         select: { finalAmount: true },
       },
-      enrollments: {
+      _count: {
         select: {
-          status: true,
+          enrollments: true,
         },
       },
     },
@@ -468,11 +469,12 @@ export async function getAllCoursesForAdmin(): Promise<AdminCourse[]> {
       startDate: course.startDate,
       endDate: course.endDate,
       maxCapacity: course.maxCapacity,
+      wsetLevel: course.wsetLevel,
       imageUrl: course.imageUrl,
       createdAt: course.createdAt,
       educator: course.educator,
       tags: course.tags,
-      enrolledCount: course.enrolledCount,
+      enrolledCount: course._count.enrollments,
       observersCount,
       totalRevenue,
       completionRate,

@@ -102,8 +102,8 @@ export function EducatorCourseRow({
   const statusBadge = getStatusBadge(course.status)
 
   const enrollmentText = course.maxCapacity
-    ? `${course.enrolledCount}/${course.maxCapacity} inscritos`
-    : `${course.enrolledCount} alumnos`
+    ? `${course._count.enrollments}/${course.maxCapacity} inscritos`
+    : `${course._count.enrollments} alumnos`
 
   const priceText = course.priceUSD === 0 ? 'Gratis' : `USD ${course.priceUSD}`
 
@@ -206,8 +206,8 @@ export function EducatorCourseRow({
             <Button variant="outline" size="sm" asChild className="gap-2">
               <Link href={`/educator/courses/${course.id}/students`}>
                 <GraduationCap className="size-4" />
-                <span className="hidden sm:inline">{course.enrolledCount} Estudiantes</span>
-                <span className="sm:hidden">{course.enrolledCount}</span>
+                <span className="hidden sm:inline">{course._count.enrollments} Estudiantes</span>
+                <span className="sm:hidden">{course._count.enrollments}</span>
               </Link>
             </Button>
 

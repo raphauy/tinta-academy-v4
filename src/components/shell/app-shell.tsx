@@ -49,7 +49,7 @@ export function AppShell({ children, variant, user, viewAsStudentId }: AppShellP
   }
 
   // Authenticated shells use sidebar navigation
-  const sidebarWidth = variant === 'admin' ? 256 : 240
+  const sidebarWidth = 240
 
   return (
     <div className="min-h-screen bg-secondary">
