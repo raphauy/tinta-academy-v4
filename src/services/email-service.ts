@@ -73,7 +73,7 @@ interface SendOrderConfirmationEmailInput {
   paymentMethod: string
   amount: string
   currency: string
-  courseSlug: string
+  courseId: string
 }
 
 export async function sendOrderConfirmationEmail(
@@ -91,10 +91,10 @@ export async function sendOrderConfirmationEmail(
     paymentMethod,
     amount,
     currency,
-    courseSlug,
+    courseId,
   } = input
 
-  const courseUrl = `${baseUrl}/student/courses/${courseSlug}`
+  const courseUrl = `${baseUrl}/student/courses/${courseId}`
 
   if (process.env.NODE_ENV === 'development') {
     console.log('\n========================================')

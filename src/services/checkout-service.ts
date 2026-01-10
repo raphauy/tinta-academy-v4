@@ -540,7 +540,7 @@ export async function completeCheckout(orderId: string): Promise<{
       paymentMethod: paymentMethodLabels[updatedOrder.paymentMethod] || updatedOrder.paymentMethod,
       amount: updatedOrder.finalAmount.toFixed(2),
       currency: updatedOrder.currency,
-      courseSlug: course.slug,
+      courseId: course.id,
     }).catch((error) => {
       console.error('Error sending order confirmation email:', error)
     })
