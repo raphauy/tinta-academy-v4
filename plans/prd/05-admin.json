@@ -115,7 +115,7 @@
       "Use try/catch with proper error messages",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.07",
@@ -131,7 +131,7 @@
       "Use revalidatePath after mutations if any",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.08",
@@ -148,7 +148,7 @@
       "Use revalidatePath after mutations",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.09",
@@ -167,7 +167,7 @@
       "Use revalidatePath after mutations",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.10",
@@ -185,7 +185,7 @@
       "Use revalidatePath after mutations",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.11",
@@ -206,7 +206,7 @@
       "Use revalidatePath after mutations",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.12",
@@ -226,7 +226,7 @@
       "Use revalidatePath after mutations",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.13",

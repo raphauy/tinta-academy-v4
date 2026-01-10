@@ -48,3 +48,58 @@
 
 ### Next step suggestion
 Item 5.06: Create server actions for admin dashboard
+
+## 2026-01-10 - Items 5.06-5.12: Server Actions for Admin Panel
+
+### Completed Items
+
+#### 5.06: Create server actions for admin dashboard
+- Created `src/app/admin/actions.ts`
+- Helper: requireSuperAdmin() for role verification
+- Actions: getDashboardMetricsAction()
+
+#### 5.07: Create server actions for admin courses management
+- Created `src/app/admin/courses/actions.ts`
+- Actions: getCoursesForAdminAction, getCourseObserversAction, getCourseEnrollmentsAction
+
+#### 5.08: Create server actions for admin students management
+- Created `src/app/admin/users/students/actions.ts`
+- Actions: getStudentsForAdminAction, getStudentDetailAction, updateStudentAction
+- Uses Zod for input validation
+
+#### 5.09: Create server actions for admin educators management
+- Created `src/app/admin/users/educators/actions.ts`
+- Actions: getEducatorsForAdminAction, getEducatorDetailAction, createEducatorAction, updateEducatorAction, deleteEducatorAction
+- Uses promoteUserToEducator for atomic educator creation with role update
+
+#### 5.10: Create server actions for admin users management
+- Created `src/app/admin/users/actions.ts`
+- Actions: getUsersForAdminAction, updateUserRoleAction, deleteUserAction, getUserActivityAction
+- Constraints: cannot demote last superadmin, cannot delete self/change own role
+
+#### 5.11: Create server actions for coupons management
+- Created `src/app/admin/coupons/actions.ts`
+- Actions: getCouponsForAdminAction, getCouponStatsAction, createCouponAction, updateCouponAction, deleteCouponAction, toggleCouponStatusAction
+- CouponWithStats type includes usage count and restricted course info
+- Soft delete for coupons with orders
+
+#### 5.12: Create server actions for bank accounts management
+- Created `src/app/admin/bank-data/actions.ts`
+- Actions: getBankAccountsForAdminAction, createBankAccountAction, updateBankAccountAction, deleteBankAccountAction, toggleBankAccountStatusAction
+- Soft delete for accounts referenced by orders
+
+### Technical Decisions
+- All actions use requireSuperAdmin() helper for consistent authorization
+- ActionResult<T> type pattern for consistent error handling
+- Zod validation for all mutation inputs
+- revalidatePath() after mutations for cache invalidation
+- error.issues for Zod error extraction (TypeScript-compatible)
+- Soft delete pattern: deactivate instead of delete when records have dependencies
+
+### Verification
+- TypeCheck: PASS
+- Lint: PASS (2 pre-existing warnings unrelated to changes)
+- Build: PASS
+
+### Next step suggestion
+Item 5.13: Create admin UI components - metric cards and charts
