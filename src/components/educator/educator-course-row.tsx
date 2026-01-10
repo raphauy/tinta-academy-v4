@@ -15,8 +15,7 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  GraduationCap,
-  Wallet
+  GraduationCap
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -100,10 +99,6 @@ function formatNumber(amount: number): string {
   }).format(amount)
 }
 
-function formatCurrencyAmount(amount: number, currency: 'USD' | 'UYU'): string {
-  return `${currency} ${formatNumber(amount)}`
-}
-
 function formatRevenue(usd: number, uyu: number): string {
   const parts: string[] = []
   if (usd > 0) parts.push(`USD ${formatNumber(usd)}`)
@@ -184,7 +179,7 @@ export function EducatorCourseRow({
             </Link>
 
             {/* Description - always takes space even if empty */}
-            <p className="text-sm text-muted-foreground line-clamp-1 min-h-[1.25rem]">
+            <p className="text-sm text-muted-foreground line-clamp-1 min-h-5">
               {course.description || '\u00A0'}
             </p>
           </div>
@@ -226,13 +221,13 @@ export function EducatorCourseRow({
         <div className="shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-end sm:justify-between gap-2">
           {/* Revenue - at top on desktop */}
           {formatRevenue(course.totalRevenueUSD, course.totalRevenueUYU) && (
-            <span className="text-lg font-bold text-primary order-1 sm:order-none">
+            <span className="text-lg font-bold text-primary order-1 sm:order-0">
               {formatRevenue(course.totalRevenueUSD, course.totalRevenueUYU)}
             </span>
           )}
 
           {/* Action buttons - always at bottom */}
-          <div className="flex items-center gap-2 order-2 sm:order-none sm:mt-auto">
+          <div className="flex items-center gap-2 order-2 sm:order-0 sm:mt-auto">
             {/* Ver estudiantes button */}
             <Button variant="outline" size="sm" asChild className="gap-2">
               <Link href={`/educator/courses/${course.id}/students`}>

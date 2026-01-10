@@ -9,13 +9,17 @@ import {
   Pencil,
   Trash2,
   Calendar,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { UserWithDetails } from '@/services/user-service'
 
 interface UserRowProps {
   user: UserWithDetails
   onEditRole?: () => void
   onDelete?: () => void
+  onToggleStatus?: () => void
 }
 
 interface AvatarProps {
@@ -115,12 +119,13 @@ const roleConfig: Record<
   },
 }
 
-export function UserRow({ user, onEditRole, onDelete }: UserRowProps) {
+export function UserRow({ user, onEditRole, onDelete, onToggleStatus }: UserRowProps) {
   const roleKey = user.role || 'user'
   const role = roleConfig[roleKey] || roleConfig.user
   const RoleIcon = role.icon
   const isAdmin = roleKey === 'superadmin'
   const displayName = user.name || user.email.split('@')[0]
+  const isInactive = !user.isActive
 
   return (
     <div className="group px-4 py-3 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors">
@@ -143,12 +148,19 @@ export function UserRow({ user, onEditRole, onDelete }: UserRowProps) {
             </div>
           </div>
 
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${role.className}`}
-          >
-            <RoleIcon className="w-3 h-3" />
-            {role.label}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${role.className}`}
+            >
+              <RoleIcon className="w-3 h-3" />
+              {role.label}
+            </span>
+            {isInactive && (
+              <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400 border-stone-300 dark:border-stone-600">
+                Desactivado
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
@@ -161,20 +173,41 @@ export function UserRow({ user, onEditRole, onDelete }: UserRowProps) {
 
           {!isAdmin && (
             <div className="flex items-center gap-1">
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={onEditRole}
-                className="p-1.5 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-md transition-colors"
-                title="Editar rol"
+                className="h-7 w-7 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20"
+                title="Editar"
               >
                 <Pencil className="w-4 h-4" />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggleStatus}
+                className={`h-7 w-7 ${
+                  isInactive
+                    ? 'text-stone-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/50'
+                    : 'text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50'
+                }`}
+                title={isInactive ? 'Activar' : 'Desactivar'}
+              >
+                {isInactive ? (
+                  <ToggleRight className="w-4 h-4" />
+                ) : (
+                  <ToggleLeft className="w-4 h-4" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={onDelete}
-                className="p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-md transition-colors"
+                className="h-7 w-7 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50"
                 title="Eliminar"
               >
                 <Trash2 className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -198,13 +231,18 @@ export function UserRow({ user, onEditRole, onDelete }: UserRowProps) {
           </div>
         </div>
 
-        <div className="col-span-2">
+        <div className="col-span-2 flex items-center gap-1.5">
           <span
             className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${role.className}`}
           >
             <RoleIcon className="w-3 h-3" />
             {role.label}
           </span>
+          {isInactive && (
+            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400 border-stone-300 dark:border-stone-600">
+              Desactivado
+            </span>
+          )}
         </div>
 
         <div className="col-span-2 text-sm text-stone-500 dark:text-stone-400">
@@ -222,20 +260,41 @@ export function UserRow({ user, onEditRole, onDelete }: UserRowProps) {
             </span>
           ) : (
             <>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={onEditRole}
-                className="p-1.5 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-md transition-colors opacity-0 group-hover:opacity-100"
-                title="Editar rol"
+                className="h-8 w-8 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 opacity-0 group-hover:opacity-100"
+                title="Editar"
               >
                 <Pencil className="w-4 h-4" />
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onToggleStatus}
+                className={`h-8 w-8 opacity-0 group-hover:opacity-100 ${
+                  isInactive
+                    ? 'text-stone-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/50'
+                    : 'text-stone-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/50'
+                }`}
+                title={isInactive ? 'Activar' : 'Desactivar'}
+              >
+                {isInactive ? (
+                  <ToggleRight className="w-4 h-4" />
+                ) : (
+                  <ToggleLeft className="w-4 h-4" />
+                )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={onDelete}
-                className="p-1.5 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                className="h-8 w-8 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 opacity-0 group-hover:opacity-100"
                 title="Eliminar"
               >
                 <Trash2 className="w-4 h-4" />
-              </button>
+              </Button>
             </>
           )}
         </div>

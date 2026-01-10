@@ -12,6 +12,8 @@ import {
   Search,
   X,
   ChevronDown,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -29,12 +31,14 @@ import { UserRow } from './user-row'
 type SortField = 'name' | 'email' | 'role' | 'createdAt'
 type SortDirection = 'asc' | 'desc'
 type RoleFilter = 'all' | 'superadmin' | 'educator' | 'student' | 'user'
+type StatusFilter = 'all' | 'active' | 'inactive'
 
 export interface AdminUsersProps {
   users: UserWithDetails[]
   stats: UserStats
   onEditRole?: (id: string) => void
   onDelete?: (id: string) => void
+  onToggleStatus?: (id: string) => void
 }
 
 export function AdminUsers({
@@ -42,9 +46,11 @@ export function AdminUsers({
   stats,
   onEditRole,
   onDelete,
+  onToggleStatus,
 }: AdminUsersProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState<RoleFilter>('all')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [sortField, setSortField] = useState<SortField>('createdAt')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
 
@@ -54,6 +60,11 @@ export function AdminUsers({
     if (roleFilter !== 'all') {
       const filterRole = roleFilter === 'user' ? null : roleFilter
       result = result.filter((user) => user.role === filterRole)
+    }
+
+    if (statusFilter !== 'all') {
+      const isActive = statusFilter === 'active'
+      result = result.filter((user) => user.isActive === isActive)
     }
 
     if (searchQuery) {
@@ -86,7 +97,7 @@ export function AdminUsers({
     })
 
     return result
-  }, [users, searchQuery, roleFilter, sortField, sortDirection])
+  }, [users, searchQuery, roleFilter, statusFilter, sortField, sortDirection])
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -98,10 +109,12 @@ export function AdminUsers({
   }
 
   const renderSortButton = (field: SortField, label: string) => (
-    <button
+    <Button
       key={field}
+      variant="ghost"
+      size="sm"
       onClick={() => handleSort(field)}
-      className={`inline-flex items-center gap-1 text-xs font-medium transition-colors ${
+      className={`h-auto px-2 py-1 inline-flex items-center gap-1 text-xs font-medium transition-colors ${
         sortField === field
           ? 'text-[#143F3B] dark:text-[#6B9B7A]'
           : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300'
@@ -115,7 +128,7 @@ export function AdminUsers({
           }`}
         />
       )}
-    </button>
+    </Button>
   )
 
   return (
@@ -162,15 +175,17 @@ export function AdminUsers({
             placeholder="Buscar por nombre o email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 bg-white dark:bg-stone-900 border-stone-300 dark:border-stone-600"
           />
           {searchQuery && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -178,7 +193,7 @@ export function AdminUsers({
           value={roleFilter}
           onValueChange={(value) => setRoleFilter(value as RoleFilter)}
         >
-          <SelectTrigger className="w-full sm:w-44">
+          <SelectTrigger className="w-full sm:w-44 bg-white dark:bg-stone-900 border-stone-300 dark:border-stone-600">
             <SelectValue placeholder="Filtrar por rol" />
           </SelectTrigger>
           <SelectContent>
@@ -214,6 +229,35 @@ export function AdminUsers({
             </SelectItem>
           </SelectContent>
         </Select>
+
+        <Select
+          value={statusFilter}
+          onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+        >
+          <SelectTrigger className="w-full sm:w-40 bg-white dark:bg-stone-900 border-stone-300 dark:border-stone-600">
+            <SelectValue placeholder="Estado" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              <span className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-stone-400" />
+                Todos
+              </span>
+            </SelectItem>
+            <SelectItem value="active">
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                Activos
+              </span>
+            </SelectItem>
+            <SelectItem value="inactive">
+              <span className="flex items-center gap-2">
+                <XCircle className="w-4 h-4 text-stone-400" />
+                Desactivados
+              </span>
+            </SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -223,7 +267,7 @@ export function AdminUsers({
             : filteredUsers.length === 1
               ? '1 usuario'
               : `${filteredUsers.length} usuarios`}
-          {(searchQuery || roleFilter !== 'all') &&
+          {(searchQuery || roleFilter !== 'all' || statusFilter !== 'all') &&
             users.length !== filteredUsers.length && (
               <span className="text-stone-400 dark:text-stone-500">
                 {' '}de {users.length} totales
@@ -270,6 +314,7 @@ export function AdminUsers({
                 user={user}
                 onEditRole={() => onEditRole?.(user.id)}
                 onDelete={() => onDelete?.(user.id)}
+                onToggleStatus={() => onToggleStatus?.(user.id)}
               />
             ))}
           </div>
@@ -283,17 +328,18 @@ export function AdminUsers({
             Sin resultados
           </h3>
           <p className="text-sm text-stone-500 dark:text-stone-400 text-center max-w-sm">
-            {searchQuery || roleFilter !== 'all'
+            {searchQuery || roleFilter !== 'all' || statusFilter !== 'all'
               ? 'No se encontraron usuarios con los filtros aplicados'
               : 'No hay usuarios registrados en la plataforma'}
           </p>
-          {(searchQuery || roleFilter !== 'all') && (
+          {(searchQuery || roleFilter !== 'all' || statusFilter !== 'all') && (
             <Button
               variant="ghost"
               className="mt-4"
               onClick={() => {
                 setSearchQuery('')
                 setRoleFilter('all')
+                setStatusFilter('all')
               }}
             >
               Limpiar filtros

@@ -6,10 +6,10 @@ import {
   Search,
   X,
   ChevronDown,
-  DollarSign,
+  Wallet,
   Clock,
-  CheckCircle,
   CreditCard,
+  AlertTriangle,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -39,7 +39,8 @@ interface OrderStats {
   total: number
   pending: number
   paid: number
-  totalRevenue: number
+  totalRevenueUSD: number
+  totalRevenueUYU: number
 }
 
 function calculateStats(orders: OrderWithRelations[]): OrderStats {
@@ -47,11 +48,23 @@ function calculateStats(orders: OrderWithRelations[]): OrderStats {
     (o) => o.status === 'pending_payment' || o.status === 'payment_processing'
   ).length
   const paid = orders.filter((o) => o.status === 'paid').length
-  const totalRevenue = orders
-    .filter((o) => o.status === 'paid')
+
+  const paidOrders = orders.filter((o) => o.status === 'paid')
+  const totalRevenueUSD = paidOrders
+    .filter((o) => o.currency === 'USD')
+    .reduce((sum, o) => sum + o.finalAmount, 0)
+  const totalRevenueUYU = paidOrders
+    .filter((o) => o.currency === 'UYU')
     .reduce((sum, o) => sum + o.finalAmount, 0)
 
-  return { total: orders.length, pending, paid, totalRevenue }
+  return { total: orders.length, pending, paid, totalRevenueUSD, totalRevenueUYU }
+}
+
+function formatNumber(amount: number): string {
+  return new Intl.NumberFormat('es-UY', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount)
 }
 
 export interface AdminOrdersProps {
@@ -128,10 +141,12 @@ export function AdminOrders({
   }
 
   const renderSortButton = (field: SortField, label: string) => (
-    <button
+    <Button
       key={field}
+      variant="ghost"
+      size="sm"
       onClick={() => handleSort(field)}
-      className={`inline-flex items-center gap-1 text-xs font-medium transition-colors ${
+      className={`h-auto px-1 py-0 text-xs font-medium ${
         sortField === field
           ? 'text-[#143F3B] dark:text-[#6B9B7A]'
           : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300'
@@ -145,43 +160,65 @@ export function AdminOrders({
           }`}
         />
       )}
-    </button>
+    </Button>
   )
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-1">
-          Ordenes de Pago
-        </h1>
-        <p className="text-sm text-stone-500 dark:text-stone-400">
-          Gestiona las ordenes y pagos de la plataforma
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-1">
+            Ordenes de Pago
+          </h1>
+          <p className="text-sm text-stone-500 dark:text-stone-400">
+            Gestiona las ordenes y pagos de la plataforma
+          </p>
+        </div>
+
+        {stats.pending > 0 && (
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl shadow-sm">
+            <div className="flex items-center justify-center w-8 h-8 bg-amber-100 dark:bg-amber-900/50 rounded-lg">
+              <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                {stats.pending} {stats.pending === 1 ? 'orden pendiente' : 'ordenes pendientes'}
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Requieren confirmacion
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <AdminMetricCard
-          label="Total Ordenes"
-          value={stats.total}
-          icon={<Receipt className="w-4 h-4" />}
-          variant="primary"
-        />
-        <AdminMetricCard
-          label="Pendientes"
-          value={stats.pending}
-          icon={<Clock className="w-4 h-4" />}
-          subtitle="Requieren atencion"
-        />
-        <AdminMetricCard
-          label="Pagadas"
-          value={stats.paid}
-          icon={<CheckCircle className="w-4 h-4" />}
-        />
-        <AdminMetricCard
-          label="Ingresos Totales"
-          value={`$${stats.totalRevenue.toLocaleString()}`}
-          icon={<DollarSign className="w-4 h-4" />}
-        />
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          <AdminMetricCard
+            label="Total Ordenes"
+            value={stats.total}
+            icon={<Receipt className="w-4 h-4" />}
+            variant="primary"
+          />
+          <AdminMetricCard
+            label="Pendientes"
+            value={stats.pending}
+            icon={<Clock className="w-4 h-4" />}
+            subtitle="Requieren atencion"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <AdminMetricCard
+            label="Ingresos USD"
+            value={`USD ${formatNumber(stats.totalRevenueUSD)}`}
+            icon={<Wallet className="w-4 h-4" />}
+          />
+          <AdminMetricCard
+            label="Ingresos UYU"
+            value={`$ ${formatNumber(stats.totalRevenueUYU)}`}
+            icon={<Wallet className="w-4 h-4" />}
+          />
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -192,15 +229,17 @@ export function AdminOrders({
             placeholder="Buscar por numero, estudiante o curso..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
+            className="pl-10 pr-10 bg-background"
           />
           {searchQuery && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
             >
               <X className="w-4 h-4" />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -208,7 +247,7 @@ export function AdminOrders({
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as StatusFilter)}
         >
-          <SelectTrigger className="w-full sm:w-40">
+          <SelectTrigger className="w-full sm:w-40 bg-background">
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
@@ -227,7 +266,7 @@ export function AdminOrders({
           value={methodFilter}
           onValueChange={(value) => setMethodFilter(value as MethodFilter)}
         >
-          <SelectTrigger className="w-full sm:w-44">
+          <SelectTrigger className="w-full sm:w-44 bg-background">
             <SelectValue placeholder="Metodo" />
           </SelectTrigger>
           <SelectContent>

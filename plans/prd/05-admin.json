@@ -452,7 +452,7 @@
       "Handle onDelete callback with confirmation dialog",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.27",
@@ -468,7 +468,7 @@
       "Handle onMarkAsPaid calling confirmTransferPaymentAction",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.28",

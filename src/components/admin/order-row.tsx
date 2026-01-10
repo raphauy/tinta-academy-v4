@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Calendar,
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import type { Order, OrderStatus, PaymentMethod } from '@prisma/client'
 
 type OrderWithRelations = Order & {
@@ -135,7 +136,7 @@ export function OrderRow({
   const canMarkAsPaid =
     order.status === 'payment_processing' ||
     (order.status === 'pending_payment' && order.paymentMethod === 'bank_transfer')
-  const hasDiscount = order.discountPercent && order.discountPercent > 0
+  const hasDiscount = order.discountPercent > 0
   const displayName = order.user.name || order.user.email.split('@')[0]
 
   return (
@@ -157,9 +158,13 @@ export function OrderRow({
             </div>
 
             <div className="min-w-0">
-              <p className="font-mono font-semibold text-sm text-stone-900 dark:text-stone-100">
+              <Button
+                variant="link"
+                onClick={onViewDetails}
+                className="h-auto p-0 font-mono font-semibold text-sm text-stone-900 dark:text-stone-100 hover:text-[#143F3B] dark:hover:text-[#6B9B7A]"
+              >
                 {order.orderNumber}
-              </p>
+              </Button>
               <p className="text-sm text-stone-600 dark:text-stone-300 truncate">
                 {displayName}
               </p>
@@ -167,15 +172,17 @@ export function OrderRow({
           </div>
 
           <div className="text-right">
-            <p
-              className={`font-bold ${
-                order.status === 'cancelled' || order.status === 'rejected'
-                  ? 'text-stone-400 line-through'
-                  : 'text-stone-900 dark:text-stone-100'
-              }`}
-            >
-              {formatCurrency(order.finalAmount, order.currency)}
-            </p>
+            {order.finalAmount > 0 ? (
+              <p
+                className={`font-bold ${
+                  order.status === 'cancelled' || order.status === 'rejected'
+                    ? 'text-stone-400 line-through'
+                    : 'text-stone-900 dark:text-stone-100'
+                }`}
+              >
+                {formatCurrency(order.finalAmount, order.currency)}
+              </p>
+            ) : null}
             {hasDiscount && (
               <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
                 <Ticket className="w-3 h-3" />-{order.discountPercent}%
@@ -211,21 +218,25 @@ export function OrderRow({
           </div>
 
           <div className="flex items-center gap-1">
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onViewDetails}
-              className="p-1.5 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-md transition-colors"
+              className="h-8 w-8 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20"
               title="Ver detalles"
             >
               <Eye className="w-4 h-4" />
-            </button>
+            </Button>
             {canMarkAsPaid && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={onMarkAsPaid}
-                className="p-1.5 text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-md transition-colors"
+                className="h-8 w-8 text-emerald-500 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
                 title="Marcar como pagado"
               >
                 <CheckCircle className="w-4 h-4" />
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -244,9 +255,13 @@ export function OrderRow({
       {/* Desktop Layout */}
       <div className="hidden lg:grid lg:grid-cols-12 gap-4 items-center">
         <div className="col-span-2">
-          <p className="font-mono font-semibold text-sm text-stone-900 dark:text-stone-100">
+          <Button
+            variant="link"
+            onClick={onViewDetails}
+            className="h-auto p-0 font-mono font-semibold text-sm text-stone-900 dark:text-stone-100 hover:text-[#143F3B] dark:hover:text-[#6B9B7A]"
+          >
             {order.orderNumber}
-          </p>
+          </Button>
           <p className="text-xs text-stone-400 dark:text-stone-500">
             {formatDateTime(order.createdAt)}
           </p>
@@ -265,15 +280,17 @@ export function OrderRow({
         </div>
 
         <div className="col-span-2">
-          <p
-            className={`font-bold ${
-              order.status === 'cancelled' || order.status === 'rejected'
-                ? 'text-stone-400 line-through'
-                : 'text-stone-900 dark:text-stone-100'
-            }`}
-          >
-            {formatCurrency(order.finalAmount, order.currency)}
-          </p>
+          {order.finalAmount > 0 ? (
+            <p
+              className={`font-bold ${
+                order.status === 'cancelled' || order.status === 'rejected'
+                  ? 'text-stone-400 line-through'
+                  : 'text-stone-900 dark:text-stone-100'
+              }`}
+            >
+              {formatCurrency(order.finalAmount, order.currency)}
+            </p>
+          ) : null}
           {hasDiscount && order.coupon && (
             <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
               <Ticket className="w-3 h-3" />
@@ -310,22 +327,26 @@ export function OrderRow({
         </div>
 
         <div className="col-span-2 flex items-center justify-end gap-1">
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onViewDetails}
-            className="p-1.5 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+            className="h-8 w-8 text-stone-400 hover:text-[#143F3B] dark:hover:text-[#6B9B7A] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 opacity-0 group-hover:opacity-100"
             title="Ver detalles"
           >
             <Eye className="w-4 h-4" />
-          </button>
+          </Button>
           {canMarkAsPaid ? (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onMarkAsPaid}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-950 rounded-lg transition-colors"
+              className="text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-950"
               title="Marcar como pagado"
             >
-              <CheckCircle className="w-3.5 h-3.5" />
+              <CheckCircle className="w-3.5 h-3.5 mr-1" />
               Confirmar pago
-            </button>
+            </Button>
           ) : order.paidAt ? (
             <span className="text-xs text-stone-400 dark:text-stone-500">
               {formatDate(order.paidAt)}

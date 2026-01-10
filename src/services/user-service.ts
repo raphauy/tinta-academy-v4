@@ -329,9 +329,23 @@ export async function deleteUser(userId: string, currentUserId: string): Promise
   }
 
   // Delete user - cascades will handle related data
-  await prisma.user.delete({
-    where: { id: userId },
-  })
+  try {
+    await prisma.user.delete({
+      where: { id: userId },
+    })
+  } catch (error) {
+    // Handle foreign key constraint error (P2003)
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as { code: string }).code === 'P2003'
+    ) {
+      throw new Error(
+        'No se puede eliminar este usuario porque tiene ordenes asociadas. Usa la opcion de Desactivar para bloquear el acceso sin perder el historial.'
+      )
+    }
+    throw error
+  }
 }
 
 export interface UserActivity {

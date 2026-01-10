@@ -25,6 +25,8 @@ import {
   Copy,
   Check,
   Loader2,
+  FileImage,
+  ExternalLink,
 } from 'lucide-react'
 import { useState } from 'react'
 import type { Order, OrderStatus, PaymentMethod } from '@prisma/client'
@@ -281,6 +283,34 @@ export function OrderDetailDialog({
                       {order.transferReference}
                     </p>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {order.transferProofUrl && (
+              <div className="py-3 px-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <FileImage className="w-4 h-4 text-emerald-500" />
+                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                      Comprobante de pago adjunto
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
+                  >
+                    <a
+                      href={order.transferProofUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-1" />
+                      Ver comprobante
+                    </a>
+                  </Button>
                 </div>
               </div>
             )}

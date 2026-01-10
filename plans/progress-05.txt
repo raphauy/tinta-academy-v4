@@ -382,3 +382,36 @@ Item 5.25: Implement admin educators page
 
 ### Next step suggestion
 Item 5.26: Implement admin users page
+
+## 2026-01-10 - Item 5.26: Admin Users Page
+
+### Completed Item
+
+#### 5.26: Implement admin users page
+- Updated `src/app/admin/users/page.tsx` as RSC
+- Fetches users and stats using getAllUsersWithDetails and getUserStats from user-service
+- Created `admin-users-client.tsx` for client-side modal handling
+- Wraps in Suspense with AdminUsersSkeleton fallback
+- Added metadata: title 'Usuarios - Admin'
+
+### Components Updated
+- `admin-users.tsx`: Changed native buttons to shadcn Button components
+- `user-row.tsx`: Changed native buttons to shadcn Button components
+
+### Dialog Integration
+- `UserRoleDialog`: Modal for editing user role with role selection
+- `ConfirmationDialog`: Delete confirmation with warning about data deletion
+
+### Technical Decisions
+- Separated RSC (page.tsx) from client logic (admin-users-client.tsx)
+- Role 'user' maps to null in database (users without specific role)
+- Superadmin users are protected from role edit and delete
+- Delete confirmation shows descriptive warning about data deletion
+
+### Verification
+- TypeCheck: PASS
+- Lint: PASS (pre-existing warnings only)
+- Build: PASS
+
+### Next step suggestion
+Item 5.27: Implement admin orders page
