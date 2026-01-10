@@ -105,7 +105,7 @@ export function EducatorCourseRow({
     ? `${course.enrolledCount}/${course.maxCapacity} inscritos`
     : `${course.enrolledCount} alumnos`
 
-  const priceText = course.priceUSD === 0 ? 'Gratis' : `US$ ${course.priceUSD}`
+  const priceText = course.priceUSD === 0 ? 'Gratis' : `USD ${course.priceUSD}`
 
   return (
     <div className="bg-card rounded-2xl border border-border p-4 hover:shadow-md transition-shadow">
