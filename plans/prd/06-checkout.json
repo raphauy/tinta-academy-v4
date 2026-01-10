@@ -558,7 +558,7 @@
       "Ensure button works for non-logged-in users (will redirect to login then back)",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.24",
@@ -582,7 +582,7 @@
       "Add retry functionality where appropriate",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "6.25",

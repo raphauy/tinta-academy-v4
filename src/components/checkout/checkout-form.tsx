@@ -53,28 +53,35 @@ function PaymentMethodSelector({
   onSelect,
   pricing,
 }: PaymentMethodSelectorProps) {
+  // MercadoPago temporarily disabled
+  const isMercadoPagoEnabled = false
+
   return (
     <div className="space-y-3">
-      {/* MercadoPago Option */}
-      <button
-        type="button"
-        onClick={() => onSelect('mercadopago')}
-        className={`w-full p-4 rounded-lg border-2 text-left transition-all cursor-pointer ${
-          selected === 'mercadopago'
+      {/* MercadoPago Option - Temporarily Disabled */}
+      <div
+        className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
+          isMercadoPagoEnabled ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+        } ${
+          selected === 'mercadopago' && isMercadoPagoEnabled
             ? 'border-verde-uva-600 bg-verde-uva-50/50'
-            : 'border-muted hover:border-muted-foreground/50'
+            : 'border-muted'
         }`}
+        onClick={() => isMercadoPagoEnabled && onSelect('mercadopago')}
+        role="button"
+        tabIndex={isMercadoPagoEnabled ? 0 : -1}
+        aria-disabled={!isMercadoPagoEnabled}
       >
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
             <div
               className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                selected === 'mercadopago'
+                selected === 'mercadopago' && isMercadoPagoEnabled
                   ? 'border-verde-uva-600 bg-verde-uva-600'
                   : 'border-muted-foreground/50'
               }`}
             >
-              {selected === 'mercadopago' && (
+              {selected === 'mercadopago' && isMercadoPagoEnabled && (
                 <Check className="w-3 h-3 text-white" />
               )}
             </div>
@@ -82,6 +89,11 @@ function PaymentMethodSelector({
               <div className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-blue-600" />
                 <span className="font-semibold">MercadoPago</span>
+                {!isMercadoPagoEnabled && (
+                  <Badge variant="secondary" className="text-xs">
+                    Proximamente
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
                 Tarjeta de credito, debito o efectivo
@@ -95,7 +107,7 @@ function PaymentMethodSelector({
             <p className="text-xs text-muted-foreground">UYU</p>
           </div>
         </div>
-      </button>
+      </div>
 
       {/* Bank Transfer Option */}
       <button
@@ -286,7 +298,7 @@ function CouponInput({
 
 export function CheckoutForm({ context }: CheckoutFormProps) {
   const router = useRouter()
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('mercadopago')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer')
   const [appliedCoupon, setAppliedCoupon] = useState<ValidateCouponResult | null>(
     context.couponValidation
   )

@@ -3,8 +3,12 @@ import { redirect, notFound } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getCheckoutContext } from '@/services/checkout-service'
 import { getCourseById } from '@/services/course-service'
-import { CannotEnroll, FreeCheckout, CheckoutForm } from '@/components/checkout'
-import { Loader2 } from 'lucide-react'
+import {
+  CannotEnroll,
+  FreeCheckout,
+  CheckoutForm,
+  CheckoutFormSkeleton,
+} from '@/components/checkout'
 
 export async function generateMetadata({
   params,
@@ -17,17 +21,6 @@ export async function generateMetadata({
   return {
     title: course ? `Checkout - ${course.title}` : 'Checkout - Tinta Academy',
   }
-}
-
-function CheckoutSkeleton() {
-  return (
-    <div className="flex items-center justify-center py-12">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-8 h-8 animate-spin text-verde-uva-600" />
-        <p className="text-muted-foreground">Cargando checkout...</p>
-      </div>
-    </div>
-  )
 }
 
 interface CheckoutContentProps {
@@ -87,7 +80,7 @@ export default async function CheckoutPage({
   const { coupon } = await searchParams
 
   return (
-    <Suspense fallback={<CheckoutSkeleton />}>
+    <Suspense fallback={<CheckoutFormSkeleton />}>
       <CheckoutContent courseId={courseId} couponCode={coupon} />
     </Suspense>
   )

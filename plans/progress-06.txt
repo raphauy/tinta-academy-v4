@@ -766,3 +766,40 @@ This file tracks progress for Milestone 06. Each entry documents what was implem
 **Next Priority:** Add checkout button to course detail page (6.23)
 
 ---
+
+## 2026-01-10 - Checkout Skeletons and Error States (6.24)
+
+**Completed (PRD item 6.24):**
+- Created src/components/checkout/skeletons.tsx with:
+  - CheckoutFormSkeleton: 2-column layout with payment method cards and summary
+  - CheckoutSummarySkeleton: course details, pricing breakdown
+  - SuccessPageSkeleton: success header, order card, action buttons
+  - PendingPageSkeleton: pending header, bank accounts, instructions
+  - FreeCheckoutSkeleton: simplified single card layout
+  - PaymentMethodCardSkeleton and BankAccountCardSkeleton helpers
+
+- Created error.tsx files for each checkout route:
+  - checkout/[courseId]/error.tsx: handles course not found, network errors
+  - checkout/success/[orderId]/error.tsx: handles order not found, unauthorized
+  - checkout/pending/[orderId]/error.tsx: handles order not found with support contact
+
+**Error Handling Features:**
+- Smart error message detection (not found, network, timeout, unauthorized)
+- User-friendly Spanish messages with suggestions
+- Retry button that calls reset() to re-render
+- Navigation options (back to courses, orders, home)
+- Error digest display for debugging
+- Contact support option on pending page
+
+**Technical Notes:**
+- All skeletons use animate-pulse for loading animation
+- Consistent styling with existing skeleton patterns
+- Error pages are client components ('use client')
+- Uses Lucide icons for visual feedback
+- Follows Next.js App Router error boundary pattern
+
+**Verification:** typecheck ✓, lint ✓ (2 warnings, pre-existing), build ✓
+
+**Next Priority:** End-to-end checkout testing and verification (6.25)
+
+---
