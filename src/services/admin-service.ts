@@ -43,7 +43,8 @@ export interface TopCourse {
   id: string
   title: string
   enrollments: number
-  revenue: number
+  revenueUSD: number
+  revenueUYU: number
 }
 
 export interface DashboardMetrics {
@@ -401,19 +402,26 @@ export async function getTopCourses(limit: number): Promise<TopCourse[]> {
       enrolledCount: true,
       orders: {
         where: { status: 'paid' },
-        select: { finalAmount: true },
+        select: { finalAmount: true, currency: true },
       },
     },
   })
 
-  // Calculate revenue for each course
+  // Calculate revenue for each course by currency
   const coursesWithRevenue = courses.map((course) => ({
     id: course.id,
     title: course.title,
     enrollments: course.enrolledCount,
-    revenue: course.orders.reduce((sum, order) => sum + order.finalAmount, 0),
+    revenueUSD: course.orders
+      .filter((order) => order.currency === 'USD')
+      .reduce((sum, order) => sum + order.finalAmount, 0),
+    revenueUYU: course.orders
+      .filter((order) => order.currency === 'UYU')
+      .reduce((sum, order) => sum + order.finalAmount, 0),
   }))
 
-  // Sort by revenue and return top N
-  return coursesWithRevenue.sort((a, b) => b.revenue - a.revenue).slice(0, limit)
+  // Sort by total revenue (USD + UYU) and return top N
+  return coursesWithRevenue
+    .sort((a, b) => (b.revenueUSD + b.revenueUYU) - (a.revenueUSD + a.revenueUYU))
+    .slice(0, limit)
 }

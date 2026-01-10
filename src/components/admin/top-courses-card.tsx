@@ -9,13 +9,18 @@ export interface TopCoursesCardProps {
   onViewCourse?: (id: string) => void
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+function formatNumber(amount: number): string {
+  return new Intl.NumberFormat('es-UY', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount)
+}
+
+function formatRevenue(usd: number, uyu: number): string {
+  const parts: string[] = []
+  if (usd > 0) parts.push(`USD ${formatNumber(usd)}`)
+  if (uyu > 0) parts.push(`UYU ${formatNumber(uyu)}`)
+  return parts.length > 0 ? parts.join(' / ') : '-'
 }
 
 export function TopCoursesCard({ courses, onViewCourse }: TopCoursesCardProps) {
@@ -81,7 +86,7 @@ export function TopCoursesCard({ courses, onViewCourse }: TopCoursesCardProps) {
                     </span>
                     <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                       <TrendingUp className="w-3 h-3" />
-                      {formatCurrency(course.revenue)}
+                      {formatRevenue(course.revenueUSD, course.revenueUYU)}
                     </span>
                   </div>
                 </div>
