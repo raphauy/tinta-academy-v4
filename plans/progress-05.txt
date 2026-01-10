@@ -103,3 +103,144 @@ Item 5.06: Create server actions for admin dashboard
 
 ### Next step suggestion
 Item 5.13: Create admin UI components - metric cards and charts
+
+## 2026-01-10 - Items 5.13-5.36: Admin Panel UI Components
+
+### Completed Items
+
+#### 5.13: Create metric cards and charts
+- Created `src/components/admin/admin-metric-card.tsx`
+  - Displays metrics with optional trend indicators
+  - Variants: default, primary
+  - Dark mode support
+- Created `src/components/admin/admin-mini-chart.tsx`
+  - Sparkline chart component using SVG
+  - Dynamic path calculation from data points
+- Created `src/components/admin/activity-feed.tsx`
+  - Recent activity list with type-specific icons
+  - Activity types: enrollment, payment, user, course
+- Created `src/components/admin/top-courses-card.tsx`
+  - Top performing courses list
+  - Shows enrollments count and revenue
+
+#### 5.14: Create courses section
+- Created `src/components/admin/admin-courses.tsx`
+  - Course management with search, status filter, sort options
+  - Grid layout with cards
+  - Empty state handling
+- Created `src/components/admin/admin-course-card.tsx`
+  - Course card with image, status badge, metrics
+  - Actions: view, edit, delete
+
+#### 5.15: Create students section
+- Created `src/components/admin/admin-students.tsx`
+  - Student listing with search and sort
+  - Stats cards: total, new this month, active, completed courses
+- Created `src/components/admin/student-row.tsx`
+  - Responsive layout (mobile/desktop)
+  - Avatar with fallback initials
+  - Activity indicator, location, enrollments, spending
+
+#### 5.16: Create educators section
+- Created `src/components/admin/admin-educators.tsx`
+  - Educator management with search and sort
+  - Stats: total educators, courses, students
+  - "New Educator" button
+- Created `src/components/admin/educator-card.tsx`
+  - Profile card with avatar, title, bio
+  - Metrics: courses count, students count
+  - Actions: view, edit, delete
+
+#### 5.17: Create users section
+- Created `src/components/admin/admin-users.tsx`
+  - User management with search, role filter, sort
+  - Stats: total, new this month, active, role distribution
+- Created `src/components/admin/user-row.tsx`
+  - Role badges with icons (superadmin, educator, student, user)
+  - Registration date, last activity
+  - Actions: edit role, delete
+
+#### 5.18: Create orders section
+- Created `src/components/admin/admin-orders.tsx`
+  - Order management with search, status filter, payment method filter
+  - Stats: total orders, pending, paid, total revenue
+- Created `src/components/admin/order-row.tsx`
+  - Status badges: created, pending_payment, payment_processing, paid, cancelled, refunded, rejected
+  - Payment method: mercadopago, bank_transfer, free
+  - Coupon indicator, transfer reference tooltip
+  - Actions: view details, mark as paid (for pending)
+
+#### 5.19: Create coupons section
+- Created `src/components/admin/admin-coupons.tsx`
+  - Coupon management with search, status filter (active, inactive, expired, exhausted)
+  - Stats: total, active, expired, total uses
+  - "New Coupon" button
+- Created `src/components/admin/coupon-row.tsx`
+  - Status calculation from isActive, expiresAt, currentUses/maxUses
+  - Usage progress bar
+  - Restrictions display (course, user limits)
+  - Actions: edit, toggle active, delete
+
+#### 5.20: Create bank data section
+- Created `src/components/admin/admin-bank-data.tsx`
+  - Bank account management by currency (USD, UYU)
+  - Stats: total accounts, active, by currency
+  - "New Account" button
+- Created `src/components/admin/bank-account-card.tsx`
+  - Account details: bank name, type, holder, number
+  - Optional: SWIFT/BIC, routing number, notes
+  - Copy-to-clipboard functionality
+  - Display order indicator
+  - Actions: toggle active, edit, delete
+
+#### 5.21: Create skeleton components
+- Created `src/components/admin/admin-skeletons.tsx`
+  - AdminDashboardSkeleton
+  - AdminCoursesSkeleton
+  - AdminStudentsSkeleton
+  - AdminEducatorsSkeleton
+  - AdminUsersSkeleton
+  - AdminOrdersSkeleton
+  - AdminCouponsSkeleton
+  - AdminBankDataSkeleton
+
+#### 5.30-5.36: Create form dialogs and confirmation dialogs
+- Created `src/components/admin/coupon-form-dialog.tsx`
+  - Create/edit coupon form with validation
+  - Fields: code, description, discount%, max uses, expiration, course restriction
+- Created `src/components/admin/bank-account-form-dialog.tsx`
+  - Create/edit bank account form
+  - Fields: bank name, type, holder, number, currency, SWIFT, routing, notes, order
+- Created `src/components/admin/user-role-dialog.tsx`
+  - Role selection with descriptions
+  - Warning for demotion from superadmin
+- Created `src/components/admin/order-detail-dialog.tsx`
+  - Complete order information display
+  - User, course, payment details, timeline
+- Created `src/components/admin/confirmation-dialog.tsx`
+  - Generic ConfirmationDialog component
+  - Specific: DeleteCouponConfirmDialog, DeleteBankAccountConfirmDialog, MarkOrderAsPaidConfirmDialog
+
+#### Barrel Export
+- Created `src/components/admin/index.ts`
+  - Exports all admin components for convenient imports
+
+### Technical Decisions
+- All components use 'use client' directive
+- Brand colors: #143F3B (primary), #6B9B7A (primary dark mode), #99757C (secondary)
+- Consistent dark mode support using dark: variants
+- Responsive design with mobile-first approach
+- renderSortButton pattern instead of inline component definitions (ESLint react-hooks/static-components)
+- renderCopyButton pattern for clipboard functionality (same reason)
+- useMemo for Date calculations to avoid impure function calls during render
+- Skeleton components match layout structure for smooth loading transitions
+- Dialog components use shadcn/ui Dialog primitives
+- Zod-based form validation where applicable
+
+### Verification
+- TypeCheck: PASS
+- Lint: PASS (only pre-existing warnings unrelated to admin components)
+- Build: PASS
+
+### Next step suggestion
+Item 5.22-5.29: Create admin page routes and integrate components
