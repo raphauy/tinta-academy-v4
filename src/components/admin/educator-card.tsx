@@ -11,6 +11,14 @@ import {
   MoreVertical,
   Mail,
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { EducatorWithStats } from '@/services/educator-service'
 
 interface EducatorCardProps {
@@ -34,7 +42,6 @@ export function EducatorCard({
   onEdit,
   onDelete,
 }: EducatorCardProps) {
-  const [showMenu, setShowMenu] = useState(false)
   const [imgError, setImgError] = useState(false)
 
   const initials = educator.name
@@ -45,8 +52,8 @@ export function EducatorCard({
     .toUpperCase()
 
   return (
-    <div className="group relative bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden transition-all duration-200 hover:border-[#143F3B]/30 dark:hover:border-[#6B9B7A]/30 hover:shadow-lg hover:shadow-[#143F3B]/5">
-      <div className="p-4">
+    <div className="group relative bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden transition-all duration-200 hover:border-[#143F3B]/30 dark:hover:border-[#6B9B7A]/30 hover:shadow-lg hover:shadow-[#143F3B]/5 h-full">
+      <div className="p-4 h-full flex flex-col">
         <div className="flex gap-4 mb-4">
           <div className="flex-shrink-0">
             {educator.imageUrl && !imgError ? (
@@ -83,59 +90,38 @@ export function EducatorCard({
             </a>
           </div>
 
-          <div className="flex-shrink-0 relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1.5 rounded-lg text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </button>
-
-            {showMenu && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowMenu(false)}
-                />
-                <div className="absolute right-0 top-full mt-1 z-20 w-36 py-1 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg shadow-lg">
-                  <button
-                    onClick={() => {
-                      setShowMenu(false)
-                      onView?.()
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-700/50"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Ver perfil
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowMenu(false)
-                      onEdit?.()
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-700/50"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowMenu(false)
-                      onDelete?.()
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Eliminar
-                  </button>
-                </div>
-              </>
-            )}
+          <div className="flex-shrink-0">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="w-4 h-4" />
+                  <span className="sr-only">Abrir menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onView}>
+                  <Eye className="w-4 h-4 mr-2" />
+                  Ver perfil
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onEdit}>
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Editar
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={onDelete}
+                  className="text-red-600 dark:text-red-400 focus:text-red-600 dark:focus:text-red-400"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Eliminar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
         {educator.bio && (
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed line-clamp-2 mb-4">
+          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed line-clamp-2 mb-4 flex-1">
             {educator.bio}
           </p>
         )}
@@ -166,19 +152,16 @@ export function EducatorCard({
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-stone-100 dark:border-stone-700">
+        <div className="flex items-center justify-between pt-3 mt-auto border-t border-stone-100 dark:border-stone-700">
           <div className="flex items-center gap-1.5 text-xs text-stone-400 dark:text-stone-500">
             <Calendar className="w-3.5 h-3.5" />
             <span>Desde {formatDate(educator.createdAt)}</span>
           </div>
 
-          <button
-            onClick={onView}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-[#143F3B] dark:text-[#6B9B7A] hover:text-[#0e2c29] dark:hover:text-[#8cc49a] hover:bg-[#143F3B]/10 dark:hover:bg-[#143F3B]/20 rounded-md transition-colors"
-          >
+          <Button variant="ghost" size="sm" onClick={onView} className="h-7 px-2 text-xs">
             Ver perfil
-            <Eye className="w-3 h-3" />
-          </button>
+            <Eye className="w-3 h-3 ml-1" />
+          </Button>
         </div>
       </div>
     </div>

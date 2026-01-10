@@ -5,6 +5,8 @@ description: Ejecuta una iteración del método Ralph Wiggum
 
 # Ralph Wiggum - Una Iteración
 
+## ARGUMENTS si no se ingresa milestone, utiliza este: 05-admin
+
 ## Archivos a leer
 
 Lee estos archivos para entender el contexto:
@@ -12,8 +14,6 @@ Lee estos archivos para entender el contexto:
 - @plans/AGENT.md - Instrucciones de build/test y arquitectura
 - @plans/progress-XX.txt - Progreso del milestone actual (XX = número del PRD, ej: progress-06.txt para 06-checkout)
 - @plans/prd/$ARGUMENTS.json - PRD del milestone (ej: 06-checkout)
-
-## ARGUMENTS si no se ingresa milestone, utiliza este: 05-admin
 
 ## Tu tarea
 

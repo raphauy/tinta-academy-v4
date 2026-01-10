@@ -152,6 +152,7 @@ export function PendingTransferPage({
     name: string
     url: string
   } | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { course } = order
 
@@ -165,10 +166,7 @@ export function PendingTransferPage({
     }
   }, [showConfetti])
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
+  const uploadFile = async (file: File) => {
     // Validate file size (10MB)
     if (file.size > 10 * 1024 * 1024) {
       toast.error('El archivo es demasiado grande', {
@@ -226,6 +224,35 @@ export function PendingTransferPage({
         fileInputRef.current.value = ''
       }
     }
+  }
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      await uploadFile(file)
+    }
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+
+    if (isSubmitting || isUploading) return
+
+    const file = e.dataTransfer.files?.[0]
+    if (file) {
+      await uploadFile(file)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
   }
 
   const handleRemoveFile = () => {
@@ -530,10 +557,15 @@ export function PendingTransferPage({
                 </div>
               ) : (
                 <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
                   className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                    isUploading
-                      ? 'border-verde-uva-300 bg-verde-uva-50/50'
-                      : 'border-muted-foreground/25 hover:border-verde-uva-400 hover:bg-muted/50'
+                    isDragging
+                      ? 'border-verde-uva-500 bg-verde-uva-50'
+                      : isUploading
+                        ? 'border-verde-uva-300 bg-verde-uva-50/50'
+                        : 'border-muted-foreground/25 hover:border-verde-uva-400 hover:bg-muted/50'
                   }`}
                 >
                   <input
@@ -554,6 +586,13 @@ export function PendingTransferPage({
                         <Loader2 className="w-8 h-8 text-verde-uva-600 animate-spin" />
                         <p className="text-sm text-verde-uva-600 font-medium">
                           Subiendo archivo...
+                        </p>
+                      </div>
+                    ) : isDragging ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Upload className="w-8 h-8 text-verde-uva-600" />
+                        <p className="text-sm text-verde-uva-600 font-medium">
+                          Suelta el archivo aqui
                         </p>
                       </div>
                     ) : (

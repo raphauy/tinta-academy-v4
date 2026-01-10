@@ -82,24 +82,26 @@ export function AdminEducators({
   }
 
   const renderSortButton = (field: SortField, label: string) => (
-    <button
+    <Button
       key={field}
+      variant="ghost"
+      size="sm"
       onClick={() => handleSort(field)}
-      className={`inline-flex items-center gap-1 text-xs font-medium transition-colors ${
+      className={`h-auto px-2 py-1 text-xs font-medium ${
         sortField === field
           ? 'text-[#143F3B] dark:text-[#6B9B7A]'
-          : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-300'
+          : 'text-stone-500 dark:text-stone-400'
       }`}
     >
       {label}
       {sortField === field && (
         <ChevronDown
-          className={`w-3 h-3 transition-transform ${
+          className={`w-3 h-3 ml-1 transition-transform ${
             sortDirection === 'asc' ? 'rotate-180' : ''
           }`}
         />
       )}
-    </button>
+    </Button>
   )
 
   return (
@@ -156,15 +158,18 @@ export function AdminEducators({
           placeholder="Buscar por nombre, email o titulo..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 pr-10"
+          className="pl-10 pr-10 bg-white dark:bg-stone-900 border-stone-300 dark:border-stone-600"
         />
         {searchQuery && (
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
           >
             <X className="w-4 h-4" />
-          </button>
+            <span className="sr-only">Limpiar busqueda</span>
+          </Button>
         )}
       </div>
 
@@ -182,9 +187,9 @@ export function AdminEducators({
           )}
         </p>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <span className="text-xs text-stone-400 dark:text-stone-500">Ordenar por:</span>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1">
             {renderSortButton('name', 'Nombre')}
             {renderSortButton('courses', 'Cursos')}
             {renderSortButton('students', 'Alumnos')}

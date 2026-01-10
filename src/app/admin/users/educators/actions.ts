@@ -15,6 +15,7 @@ import {
   type CreateEducatorInput,
   type UpdateEducatorAsAdminInput,
 } from '@/services/educator-service'
+import { getEligibleEducatorUsers, type UserWithDetails } from '@/services/user-service'
 
 // ============================================
 // TYPES
@@ -267,6 +268,30 @@ export async function deleteEducatorAction(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Error al eliminar el educador',
+    }
+  }
+}
+
+/**
+ * Get users eligible to become educators
+ */
+export async function getEligibleEducatorUsersAction(): Promise<
+  ActionResult<UserWithDetails[]>
+> {
+  const authResult = await requireSuperAdmin()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  try {
+    const users = await getEligibleEducatorUsers()
+    return { success: true, data: users }
+  } catch (error) {
+    console.error('Error fetching eligible users:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Error al obtener los usuarios',
     }
   }
 }

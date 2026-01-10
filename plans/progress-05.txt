@@ -338,3 +338,47 @@ Item 5.24: Implement admin students page
 
 ### Next step suggestion
 Item 5.25: Implement admin educators page
+
+## 2026-01-10 - Item 5.25: Admin Educators Page
+
+### Completed Item
+
+#### 5.25: Implement admin educators page
+- Updated `src/app/admin/users/educators/page.tsx` as RSC
+- Fetches educators and stats using getAllEducatorsWithStats and getEducatorStats from educator-service
+- Created `admin-educators-client.tsx` for client-side modal handling
+- Wraps in Suspense with AdminEducatorsSkeleton fallback
+- Added metadata: title 'Educadores - Admin'
+
+### New Components Created
+- `src/components/admin/educator-detail-dialog.tsx`:
+  - View mode: educator stats (courses, students), email, bio, member since
+  - Edit mode: form for name, title, bio, imageUrl
+  - Uses same pattern as StudentDetailDialog
+- `src/components/admin/create-educator-dialog.tsx`:
+  - Select from eligible users (users without educator profile)
+  - Pre-fills name from user's name if available
+  - Form fields: name, title, bio, imageUrl
+  - Shows loading state while fetching eligible users
+  - Shows warning when no eligible users available
+
+### Service & Actions Updates
+- Added `getEligibleEducatorUsers()` to user-service.ts
+  - Returns users without educator profile
+- Added `getEligibleEducatorUsersAction()` to educators/actions.ts
+  - Fetches eligible users for create educator dialog
+
+### Technical Decisions
+- Separated RSC (page.tsx) from client logic (admin-educators-client.tsx)
+- Used `ConfirmationDialog` for delete with custom description showing courses count
+- Delete dialog shows warning if educator has courses associated
+- Create dialog fetches eligible users lazily (on dialog open)
+- Updated barrel export in components/admin/index.ts
+
+### Verification
+- TypeCheck: PASS
+- Lint: PASS (pre-existing warnings only - img elements and react-hook-form watch)
+- Build: PASS
+
+### Next step suggestion
+Item 5.26: Implement admin users page

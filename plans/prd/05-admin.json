@@ -436,7 +436,7 @@
       "For create: open modal or navigate to create page",
       "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "5.26",

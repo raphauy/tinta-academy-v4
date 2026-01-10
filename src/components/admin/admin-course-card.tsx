@@ -42,6 +42,7 @@ import type { AdminCourse, CourseEnrollmentWithDetails } from '@/services/course
 
 interface AdminCourseCardProps {
   course: AdminCourse
+  onEducatorClick?: (educatorId: string) => void
 }
 
 const DEFAULT_COURSE_IMAGE = '/placeholder-course.jpg'
@@ -122,7 +123,7 @@ function getStudentName(enrollment: CourseEnrollmentWithDetails): string {
   return student.user.name || student.user.email
 }
 
-export function AdminCourseCard({ course }: AdminCourseCardProps) {
+export function AdminCourseCard({ course, onEducatorClick }: AdminCourseCardProps) {
   const [studentsModalOpen, setStudentsModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [enrollments, setEnrollments] = useState<CourseEnrollmentWithDetails[]>([])
@@ -230,7 +231,14 @@ export function AdminCourseCard({ course }: AdminCourseCardProps) {
 
                 {/* Educator */}
                 <p className="text-sm text-muted-foreground mb-2">
-                  por {course.educator.name}
+                  por{' '}
+                  <Button
+                    variant="link"
+                    className="h-auto p-0 text-sm font-medium"
+                    onClick={() => onEducatorClick?.(course.educator.id)}
+                  >
+                    {course.educator.name}
+                  </Button>
                 </p>
 
                 {/* Tags */}

@@ -24,11 +24,13 @@ type TypeFilter = 'all' | 'wset' | 'taller' | 'cata' | 'curso'
 export interface AdminCoursesProps {
   courses: AdminCourse[]
   tags: Tag[]
+  onEducatorClick?: (educatorId: string) => void
 }
 
 export function AdminCourses({
   courses,
   tags,
+  onEducatorClick,
 }: AdminCoursesProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -215,7 +217,11 @@ export function AdminCourses({
       ) : (
         <div className="space-y-4">
           {filteredCourses.map((course) => (
-            <AdminCourseCard key={course.id} course={course} />
+            <AdminCourseCard
+              key={course.id}
+              course={course}
+              onEducatorClick={onEducatorClick}
+            />
           ))}
         </div>
       )}

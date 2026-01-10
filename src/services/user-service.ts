@@ -435,3 +435,32 @@ export async function getVisitors(): Promise<UserWithDetails[]> {
     hasEducatorProfile: false,
   }))
 }
+
+/**
+ * Get users eligible to become educators (users without educator profile)
+ */
+export async function getEligibleEducatorUsers(): Promise<UserWithDetails[]> {
+  const users = await prisma.user.findMany({
+    where: {
+      educator: null,
+    },
+    include: {
+      student: { select: { id: true } },
+      educator: { select: { id: true } },
+    },
+    orderBy: { name: 'asc' },
+  })
+
+  return users.map((user) => ({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    image: user.image,
+    role: user.role,
+    isActive: user.isActive,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    hasStudentProfile: !!user.student,
+    hasEducatorProfile: false,
+  }))
+}
