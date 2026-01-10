@@ -147,7 +147,7 @@ export async function initiateCheckoutAction(
   currency: 'USD' | 'UYU',
   couponCode?: string,
   bankAccountId?: string
-): Promise<ActionResult<{ orderId: string; redirectUrl?: string }>> {
+): Promise<ActionResult<{ orderId: string; redirectUrl?: string; newRole?: string }>> {
   const authResult = await getAuthenticatedUser()
 
   if ('error' in authResult) {
@@ -184,7 +184,10 @@ export async function initiateCheckoutAction(
 
       return {
         success: true,
-        data: { orderId: result.order!.id },
+        data: {
+          orderId: result.order!.id,
+          newRole: result.isNewStudent ? 'student' : undefined,
+        },
       }
     }
 

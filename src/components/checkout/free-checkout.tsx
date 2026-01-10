@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { Gift, Calendar, MapPin, Clock, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -38,6 +39,7 @@ const courseTypeLabels: Record<string, string> = {
 
 export function FreeCheckout({ context }: FreeCheckoutProps) {
   const router = useRouter()
+  const { update: updateSession } = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const { course, coupon, pricing } = context
 
@@ -58,6 +60,11 @@ export function FreeCheckout({ context }: FreeCheckoutProps) {
         })
         setIsLoading(false)
         return
+      }
+
+      // Update session if a new role was assigned
+      if (result.data?.newRole) {
+        await updateSession({ role: result.data.newRole })
       }
 
       toast.success('Inscripcion completada', {
