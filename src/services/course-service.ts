@@ -188,11 +188,15 @@ export async function getEducatorCourses(
     where.modality = filters.modality
   }
 
-  return prisma.course.findMany({
+  const courses = await prisma.course.findMany({
     where,
     include: {
       educator: true,
       tags: true,
+      orders: {
+        where: { status: 'paid' },
+        select: { finalAmount: true, currency: true },
+      },
       _count: {
         select: { enrollments: true },
       },
@@ -200,6 +204,26 @@ export async function getEducatorCourses(
     orderBy: [
       { createdAt: 'desc' },
     ],
+  })
+
+  // Calculate revenue by currency for each course
+  return courses.map((course) => {
+    let totalRevenueUSD = 0
+    let totalRevenueUYU = 0
+
+    course.orders.forEach((order) => {
+      if (order.currency === 'USD') {
+        totalRevenueUSD += order.finalAmount
+      } else if (order.currency === 'UYU') {
+        totalRevenueUYU += order.finalAmount
+      }
+    })
+
+    return {
+      ...course,
+      totalRevenueUSD,
+      totalRevenueUYU,
+    }
   })
 }
 

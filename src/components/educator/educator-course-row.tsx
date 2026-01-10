@@ -15,7 +15,8 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  GraduationCap
+  GraduationCap,
+  Wallet
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +32,8 @@ import type { Course, Educator, Tag } from '@prisma/client'
 type CourseWithRelations = Course & {
   educator: Educator
   tags: Tag[]
+  totalRevenueUSD: number
+  totalRevenueUYU: number
   _count: {
     enrollments: number
   }
@@ -90,6 +93,24 @@ function getStatusBadge(status: string): { label: string; className: string } {
   return config[status] || { label: status, className: 'bg-gray-100 text-gray-600 border-gray-200' }
 }
 
+function formatNumber(amount: number): string {
+  return new Intl.NumberFormat('es-UY', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
+function formatCurrencyAmount(amount: number, currency: 'USD' | 'UYU'): string {
+  return `${currency} ${formatNumber(amount)}`
+}
+
+function formatRevenue(usd: number, uyu: number): string {
+  const parts: string[] = []
+  if (usd > 0) parts.push(`USD ${formatNumber(usd)}`)
+  if (uyu > 0) parts.push(`UYU ${formatNumber(uyu)}`)
+  return parts.length > 0 ? parts.join(' / ') : ''
+}
+
 export function EducatorCourseRow({
   course,
   onPublish,
@@ -104,8 +125,6 @@ export function EducatorCourseRow({
   const enrollmentText = course.maxCapacity
     ? `${course._count.enrollments}/${course.maxCapacity} inscritos`
     : `${course._count.enrollments} alumnos`
-
-  const priceText = course.priceUSD === 0 ? 'Gratis' : `USD ${course.priceUSD}`
 
   return (
     <div className="bg-card rounded-2xl border border-border p-4 hover:shadow-md transition-shadow">
@@ -193,12 +212,14 @@ export function EducatorCourseRow({
           </div>
         </div>
 
-        {/* Right side: Price + Actions */}
+        {/* Right side: Revenue + Actions */}
         <div className="shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-between gap-2">
-          {/* Price */}
-          <span className="text-lg font-bold text-primary">
-            {priceText}
-          </span>
+          {/* Revenue */}
+          {formatRevenue(course.totalRevenueUSD, course.totalRevenueUYU) && (
+            <span className="text-lg font-bold text-primary">
+              {formatRevenue(course.totalRevenueUSD, course.totalRevenueUYU)}
+            </span>
+          )}
 
           {/* Action buttons */}
           <div className="flex items-center gap-2">
