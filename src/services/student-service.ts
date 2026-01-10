@@ -273,3 +273,375 @@ export async function getAllStudents() {
 }
 
 export type StudentForSelection = Awaited<ReturnType<typeof getAllStudents>>[number]
+
+// ============================================
+// ADMIN FUNCTIONS
+// ============================================
+
+export interface StudentWithStats {
+  id: string
+  userId: string
+  firstName: string | null
+  lastName: string | null
+  identityDocument: string | null
+  phone: string | null
+  city: string | null
+  country: string | null
+  createdAt: Date
+  user: {
+    id: string
+    email: string
+    name: string | null
+    image: string | null
+    isActive: boolean
+    createdAt: Date
+  }
+  enrollmentsCount: number
+  completedCourses: number
+  totalSpent: number
+  lastActivityAt: Date | null
+}
+
+export interface StudentStats {
+  total: number
+  newThisMonth: number
+  activeThisMonth: number
+  withCompletedCourses: number
+}
+
+/**
+ * Get all students with computed stats for admin panel
+ */
+export async function getAllStudentsWithStats(): Promise<StudentWithStats[]> {
+  const students = await prisma.student.findMany({
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          image: true,
+          isActive: true,
+          createdAt: true,
+        },
+      },
+      enrollments: {
+        select: {
+          id: true,
+          status: true,
+          enrolledAt: true,
+          course: {
+            select: {
+              status: true,
+            },
+          },
+        },
+      },
+      orders: {
+        where: { status: 'paid' },
+        select: {
+          finalAmount: true,
+          paidAt: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  return students.map((student) => {
+    const confirmedEnrollments = student.enrollments.filter((e) => e.status === 'confirmed')
+    const completedCourses = confirmedEnrollments.filter(
+      (e) => e.course.status === 'finished'
+    ).length
+    const totalSpent = student.orders.reduce((sum, order) => sum + order.finalAmount, 0)
+
+    // Find last activity (most recent enrollment or payment)
+    const enrollmentDates = student.enrollments.map((e) => e.enrolledAt)
+    const paymentDates = student.orders.map((o) => o.paidAt).filter(Boolean) as Date[]
+    const allDates = [...enrollmentDates, ...paymentDates]
+    const lastActivityAt = allDates.length > 0
+      ? new Date(Math.max(...allDates.map((d) => d.getTime())))
+      : null
+
+    return {
+      id: student.id,
+      userId: student.userId,
+      firstName: student.firstName,
+      lastName: student.lastName,
+      identityDocument: student.identityDocument,
+      phone: student.phone,
+      city: student.city,
+      country: student.country,
+      createdAt: student.createdAt,
+      user: student.user,
+      enrollmentsCount: confirmedEnrollments.length,
+      completedCourses,
+      totalSpent,
+      lastActivityAt,
+    }
+  })
+}
+
+/**
+ * Get aggregated student statistics for dashboard
+ */
+export async function getStudentStats(): Promise<StudentStats> {
+  const now = new Date()
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  const [total, newThisMonth, studentsWithActivity, studentsWithCompletedCourses] =
+    await Promise.all([
+      // Total students
+      prisma.student.count(),
+      // New students this month
+      prisma.student.count({
+        where: {
+          createdAt: { gte: thisMonthStart },
+        },
+      }),
+      // Students with activity this month (enrollments or orders)
+      prisma.student.count({
+        where: {
+          OR: [
+            {
+              enrollments: {
+                some: {
+                  enrolledAt: { gte: thisMonthStart },
+                },
+              },
+            },
+            {
+              orders: {
+                some: {
+                  createdAt: { gte: thisMonthStart },
+                },
+              },
+            },
+          ],
+        },
+      }),
+      // Students with at least one completed course
+      prisma.student.count({
+        where: {
+          enrollments: {
+            some: {
+              status: 'confirmed',
+              course: {
+                status: 'finished',
+              },
+            },
+          },
+        },
+      }),
+    ])
+
+  return {
+    total,
+    newThisMonth,
+    activeThisMonth: studentsWithActivity,
+    withCompletedCourses: studentsWithCompletedCourses,
+  }
+}
+
+/**
+ * Get student by ID with full stats for admin detail view
+ */
+export async function getStudentByIdWithStats(
+  studentId: string
+): Promise<StudentWithStats | null> {
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          image: true,
+          isActive: true,
+          createdAt: true,
+        },
+      },
+      enrollments: {
+        select: {
+          id: true,
+          status: true,
+          enrolledAt: true,
+          course: {
+            select: {
+              status: true,
+            },
+          },
+        },
+      },
+      orders: {
+        where: { status: 'paid' },
+        select: {
+          finalAmount: true,
+          paidAt: true,
+        },
+      },
+    },
+  })
+
+  if (!student) return null
+
+  const confirmedEnrollments = student.enrollments.filter((e) => e.status === 'confirmed')
+  const completedCourses = confirmedEnrollments.filter(
+    (e) => e.course.status === 'finished'
+  ).length
+  const totalSpent = student.orders.reduce((sum, order) => sum + order.finalAmount, 0)
+
+  const enrollmentDates = student.enrollments.map((e) => e.enrolledAt)
+  const paymentDates = student.orders.map((o) => o.paidAt).filter(Boolean) as Date[]
+  const allDates = [...enrollmentDates, ...paymentDates]
+  const lastActivityAt = allDates.length > 0
+    ? new Date(Math.max(...allDates.map((d) => d.getTime())))
+    : null
+
+  return {
+    id: student.id,
+    userId: student.userId,
+    firstName: student.firstName,
+    lastName: student.lastName,
+    identityDocument: student.identityDocument,
+    phone: student.phone,
+    city: student.city,
+    country: student.country,
+    createdAt: student.createdAt,
+    user: student.user,
+    enrollmentsCount: confirmedEnrollments.length,
+    completedCourses,
+    totalSpent,
+    lastActivityAt,
+  }
+}
+
+// Admin can update the same fields as regular update for now
+// This type alias allows for future extension if needed
+export type UpdateStudentAsAdminInput = UpdateStudentInput
+
+/**
+ * Update student as admin (can update more fields)
+ */
+export async function updateStudentAsAdmin(
+  studentId: string,
+  data: UpdateStudentAsAdminInput
+) {
+  return prisma.student.update({
+    where: { id: studentId },
+    data: {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      identityDocument: data.identityDocument,
+      phone: data.phone,
+      dateOfBirth: data.dateOfBirth,
+      address: data.address,
+      city: data.city,
+      zip: data.zip,
+      country: data.country,
+      billingName: data.billingName,
+      billingTaxId: data.billingTaxId,
+      billingAddress: data.billingAddress,
+      notifyNewCourses: data.notifyNewCourses,
+      notifyPromotions: data.notifyPromotions,
+      notifyCourseUpdates: data.notifyCourseUpdates,
+    },
+    include: {
+      user: true,
+    },
+  })
+}
+
+/**
+ * Get students who have been active in the last N days
+ */
+export async function getStudentsByActivity(days: number): Promise<StudentWithStats[]> {
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - days)
+
+  const students = await prisma.student.findMany({
+    where: {
+      OR: [
+        {
+          enrollments: {
+            some: {
+              enrolledAt: { gte: cutoffDate },
+            },
+          },
+        },
+        {
+          orders: {
+            some: {
+              createdAt: { gte: cutoffDate },
+            },
+          },
+        },
+      ],
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          image: true,
+          isActive: true,
+          createdAt: true,
+        },
+      },
+      enrollments: {
+        select: {
+          id: true,
+          status: true,
+          enrolledAt: true,
+          course: {
+            select: {
+              status: true,
+            },
+          },
+        },
+      },
+      orders: {
+        where: { status: 'paid' },
+        select: {
+          finalAmount: true,
+          paidAt: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  return students.map((student) => {
+    const confirmedEnrollments = student.enrollments.filter((e) => e.status === 'confirmed')
+    const completedCourses = confirmedEnrollments.filter(
+      (e) => e.course.status === 'finished'
+    ).length
+    const totalSpent = student.orders.reduce((sum, order) => sum + order.finalAmount, 0)
+
+    const enrollmentDates = student.enrollments.map((e) => e.enrolledAt)
+    const paymentDates = student.orders.map((o) => o.paidAt).filter(Boolean) as Date[]
+    const allDates = [...enrollmentDates, ...paymentDates]
+    const lastActivityAt = allDates.length > 0
+      ? new Date(Math.max(...allDates.map((d) => d.getTime())))
+      : null
+
+    return {
+      id: student.id,
+      userId: student.userId,
+      firstName: student.firstName,
+      lastName: student.lastName,
+      identityDocument: student.identityDocument,
+      phone: student.phone,
+      city: student.city,
+      country: student.country,
+      createdAt: student.createdAt,
+      user: student.user,
+      enrollmentsCount: confirmedEnrollments.length,
+      completedCourses,
+      totalSpent,
+      lastActivityAt,
+    }
+  })
+}

@@ -1,0 +1,740 @@
+[
+  {
+    "id": "5.01",
+    "category": "service",
+    "description": "Create admin-service for dashboard metrics and aggregated data",
+    "steps": [
+      "Create src/services/admin-service.ts with:",
+      "Types:",
+      "  - DashboardTotals: users, students, educators, courses, coursesOnline, coursesPresencial, revenue (thisMonth, lastMonth), enrollments (thisMonth, lastMonth)",
+      "  - ChartDataPoint: { month: string, value: number }",
+      "  - RecentActivity: id, type (enrollment | payment | course_completed | new_user | transfer_pending | coupon_used), description, timestamp",
+      "  - TopCourse: id, title, enrollments, revenue",
+      "  - DashboardMetrics: totals, charts (revenue, enrollments, userGrowth), recentActivity, topCourses",
+      "Functions:",
+      "  - getDashboardMetrics(): DashboardMetrics - aggregates all metrics for the admin dashboard",
+      "  - getDashboardTotals(): DashboardTotals - counts users, students, educators, courses by type",
+      "  - getRevenueChart(months: number): ChartDataPoint[] - revenue per month for last N months",
+      "  - getEnrollmentsChart(months: number): ChartDataPoint[] - enrollments per month",
+      "  - getUserGrowthChart(months: number): ChartDataPoint[] - cumulative user count per month",
+      "  - getRecentActivity(limit: number): RecentActivity[] - recent platform activity",
+      "  - getTopCourses(limit: number): TopCourse[] - courses by revenue and enrollments",
+      "Use Prisma aggregations for efficient queries",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": true
+  },
+  {
+    "id": "5.02",
+    "category": "service",
+    "description": "Extend student-service with admin functions",
+    "steps": [
+      "Add to src/services/student-service.ts:",
+      "Types:",
+      "  - StudentWithStats: Student with enrollmentsCount, completedCourses, totalSpent, lastActivityAt",
+      "  - StudentStats: total, newThisMonth, activeThisMonth, withCompletedCourses",
+      "Functions:",
+      "  - getAllStudentsWithStats(): StudentWithStats[] - all students with computed stats for admin",
+      "  - getStudentStats(): StudentStats - aggregated statistics for dashboard cards",
+      "  - getStudentById(id): StudentWithStats | null - full student details with stats",
+      "  - updateStudentAsAdmin(id, data): Student - admin update (can update more fields)",
+      "  - getStudentsByActivity(days: number): StudentWithStats[] - students active in last N days",
+      "Use efficient Prisma queries with includes for related data",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": true
+  },
+  {
+    "id": "5.03",
+    "category": "service",
+    "description": "Extend educator-service with admin functions",
+    "steps": [
+      "Add to src/services/educator-service.ts:",
+      "Types:",
+      "  - EducatorWithStats: Educator with coursesCount, studentsCount, totalRevenue",
+      "  - EducatorStats: total, totalCourses, totalStudents, averageRating",
+      "Functions:",
+      "  - getAllEducatorsWithStats(): EducatorWithStats[] - all educators with computed stats",
+      "  - getEducatorStats(): EducatorStats - aggregated statistics for dashboard",
+      "  - createEducator(userId, data): Educator - create educator profile from existing user",
+      "  - updateEducatorAsAdmin(id, data): Educator - admin update with all fields",
+      "  - deleteEducator(id): void - remove educator (only if no courses, soft delete otherwise)",
+      "  - promoteUserToEducator(userId, educatorData): creates educator profile and updates user role",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": true
+  },
+  {
+    "id": "5.04",
+    "category": "service",
+    "description": "Extend user-service with admin functions",
+    "steps": [
+      "Add to src/services/user-service.ts:",
+      "Types:",
+      "  - UserWithDetails: User with role, createdAt, lastLoginAt (from auth provider)",
+      "  - UserStats: total, admins, educators, students, regularUsers, newThisMonth, activeThisMonth",
+      "Functions:",
+      "  - getAllUsersWithDetails(): UserWithDetails[] - all users for admin table",
+      "  - getUserStats(): UserStats - aggregated statistics by role",
+      "  - updateUserRole(userId, newRole): User - change user role (superadmin, educator, student)",
+      "  - deleteUser(userId): void - delete user and all related data (with confirmation)",
+      "  - getUserActivity(userId): activity logs for user",
+      "Handle role constraints: cannot demote last superadmin, cannot delete self",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": true
+  },
+  {
+    "id": "5.05",
+    "category": "service",
+    "description": "Extend course-service with admin analytics",
+    "steps": [
+      "Add to src/services/course-service.ts:",
+      "Types:",
+      "  - AdminCourse: Course with enrolledCount, observersCount, totalRevenue, completionRate, averageProgress",
+      "Functions:",
+      "  - getAllCoursesForAdmin(): AdminCourse[] - all courses with admin metrics",
+      "  - getCourseAnalytics(courseId): detailed analytics for a course",
+      "  - getCourseObservers(courseId): CourseObserver[] - users watching the course",
+      "  - getCourseEnrollmentsWithDetails(courseId): enrollments with student info and progress",
+      "Use efficient joins to minimize queries",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": true
+  },
+  {
+    "id": "5.06",
+    "category": "actions",
+    "description": "Create server actions for admin dashboard",
+    "steps": [
+      "Create src/app/admin/actions.ts with 'use server'",
+      "Helper: requireSuperAdmin() - verify user has superadmin role",
+      "Actions:",
+      "  - getDashboardMetricsAction(): DashboardMetrics or error",
+      "All actions require superadmin role",
+      "Use try/catch with proper error messages",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.07",
+    "category": "actions",
+    "description": "Create server actions for admin courses management",
+    "steps": [
+      "Create src/app/admin/courses/actions.ts with 'use server'",
+      "Actions:",
+      "  - getCoursesForAdminAction(): AdminCourse[] or error",
+      "  - getCourseObserversAction(courseId): CourseObserver[] or error",
+      "  - getCourseEnrollmentsAction(courseId): enrollments with details",
+      "All actions require superadmin role",
+      "Use revalidatePath after mutations if any",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.08",
+    "category": "actions",
+    "description": "Create server actions for admin students management",
+    "steps": [
+      "Create src/app/admin/users/students/actions.ts with 'use server'",
+      "Actions:",
+      "  - getStudentsForAdminAction(): { students: StudentWithStats[], stats: StudentStats }",
+      "  - getStudentDetailAction(studentId): StudentWithStats or error",
+      "  - updateStudentAction(studentId, data): update student data",
+      "All actions require superadmin role",
+      "Use Zod for input validation",
+      "Use revalidatePath after mutations",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.09",
+    "category": "actions",
+    "description": "Create server actions for admin educators management",
+    "steps": [
+      "Create src/app/admin/users/educators/actions.ts with 'use server'",
+      "Actions:",
+      "  - getEducatorsForAdminAction(): { educators: EducatorWithStats[], stats: EducatorStats }",
+      "  - getEducatorDetailAction(educatorId): EducatorWithStats or error",
+      "  - createEducatorAction(userId, data): create educator from existing user",
+      "  - updateEducatorAction(educatorId, data): update educator data",
+      "  - deleteEducatorAction(educatorId): delete/deactivate educator",
+      "All actions require superadmin role",
+      "Use Zod for input validation",
+      "Use revalidatePath after mutations",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.10",
+    "category": "actions",
+    "description": "Create server actions for admin users management",
+    "steps": [
+      "Create src/app/admin/users/actions.ts (extend if exists) with 'use server'",
+      "Actions:",
+      "  - getUsersForAdminAction(): { users: UserWithDetails[], stats: UserStats }",
+      "  - updateUserRoleAction(userId, newRole): change user role",
+      "  - deleteUserAction(userId): delete user with all related data",
+      "Add constraints: cannot demote last superadmin, cannot delete self",
+      "All actions require superadmin role",
+      "Use Zod for input validation",
+      "Use revalidatePath after mutations",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.11",
+    "category": "actions",
+    "description": "Create server actions for coupons management",
+    "steps": [
+      "Create src/app/admin/coupons/actions.ts with 'use server'",
+      "Actions:",
+      "  - getCouponsForAdminAction(): Coupon[] with usage stats",
+      "  - getCouponStatsAction(couponId): detailed usage statistics",
+      "  - createCouponAction(data): create new coupon",
+      "  - updateCouponAction(couponId, data): update coupon",
+      "  - deleteCouponAction(couponId): delete/deactivate coupon",
+      "  - toggleCouponStatusAction(couponId): toggle isActive",
+      "Data for coupon creation/edit: code, discountPercent, maxUses, restrictedEmail?, restrictedCourseId?, expiresAt?",
+      "All actions require superadmin role",
+      "Use Zod for input validation",
+      "Use revalidatePath after mutations",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.12",
+    "category": "actions",
+    "description": "Create server actions for bank accounts management",
+    "steps": [
+      "Create src/app/admin/bank-data/actions.ts with 'use server'",
+      "Actions:",
+      "  - getBankAccountsForAdminAction(): BankAccount[]",
+      "  - createBankAccountAction(data): create new bank account",
+      "  - updateBankAccountAction(accountId, data): update bank account",
+      "  - deleteBankAccountAction(accountId): delete bank account (only if no orders reference it)",
+      "  - toggleBankAccountStatusAction(accountId): toggle isActive",
+      "Data: bankName, accountHolder, accountType, accountNumber, currency, swiftCode?, notes?",
+      "All actions require superadmin role",
+      "Use Zod for input validation",
+      "Use revalidatePath after mutations",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.13",
+    "category": "ui",
+    "description": "Create admin UI components - metric cards and charts",
+    "steps": [
+      "Create src/components/admin/ directory",
+      "Copy and adapt from product-plan/sections/admin/components/:",
+      "  - AdminMetricCard.tsx - metric display card with icon, value, trend",
+      "  - AdminMiniChart.tsx - small trend chart using recharts or similar",
+      "  - ActivityFeed.tsx - recent activity list",
+      "  - TopCoursesCard.tsx - top performing courses",
+      "Adapt imports to use @/components/ui components",
+      "Use 'use client' where needed for interactivity",
+      "Create src/components/admin/index.ts with exports",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.14",
+    "category": "ui",
+    "description": "Create admin UI components - courses section",
+    "steps": [
+      "Copy and adapt from product-plan/sections/admin/components/:",
+      "  - AdminCourses.tsx - courses list with filters and search",
+      "  - AdminCourseCard.tsx - course card with metrics",
+      "  - CourseObserversModal.tsx - modal showing interested users",
+      "Adapt imports to use @/components/ui components",
+      "Handle callback props for navigation and actions",
+      "Add types to src/components/admin/types.ts if needed",
+      "Export from src/components/admin/index.ts",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.15",
+    "category": "ui",
+    "description": "Create admin UI components - students section",
+    "steps": [
+      "Copy and adapt from product-plan/sections/admin/components/:",
+      "  - AdminStudents.tsx - students table with search and sort",
+      "  - StudentRow.tsx - table row component",
+      "Adapt imports and styling to match project conventions",
+      "Handle onView and onEdit callbacks",
+      "Export from src/components/admin/index.ts",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.16",
+    "category": "ui",
+    "description": "Create admin UI components - educators section",
+    "steps": [
+      "Copy and adapt from product-plan/sections/admin/components/:",
+      "  - AdminEducators.tsx - educators grid with search",
+      "  - EducatorCard.tsx - educator card with stats",
+      "Adapt imports and styling",
+      "Handle onCreate, onView, onEdit, onDelete callbacks",
+      "Export from src/components/admin/index.ts",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.17",
+    "category": "ui",
+    "description": "Create admin UI components - users section",
+    "steps": [
+      "Copy and adapt from product-plan/sections/admin/components/:",
+      "  - AdminUsers.tsx - users table with role filter and search",
+      "  - UserRow.tsx - table row component",
+      "Adapt imports and styling",
+      "Handle onEditRole and onDelete callbacks",
+      "Export from src/components/admin/index.ts",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.18",
+    "category": "ui",
+    "description": "Create admin UI components - orders section",
+    "steps": [
+      "Copy and adapt from product-plan/sections/admin/components/:",
+      "  - AdminOrders.tsx - orders table with filters and search",
+      "  - OrderRow.tsx - table row component with status badge",
+      "Adapt to use real Order type from Prisma",
+      "Handle onViewDetails, onMarkAsPaid callbacks",
+      "Add order status mapping to display labels",
+      "Export from src/components/admin/index.ts",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.19",
+    "category": "ui",
+    "description": "Create admin UI components - coupons section",
+    "steps": [
+      "Copy and adapt from product-plan/sections/admin/components/:",
+      "  - AdminCoupons.tsx - coupons table with filters",
+      "  - CouponRow.tsx - table row component",
+      "Adapt to use real Coupon type from Prisma",
+      "Handle onCreate, onViewStats, onEdit, onDelete callbacks",
+      "Add coupon status logic (active, inactive, expired, exhausted)",
+      "Export from src/components/admin/index.ts",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.20",
+    "category": "ui",
+    "description": "Create admin UI components - bank data section",
+    "steps": [
+      "Copy and adapt from product-plan/sections/admin/components/:",
+      "  - AdminBankData.tsx - bank accounts grid",
+      "  - BankAccountCard.tsx - bank account card with copy buttons",
+      "Adapt imports and styling",
+      "Handle onCreate, onEdit, onDelete callbacks",
+      "Export from src/components/admin/index.ts",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.21",
+    "category": "ui",
+    "description": "Create admin skeleton components for loading states",
+    "steps": [
+      "Create src/components/admin/skeletons.tsx with:",
+      "  - DashboardSkeleton - skeleton for dashboard page",
+      "  - CoursesListSkeleton - skeleton for courses table",
+      "  - StudentsListSkeleton - skeleton for students table",
+      "  - EducatorsListSkeleton - skeleton for educators grid",
+      "  - UsersListSkeleton - skeleton for users table",
+      "  - OrdersListSkeleton - skeleton for orders table",
+      "  - CouponsListSkeleton - skeleton for coupons table",
+      "  - BankDataSkeleton - skeleton for bank accounts grid",
+      "Use @/components/ui/skeleton component",
+      "Match structure of real components for smooth loading transition",
+      "Export from src/components/admin/index.ts",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.22",
+    "category": "page",
+    "description": "Implement admin dashboard page",
+    "steps": [
+      "Update src/app/admin/page.tsx as RSC:",
+      "  - Fetch dashboard metrics using getDashboardMetrics from admin-service",
+      "  - Pass data to AdminDashboard component",
+      "  - Wrap in Suspense with DashboardSkeleton fallback",
+      "  - Add metadata: title 'Dashboard - Admin'",
+      "Use async server component pattern (see educator/page.tsx for reference)",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.23",
+    "category": "page",
+    "description": "Implement admin courses page",
+    "steps": [
+      "Update src/app/admin/courses/page.tsx as RSC:",
+      "  - Fetch courses and observers using service functions",
+      "  - Pass data to AdminCourses component",
+      "  - Wrap in Suspense with CoursesListSkeleton fallback",
+      "  - Add metadata: title 'Cursos - Admin'",
+      "Handle onViewDetails navigation to course detail (if exists) or educator edit",
+      "Handle onViewObservers to show modal (client-side state)",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.24",
+    "category": "page",
+    "description": "Implement admin students page",
+    "steps": [
+      "Update src/app/admin/users/students/page.tsx as RSC:",
+      "  - Fetch students and stats using service functions",
+      "  - Pass data to AdminStudents component",
+      "  - Wrap in Suspense with StudentsListSkeleton fallback",
+      "  - Add metadata: title 'Estudiantes - Admin'",
+      "Handle onView/onEdit callbacks with router navigation or modal",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.25",
+    "category": "page",
+    "description": "Implement admin educators page",
+    "steps": [
+      "Update src/app/admin/users/educators/page.tsx as RSC:",
+      "  - Fetch educators and stats using service functions",
+      "  - Pass data to AdminEducators component",
+      "  - Wrap in Suspense with EducatorsListSkeleton fallback",
+      "  - Add metadata: title 'Educadores - Admin'",
+      "Handle onCreate, onView, onEdit, onDelete callbacks",
+      "For create: open modal or navigate to create page",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.26",
+    "category": "page",
+    "description": "Implement admin users page",
+    "steps": [
+      "Update src/app/admin/users/page.tsx as RSC:",
+      "  - Fetch users and stats using service functions",
+      "  - Pass data to AdminUsers component",
+      "  - Wrap in Suspense with UsersListSkeleton fallback",
+      "  - Add metadata: title 'Usuarios - Admin'",
+      "Handle onEditRole callback with confirmation dialog",
+      "Handle onDelete callback with confirmation dialog",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.27",
+    "category": "page",
+    "description": "Implement admin orders page",
+    "steps": [
+      "Update src/app/admin/orders/page.tsx as RSC:",
+      "  - Fetch orders using getOrdersAction (already exists in actions.ts)",
+      "  - Pass data to AdminOrders component",
+      "  - Wrap in Suspense with OrdersListSkeleton fallback",
+      "  - Add metadata: title 'Ordenes - Admin'",
+      "Handle onViewDetails to show order detail modal or page",
+      "Handle onMarkAsPaid calling confirmTransferPaymentAction",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.28",
+    "category": "page",
+    "description": "Implement admin coupons page",
+    "steps": [
+      "Update src/app/admin/coupons/page.tsx as RSC:",
+      "  - Fetch coupons using getCouponsForAdminAction",
+      "  - Pass data to AdminCoupons component",
+      "  - Wrap in Suspense with CouponsListSkeleton fallback",
+      "  - Add metadata: title 'Cupones - Admin'",
+      "Handle onCreate, onEdit, onDelete callbacks with modals or forms",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.29",
+    "category": "page",
+    "description": "Implement admin bank data page",
+    "steps": [
+      "Update src/app/admin/bank-data/page.tsx as RSC:",
+      "  - Fetch bank accounts using getBankAccountsForAdminAction",
+      "  - Pass data to AdminBankData component",
+      "  - Wrap in Suspense with BankDataSkeleton fallback",
+      "  - Add metadata: title 'Datos Bancarios - Admin'",
+      "Handle onCreate, onEdit, onDelete callbacks with modals",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.30",
+    "category": "ui",
+    "description": "Create coupon form component for create/edit",
+    "steps": [
+      "Create src/components/admin/coupon-form.tsx as client component:",
+      "  - Form fields: code (auto-uppercase), discountPercent (1-100), maxUses, expiresAt (date picker)",
+      "  - Optional: restrictedEmail, restrictedCourseId (select from courses)",
+      "  - Use react-hook-form with Zod validation",
+      "  - Mode prop: 'create' | 'edit' to toggle behavior",
+      "  - onSubmit calls appropriate server action",
+      "  - Show loading state during submission",
+      "Create src/components/admin/coupon-dialog.tsx for modal wrapper",
+      "Use Dialog from @/components/ui/dialog",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.31",
+    "category": "ui",
+    "description": "Create bank account form component for create/edit",
+    "steps": [
+      "Create src/components/admin/bank-account-form.tsx as client component:",
+      "  - Form fields: bankName, accountHolder, accountType (select), accountNumber, currency (USD/UYU), swiftCode?, notes?",
+      "  - Use react-hook-form with Zod validation",
+      "  - Mode prop: 'create' | 'edit' to toggle behavior",
+      "  - onSubmit calls appropriate server action",
+      "  - Show loading state during submission",
+      "Create src/components/admin/bank-account-dialog.tsx for modal wrapper",
+      "Use Dialog from @/components/ui/dialog",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.32",
+    "category": "ui",
+    "description": "Create user role edit dialog",
+    "steps": [
+      "Create src/components/admin/edit-role-dialog.tsx as client component:",
+      "  - Props: user, isOpen, onClose",
+      "  - Show current role, select for new role",
+      "  - Available roles: superadmin, educator, student",
+      "  - Confirmation message before changing",
+      "  - Special warning for superadmin changes",
+      "  - Call updateUserRoleAction on confirm",
+      "  - Show loading and error states",
+      "Use AlertDialog from @/components/ui/alert-dialog",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.33",
+    "category": "ui",
+    "description": "Create educator form component for create/edit",
+    "steps": [
+      "Create src/components/admin/educator-form.tsx as client component:",
+      "  - For create: select existing user (non-educator) to promote",
+      "  - Form fields: title, bio, optional image upload",
+      "  - Use react-hook-form with Zod validation",
+      "  - Mode prop: 'create' | 'edit'",
+      "  - onSubmit calls appropriate server action",
+      "Create src/components/admin/educator-dialog.tsx for modal wrapper",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.34",
+    "category": "ui",
+    "description": "Create student detail/edit dialog",
+    "steps": [
+      "Create src/components/admin/student-detail-dialog.tsx as client component:",
+      "  - View mode: show all student data (contact, address, stats)",
+      "  - Edit mode: form to update student data",
+      "  - Use Tabs from @/components/ui/tabs for different sections",
+      "  - Sections: Info Personal, Contacto, Direccion, Facturacion",
+      "  - Call updateStudentAction on save",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.35",
+    "category": "ui",
+    "description": "Create order detail dialog",
+    "steps": [
+      "Create src/components/admin/order-detail-dialog.tsx as client component:",
+      "  - Show full order details: order number, dates, amounts, discounts",
+      "  - Show student info with link to student detail",
+      "  - Show course info with link to course",
+      "  - Show payment method details (MP reference, transfer comment)",
+      "  - Action buttons based on status:",
+      "    - pending_payment/payment_sent: Mark as Paid, Cancel",
+      "    - paid: Refund (with confirmation)",
+      "  - Call appropriate server actions",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.36",
+    "category": "ui",
+    "description": "Create confirmation dialogs for destructive actions",
+    "steps": [
+      "Create src/components/admin/confirm-dialog.tsx as reusable component:",
+      "  - Props: isOpen, onClose, onConfirm, title, description, variant (danger/warning)",
+      "  - Use AlertDialog from @/components/ui/alert-dialog",
+      "  - Show loading state during action",
+      "Create specific dialogs that use this base:",
+      "  - DeleteUserDialog",
+      "  - DeleteCouponDialog",
+      "  - DeleteBankAccountDialog",
+      "  - RefundOrderDialog",
+      "  - CancelOrderDialog",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.37",
+    "category": "feature",
+    "description": "Add copy to clipboard functionality for bank data",
+    "steps": [
+      "Create src/lib/clipboard.ts utility:",
+      "  - copyToClipboard(text): async function with fallback",
+      "  - Uses navigator.clipboard API with fallback for older browsers",
+      "Update BankAccountCard to use this utility",
+      "Add toast notification on successful copy",
+      "Add 'Copy all' button in bank data list to copy all account numbers",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.38",
+    "category": "feature",
+    "description": "Add export functionality for admin data",
+    "steps": [
+      "Create src/lib/export.ts utility:",
+      "  - exportToCSV(data, filename): exports data array to CSV file",
+      "  - formatForExport(data): sanitizes data for export",
+      "Add export buttons to:",
+      "  - Students page - export student list",
+      "  - Orders page - export orders list",
+      "  - Coupons page - export coupons list",
+      "Export respects current filters (only exports visible data)",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.39",
+    "category": "polish",
+    "description": "Add admin page visitors placeholder",
+    "steps": [
+      "Update src/app/admin/users/visitors/page.tsx:",
+      "  - Display list of registered users without student/educator profiles",
+      "  - These are users who registered but never enrolled",
+      "  - Show: email, registration date, last login",
+      "  - Option to send marketing email (future feature)",
+      "  - Wrap in Suspense with skeleton",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.40",
+    "category": "polish",
+    "description": "Add placeholder pages for communications and settings",
+    "steps": [
+      "Update src/app/admin/communications/page.tsx with placeholder:",
+      "  - Title: 'Comunicaciones'",
+      "  - Description: 'Gestiona campanas de email y notificaciones'",
+      "  - UnderDevelopment component with clear message",
+      "Update src/app/admin/settings/page.tsx with placeholder:",
+      "  - Title: 'Configuracion'",
+      "  - Description: 'Configuracion general de la plataforma'",
+      "  - UnderDevelopment component",
+      "These will be implemented in future milestones",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.41",
+    "category": "polish",
+    "description": "Add error boundaries to admin pages",
+    "steps": [
+      "Create error.tsx files for admin routes:",
+      "  - src/app/admin/error.tsx",
+      "  - src/app/admin/courses/error.tsx",
+      "  - src/app/admin/users/error.tsx",
+      "  - src/app/admin/orders/error.tsx",
+      "  - src/app/admin/coupons/error.tsx",
+      "  - src/app/admin/bank-data/error.tsx",
+      "Each error page should:",
+      "  - Show friendly error message",
+      "  - Provide 'Try again' button that calls reset()",
+      "  - Provide link to dashboard as fallback",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.42",
+    "category": "integration",
+    "description": "Final integration and manual testing",
+    "steps": [
+      "Manual testing checklist:",
+      "  1. Dashboard loads with real metrics",
+      "  2. Courses page shows all courses with correct stats",
+      "  3. Can view observers for a course",
+      "  4. Students page lists all students with stats",
+      "  5. Can view/edit student details",
+      "  6. Educators page lists all educators",
+      "  7. Can create new educator from existing user",
+      "  8. Users page lists all users with role filter",
+      "  9. Can change user role with confirmation",
+      "  10. Orders page shows all orders with filters",
+      "  11. Can confirm bank transfer payment",
+      "  12. Can cancel/refund orders",
+      "  13. Coupons page shows all coupons",
+      "  14. Can create/edit/delete coupons",
+      "  15. Bank data page shows accounts",
+      "  16. Can create/edit/delete bank accounts",
+      "  17. Copy functionality works",
+      "  18. Export CSV works",
+      "  19. All skeletons show during loading",
+      "  20. Error pages show on errors",
+      "Document any issues found and fix them",
+      "Verify with pnpm lint, pnpm typecheck, pnpm build in sequence"
+    ],
+    "passes": false
+  }
+]

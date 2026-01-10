@@ -1,0 +1,50 @@
+# Progress - Milestone 05: Admin Panel
+
+## 2026-01-10 - Items 5.01-5.05: Service Layer for Admin Panel
+
+### Completed Items
+
+#### 5.01: Create admin-service for dashboard metrics
+- Created `src/services/admin-service.ts`
+- Types: DashboardTotals, ChartDataPoint, RecentActivity, TopCourse, DashboardMetrics
+- Functions: getDashboardMetrics, getDashboardTotals, getRevenueChart, getEnrollmentsChart, getUserGrowthChart, getRecentActivity, getTopCourses
+
+#### 5.02: Extend student-service with admin functions
+- Extended `src/services/student-service.ts`
+- Types: StudentWithStats, StudentStats
+- Functions: getAllStudentsWithStats, getStudentStats, getStudentByIdWithStats, updateStudentAsAdmin, getStudentsByActivity
+
+#### 5.03: Extend educator-service with admin functions
+- Extended `src/services/educator-service.ts`
+- Types: EducatorWithStats, EducatorStats, CreateEducatorInput, UpdateEducatorAsAdminInput
+- Functions: getAllEducatorsWithStats, getEducatorStats, createEducator, updateEducatorAsAdmin, deleteEducator, promoteUserToEducator, getEducatorByIdWithStats
+
+#### 5.04: Extend user-service with admin functions
+- Extended `src/services/user-service.ts`
+- Types: UserWithDetails, UserStats, UserActivity
+- Functions: getAllUsersWithDetails, getUserStats, updateUserRole, deleteUser, getUserActivity, getVisitors
+- Constraints: Cannot demote last superadmin, cannot delete self
+
+#### 5.05: Extend course-service with admin analytics
+- Extended `src/services/course-service.ts`
+- Types: AdminCourse, CourseObserver, CourseEnrollmentWithDetails, CourseAnalytics
+- Functions: getAllCoursesForAdmin, getCourseAnalytics, getCourseObservers (placeholder), getCourseEnrollmentsWithDetails
+
+### Technical Decisions
+- Used Prisma aggregations for efficient queries
+- Chart functions iterate over months (could be optimized with raw SQL if needed)
+- RecentActivity combines multiple entity types and sorts by timestamp
+- Revenue calculated from paid orders using finalAmount
+- Month formatting uses Spanish locale (es-ES)
+- Role constraints handled in updateUserRole and deleteUser
+- deleteEducator checks for courses before allowing deletion
+- promoteUserToEducator uses transaction to create educator profile and update user role atomically
+- CourseObservers is a placeholder - would need a separate model for "interested users" tracking
+
+### Verification
+- TypeCheck: PASS
+- Lint: PASS (2 pre-existing warnings unrelated to changes)
+- Build: PASS
+
+### Next step suggestion
+Item 5.06: Create server actions for admin dashboard

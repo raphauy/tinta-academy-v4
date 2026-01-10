@@ -342,3 +342,261 @@ export async function checkSlug(slug: string, courseId?: string): Promise<boolea
 
   return true // Slug is in use by another course
 }
+
+// ============================================
+// ADMIN FUNCTIONS
+// ============================================
+
+export interface AdminCourse {
+  id: string
+  slug: string
+  title: string
+  type: CourseType
+  modality: CourseModality
+  status: CourseStatus
+  priceUSD: number
+  startDate: Date | null
+  endDate: Date | null
+  maxCapacity: number | null
+  imageUrl: string | null
+  createdAt: Date
+  educator: {
+    id: string
+    name: string
+    imageUrl: string | null
+  }
+  tags: Array<{ id: string; name: string }>
+  enrolledCount: number
+  observersCount: number
+  totalRevenue: number
+  completionRate: number
+  averageProgress: number
+}
+
+export interface CourseObserver {
+  id: string
+  email: string
+  name: string | null
+  createdAt: Date
+}
+
+export interface CourseEnrollmentWithDetails {
+  id: string
+  status: string
+  enrolledAt: Date
+  student: {
+    id: string
+    firstName: string | null
+    lastName: string | null
+    user: {
+      id: string
+      email: string
+      name: string | null
+    }
+  }
+  progress: number // placeholder for future progress tracking
+}
+
+export interface CourseAnalytics {
+  id: string
+  title: string
+  enrolledCount: number
+  observersCount: number
+  totalRevenue: number
+  revenueByMonth: Array<{ month: string; value: number }>
+  enrollmentsByMonth: Array<{ month: string; value: number }>
+  completionRate: number
+  averageProgress: number
+  topReferrers: Array<{ source: string; count: number }> // placeholder for analytics
+}
+
+/**
+ * Get all courses with admin metrics
+ */
+export async function getAllCoursesForAdmin(): Promise<AdminCourse[]> {
+  const courses = await prisma.course.findMany({
+    include: {
+      educator: {
+        select: {
+          id: true,
+          name: true,
+          imageUrl: true,
+        },
+      },
+      tags: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      orders: {
+        where: { status: 'paid' },
+        select: { finalAmount: true },
+      },
+      enrollments: {
+        select: {
+          status: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  return courses.map((course) => {
+    const totalRevenue = course.orders.reduce((sum, order) => sum + order.finalAmount, 0)
+
+    // Placeholder for observers (users interested but not enrolled)
+    // In a real implementation, this would come from a separate CourseObserver model
+    const observersCount = 0
+
+    // Calculate completion rate based on course status
+    const completionRate = course.status === 'finished' ? 100 : 0
+    const averageProgress = course.status === 'finished'
+      ? 100
+      : course.status === 'in_progress'
+        ? 50
+        : 0
+
+    return {
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      type: course.type,
+      modality: course.modality,
+      status: course.status,
+      priceUSD: course.priceUSD,
+      startDate: course.startDate,
+      endDate: course.endDate,
+      maxCapacity: course.maxCapacity,
+      imageUrl: course.imageUrl,
+      createdAt: course.createdAt,
+      educator: course.educator,
+      tags: course.tags,
+      enrolledCount: course.enrolledCount,
+      observersCount,
+      totalRevenue,
+      completionRate,
+      averageProgress,
+    }
+  })
+}
+
+/**
+ * Get detailed analytics for a specific course
+ */
+export async function getCourseAnalytics(courseId: string): Promise<CourseAnalytics | null> {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: {
+      orders: {
+        where: { status: 'paid' },
+        select: {
+          finalAmount: true,
+          paidAt: true,
+        },
+      },
+      enrollments: {
+        select: {
+          status: true,
+          enrolledAt: true,
+        },
+      },
+    },
+  })
+
+  if (!course) return null
+
+  const totalRevenue = course.orders.reduce((sum, order) => sum + order.finalAmount, 0)
+
+  // Generate revenue by month for last 6 months
+  const revenueByMonth: Array<{ month: string; value: number }> = []
+  const enrollmentsByMonth: Array<{ month: string; value: number }> = []
+  const now = new Date()
+
+  for (let i = 5; i >= 0; i--) {
+    const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0)
+    const monthName = monthStart.toLocaleDateString('es-ES', { month: 'short' })
+
+    const monthRevenue = course.orders
+      .filter((o) => o.paidAt && o.paidAt >= monthStart && o.paidAt <= monthEnd)
+      .reduce((sum, o) => sum + o.finalAmount, 0)
+
+    const monthEnrollments = course.enrollments.filter(
+      (e) => e.status === 'confirmed' && e.enrolledAt >= monthStart && e.enrolledAt <= monthEnd
+    ).length
+
+    revenueByMonth.push({ month: monthName, value: monthRevenue })
+    enrollmentsByMonth.push({ month: monthName, value: monthEnrollments })
+  }
+
+  const completionRate = course.status === 'finished' ? 100 : 0
+  const averageProgress = course.status === 'finished'
+    ? 100
+    : course.status === 'in_progress'
+      ? 50
+      : 0
+
+  return {
+    id: course.id,
+    title: course.title,
+    enrolledCount: course.enrolledCount,
+    observersCount: 0, // placeholder
+    totalRevenue,
+    revenueByMonth,
+    enrollmentsByMonth,
+    completionRate,
+    averageProgress,
+    topReferrers: [], // placeholder for future analytics
+  }
+}
+
+/**
+ * Get observers for a course (users interested but not enrolled)
+ * Placeholder - would need a CourseObserver model in the future
+ */
+export async function getCourseObservers(courseId: string): Promise<CourseObserver[]> {
+  // Placeholder implementation
+  // In a real implementation, this would query a CourseObserver model
+  // For now, return empty array
+  console.log(`Getting observers for course ${courseId}`)
+  return []
+}
+
+/**
+ * Get enrollments with full student details for admin
+ */
+export async function getCourseEnrollmentsWithDetails(
+  courseId: string
+): Promise<CourseEnrollmentWithDetails[]> {
+  const enrollments = await prisma.enrollment.findMany({
+    where: { courseId },
+    include: {
+      student: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { enrolledAt: 'desc' },
+  })
+
+  return enrollments.map((enrollment) => ({
+    id: enrollment.id,
+    status: enrollment.status,
+    enrolledAt: enrollment.enrolledAt,
+    student: {
+      id: enrollment.student.id,
+      firstName: enrollment.student.firstName,
+      lastName: enrollment.student.lastName,
+      user: enrollment.student.user,
+    },
+    progress: enrollment.status === 'confirmed' ? 50 : 0, // placeholder
+  }))
+}

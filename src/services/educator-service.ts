@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { Role } from '@prisma/client'
 
 /**
  * Get educator by user ID with user relation
@@ -291,4 +292,308 @@ function generateChartData(
   }
 
   return { students: studentsData, progress: progressData }
+}
+
+// ============================================
+// ADMIN FUNCTIONS
+// ============================================
+
+export interface EducatorWithStats {
+  id: string
+  userId: string
+  name: string
+  title: string | null
+  bio: string | null
+  imageUrl: string | null
+  createdAt: Date
+  user: {
+    id: string
+    email: string
+    name: string | null
+    isActive: boolean
+  }
+  coursesCount: number
+  studentsCount: number
+  totalRevenue: number
+}
+
+export interface EducatorStats {
+  total: number
+  totalCourses: number
+  totalStudents: number
+  averageRating: number // placeholder for future rating system
+}
+
+/**
+ * Get all educators with computed stats for admin panel
+ */
+export async function getAllEducatorsWithStats(): Promise<EducatorWithStats[]> {
+  const educators = await prisma.educator.findMany({
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          isActive: true,
+        },
+      },
+      courses: {
+        select: {
+          id: true,
+          enrolledCount: true,
+          orders: {
+            where: { status: 'paid' },
+            select: { finalAmount: true },
+          },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  return educators.map((educator) => {
+    const coursesCount = educator.courses.length
+    const studentsCount = educator.courses.reduce((sum, course) => sum + course.enrolledCount, 0)
+    const totalRevenue = educator.courses.reduce(
+      (sum, course) => sum + course.orders.reduce((orderSum, order) => orderSum + order.finalAmount, 0),
+      0
+    )
+
+    return {
+      id: educator.id,
+      userId: educator.userId,
+      name: educator.name,
+      title: educator.title,
+      bio: educator.bio,
+      imageUrl: educator.imageUrl,
+      createdAt: educator.createdAt,
+      user: educator.user,
+      coursesCount,
+      studentsCount,
+      totalRevenue,
+    }
+  })
+}
+
+/**
+ * Get aggregated educator statistics for dashboard
+ */
+export async function getEducatorStats(): Promise<EducatorStats> {
+  const educators = await prisma.educator.findMany({
+    include: {
+      courses: {
+        select: {
+          enrolledCount: true,
+        },
+      },
+    },
+  })
+
+  const total = educators.length
+  const totalCourses = educators.reduce((sum, e) => sum + e.courses.length, 0)
+  const totalStudents = educators.reduce(
+    (sum, e) => sum + e.courses.reduce((courseSum, c) => courseSum + c.enrolledCount, 0),
+    0
+  )
+
+  return {
+    total,
+    totalCourses,
+    totalStudents,
+    averageRating: 0, // placeholder for future rating system
+  }
+}
+
+export interface CreateEducatorInput {
+  userId: string
+  name: string
+  title?: string
+  bio?: string
+  imageUrl?: string
+}
+
+/**
+ * Create educator profile from existing user
+ */
+export async function createEducator(data: CreateEducatorInput) {
+  return prisma.educator.create({
+    data: {
+      userId: data.userId,
+      name: data.name,
+      title: data.title,
+      bio: data.bio,
+      imageUrl: data.imageUrl,
+    },
+    include: {
+      user: true,
+    },
+  })
+}
+
+export interface UpdateEducatorAsAdminInput {
+  name?: string
+  title?: string
+  bio?: string
+  imageUrl?: string
+}
+
+/**
+ * Update educator as admin (can update all fields)
+ */
+export async function updateEducatorAsAdmin(
+  educatorId: string,
+  data: UpdateEducatorAsAdminInput
+) {
+  return prisma.educator.update({
+    where: { id: educatorId },
+    data: {
+      ...(data.name !== undefined && { name: data.name }),
+      ...(data.title !== undefined && { title: data.title }),
+      ...(data.bio !== undefined && { bio: data.bio }),
+      ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
+    },
+    include: {
+      user: true,
+    },
+  })
+}
+
+/**
+ * Delete educator (only if no courses, otherwise throw error)
+ */
+export async function deleteEducator(educatorId: string) {
+  // Check if educator has courses
+  const coursesCount = await prisma.course.count({
+    where: { educatorId },
+  })
+
+  if (coursesCount > 0) {
+    throw new Error(
+      `No se puede eliminar el educador porque tiene ${coursesCount} curso(s). Primero debe reasignar o eliminar los cursos.`
+    )
+  }
+
+  // Get educator to find userId
+  const educator = await prisma.educator.findUnique({
+    where: { id: educatorId },
+    select: { userId: true },
+  })
+
+  if (!educator) {
+    throw new Error('Educador no encontrado')
+  }
+
+  // Delete educator and reset user role in transaction
+  await prisma.$transaction([
+    prisma.educator.delete({
+      where: { id: educatorId },
+    }),
+    prisma.user.update({
+      where: { id: educator.userId },
+      data: { role: null },
+    }),
+  ])
+}
+
+/**
+ * Promote user to educator role
+ * Creates educator profile and updates user role
+ */
+export async function promoteUserToEducator(
+  userId: string,
+  educatorData: Omit<CreateEducatorInput, 'userId'>
+) {
+  // Check if user exists and doesn't already have educator profile
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { educator: true },
+  })
+
+  if (!user) {
+    throw new Error('Usuario no encontrado')
+  }
+
+  if (user.educator) {
+    throw new Error('El usuario ya tiene un perfil de educador')
+  }
+
+  // Create educator profile and update role in transaction
+  const result = await prisma.$transaction(async (tx) => {
+    const educator = await tx.educator.create({
+      data: {
+        userId,
+        name: educatorData.name,
+        title: educatorData.title,
+        bio: educatorData.bio,
+        imageUrl: educatorData.imageUrl,
+      },
+      include: {
+        user: true,
+      },
+    })
+
+    await tx.user.update({
+      where: { id: userId },
+      data: { role: Role.educator },
+    })
+
+    return educator
+  })
+
+  return result
+}
+
+/**
+ * Get educator by ID with full stats for admin detail view
+ */
+export async function getEducatorByIdWithStats(
+  educatorId: string
+): Promise<EducatorWithStats | null> {
+  const educator = await prisma.educator.findUnique({
+    where: { id: educatorId },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          isActive: true,
+        },
+      },
+      courses: {
+        select: {
+          id: true,
+          enrolledCount: true,
+          orders: {
+            where: { status: 'paid' },
+            select: { finalAmount: true },
+          },
+        },
+      },
+    },
+  })
+
+  if (!educator) return null
+
+  const coursesCount = educator.courses.length
+  const studentsCount = educator.courses.reduce((sum, course) => sum + course.enrolledCount, 0)
+  const totalRevenue = educator.courses.reduce(
+    (sum, course) => sum + course.orders.reduce((orderSum, order) => orderSum + order.finalAmount, 0),
+    0
+  )
+
+  return {
+    id: educator.id,
+    userId: educator.userId,
+    name: educator.name,
+    title: educator.title,
+    bio: educator.bio,
+    imageUrl: educator.imageUrl,
+    createdAt: educator.createdAt,
+    user: educator.user,
+    coursesCount,
+    studentsCount,
+    totalRevenue,
+  }
 }
