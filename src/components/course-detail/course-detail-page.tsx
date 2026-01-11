@@ -35,16 +35,22 @@ interface CourseDetailPageProps {
   isEnrolled?: boolean
 }
 
+function capitalizeFirst(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
 function formatMonthYear(date: Date | null): string {
   if (!date) return ''
-  return new Intl.DateTimeFormat('es-AR', {
+  const formatted = new Intl.DateTimeFormat('es-AR', {
     month: 'long',
     year: 'numeric',
   }).format(toLocalDate(date))
+  return capitalizeFirst(formatted)
 }
 
 function formatClassDate(date: Date): string {
-  return format(toLocalDate(date), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
+  const formatted = format(toLocalDate(date), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })
+  return capitalizeFirst(formatted)
 }
 
 function getEndTime(startTime: string | null, durationMinutes: number | null): string {
@@ -132,13 +138,15 @@ const WSET_REQUIREMENTS = [
   'No se requieren conocimientos previos',
 ]
 
-const WSET_INCLUDED = [
-  'Material de estudio oficial WSET',
-  'Examen de certificación internacional',
-  'Degustación de vinos durante el curso',
-  'Certificado oficial WSET al aprobar',
-  'PIN oficial WSET',
-]
+function getWsetIncluded(wsetLevel: number | null | undefined): string[] {
+  const wineCount = wsetLevel === 1 ? 10 : wsetLevel === 2 ? 40 : 40
+  return [
+    'Material de estudio oficial WSET',
+    'Examen de certificación internacional',
+    `Cata técnica de ${wineCount} vinos durante el curso`,
+    'Certificado Digital Oficial del WSET al aprobar',
+  ]
+}
 
 export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPageProps) {
   const router = useRouter()
@@ -213,7 +221,7 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
               {course.title}
             </h1>
             {course.startDate && (
-              <h2 className="text-xl opacity-90 capitalize">
+              <h2 className="text-xl opacity-90">
                 {formatMonthYear(course.startDate)}
               </h2>
             )}
@@ -274,7 +282,7 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
 
                 <Card>
                   <CardHeader>
-                    <CardTitle>Este curso es para vos si</CardTitle>
+                    <CardTitle>¿Para quién es este curso?</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-3">
@@ -304,12 +312,12 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                         <BookOpen className="size-5 text-muted-foreground mt-0.5" />
                         <div>
                           <span className="font-medium">Clase {index + 1}:</span>{' '}
-                          <span className="capitalize">
+                          <span>
                             {formatClassDate(new Date(date))}
                           </span>
                           {course.startTime && endTime && (
                             <span className="text-muted-foreground">
-                              {' '}- {course.startTime} a {endTime} hs
+                              {' '}- {course.startTime} a {endTime} h
                             </span>
                           )}
                         </div>
@@ -323,7 +331,7 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                       <GraduationCap className="size-5 text-muted-foreground mt-0.5" />
                       <div>
                         <span className="font-medium">Examen:</span>{' '}
-                        <span className="capitalize">
+                        <span>
                           {formatClassDate(new Date(course.examDate))}
                         </span>
                       </div>
@@ -335,8 +343,8 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                     <div className="flex items-start gap-3 pt-2 border-t">
                       <AlertCircle className="size-5 text-amber-500 mt-0.5" />
                       <div>
-                        <span className="font-medium">Fecha limite de inscripcion:</span>{' '}
-                        <span className="capitalize">
+                        <span className="font-medium">Fecha límite de inscripción:</span>{' '}
+                        <span>
                           {formatClassDate(new Date(course.registrationDeadline))}
                         </span>
                       </div>
@@ -440,7 +448,7 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                     <div className="mt-4 pt-4 border-t">
                       <p className="font-medium mb-2">Incluye:</p>
                       <ul className="space-y-2">
-                        {WSET_INCLUDED.map((item, index) => (
+                        {getWsetIncluded(course.wsetLevel).map((item, index) => (
                           <li key={index} className="flex gap-2 text-sm text-muted-foreground">
                             <CheckCircle className="size-4 text-primary flex-shrink-0 mt-0.5" />
                             {item}

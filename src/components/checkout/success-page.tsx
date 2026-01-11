@@ -125,10 +125,10 @@ export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
           <h1 className="text-2xl font-bold text-green-700">
-            Inscripcion Confirmada
+            Inscripción Confirmada
           </h1>
           <p className="text-muted-foreground">
-            Tu inscripcion al curso ha sido procesada exitosamente
+            Tu inscripción al curso ha sido procesada exitosamente
           </p>
         </div>
 
@@ -145,7 +145,7 @@ export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
                     Completa tus datos personales
                   </CardTitle>
                   <CardDescription className="text-amber-700">
-                    Para cursos WSET necesitamos tu informacion completa para el
+                    Para cursos WSET necesitamos tu información completa para el
                     registro oficial. Por favor completa tu perfil antes del
                     inicio del curso.
                   </CardDescription>
@@ -232,7 +232,7 @@ export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
             {/* Payment Info */}
             <div className="pt-4 border-t space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Metodo de pago</span>
+                <span className="text-muted-foreground">Método de pago</span>
                 <span>{paymentMethodLabels[order.paymentMethod]}</span>
               </div>
               <div className="flex justify-between font-semibold">
@@ -267,7 +267,7 @@ export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
 
         {/* Additional Info */}
         <p className="text-center text-sm text-muted-foreground">
-          Recibiras un email de confirmacion con todos los detalles del curso.
+          Recibirás un email de confirmación con todos los detalles del curso.
           Si tienes alguna pregunta, no dudes en contactarnos.
         </p>
       </div>

@@ -49,7 +49,7 @@ export default function OrderConfirmationEmail({
   return (
     <Html>
       <Head />
-      <Preview>¡Compraste {courseName}!</Preview>
+      <Preview>¡Bienvenido/a a Tinta Academy!</Preview>
       <Body style={styles.body}>
         <Container style={styles.container}>
           <EmailHeader />
@@ -57,7 +57,7 @@ export default function OrderConfirmationEmail({
           <Section style={styles.content}>
             {/* Main Title */}
             <Heading style={styles.title}>
-              ¡Compraste {courseName}!
+              ¡Bienvenido/a a Tinta Academy!
             </Heading>
 
             {/* Welcome Text */}
@@ -65,19 +65,21 @@ export default function OrderConfirmationEmail({
               Hola <strong>{customerName}</strong>,
             </Text>
             <Text style={styles.text}>
-              ¡Qué alegría tenerte con nosotros en Tinta Academy! 🎉
+              ¡Qué alegría tenerte con nosotros en Tinta Academy!
             </Text>
             <Text style={styles.text}>
-              Ya estás adentro de un viaje único que te va a llevar a conocer
-              nuevos horizontes junto a un grupo exclusivo de entusiastas y
-              profesionales como vos. En Tinta Academy creemos en el poder
-              transformador del conocimiento y traemos una formación de alta
-              calidad con perspectiva global para que sigas explorando y
-              expandiendo tu pasión por la cultura del vino.
+              Ya sos parte de una experiencia de formación pensada para explorar
+              la cultura del vino con una mirada profesional, curiosa y
+              conectada con el mundo.
             </Text>
             <Text style={styles.text}>
-              Conoce al equipo de Tinta Academy que te acompañará en esta
-              aventura:
+              En Tinta Academy creemos en el valor del conocimiento. Por eso
+              ofrecemos programas de formación con estándares internacionales y
+              una perspectiva global, orientados a acompañar los procesos de
+              aprendizaje y profundización en la cultura del vino.
+            </Text>
+            <Text style={styles.text}>
+              Conoce a quien estará a cargo de acompañarte en esta experiencia:
             </Text>
 
             {/* Team Section */}
@@ -94,27 +96,26 @@ export default function OrderConfirmationEmail({
                 </Column>
                 <Column style={styles.teamTextColumn}>
                   <Text style={styles.teamText}>
-                    <strong>Gabi Zimmer</strong>, sommelier, comunicadora
-                    referente en el mundo del vino en Uruguay y diplomada en
-                    WSET, es quien lidera nuestra academia y quien dictará los
-                    cursos de formación.
+                    <strong>Gabi Zimmer</strong>, sommelière, autora, catadora
+                    profesional y comunicadora especializada en el mundo del
+                    vino, diplomada en WSET y fundadora de Tinta. Es quien
+                    lidera la academia y dicta los cursos de formación.
                   </Text>
                 </Column>
               </Row>
             </Section>
 
             <Text style={styles.text}>
-              Queremos que sepas que estamos aquí para acompañarte en cada paso
-              de esta experiencia. Si tenés alguna duda o consulta, no dudes en
-              contactarnos. Podés comunicarte con nosotras a través de:
+              Estamos aquí para acompañarte en cada etapa. Si tienes consultas,
+              puedes contactarnos a través de:
             </Text>
 
             {/* Contact Info */}
             <Section style={styles.contactBox}>
               <Text style={styles.contactItem}>
                 <strong>▪️ WhatsApp:</strong>{' '}
-                <Link href="https://wa.me/59892265737" style={styles.link}>
-                  +598 92265737
+                <Link href="https://wa.me/59892794526" style={styles.link}>
+                  +598 92794526
                 </Link>
               </Text>
               <Text style={styles.contactItem}>
@@ -135,10 +136,12 @@ export default function OrderConfirmationEmail({
             </Section>
 
             <Text style={styles.text}>
-              Estamos emocionadas de comenzar esta aventura juntos. ¡Nos vemos
-              pronto!
+              Estamos muy contentos de comenzar este camino juntos.
             </Text>
-            <Text style={styles.signOff}>El equipo de Tinta Academy</Text>
+            <Text style={styles.text}>¡Nos vemos pronto!</Text>
+            <Text style={styles.signOff}>
+              Gabi Zimmer &amp; el equipo de Tinta Academy
+            </Text>
 
             <Hr style={styles.divider} />
 

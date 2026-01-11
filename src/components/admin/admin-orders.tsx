@@ -168,10 +168,10 @@ export function AdminOrders({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-1">
-            Ordenes de Pago
+            Órdenes de Pago
           </h1>
           <p className="text-sm text-stone-500 dark:text-stone-400">
-            Gestiona las ordenes y pagos de la plataforma
+            Gestiona las órdenes y pagos de la plataforma
           </p>
         </div>
 
@@ -182,10 +182,10 @@ export function AdminOrders({
             </div>
             <div>
               <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-                {stats.pending} {stats.pending === 1 ? 'orden pendiente' : 'ordenes pendientes'}
+                {stats.pending} {stats.pending === 1 ? 'orden pendiente' : 'órdenes pendientes'}
               </p>
               <p className="text-xs text-amber-600 dark:text-amber-400">
-                Requieren confirmacion
+                Requieren confirmación
               </p>
             </div>
           </div>
@@ -195,7 +195,7 @@ export function AdminOrders({
       <div className="space-y-3">
         <div className="grid grid-cols-2 gap-3">
           <AdminMetricCard
-            label="Total Ordenes"
+            label="Total Órdenes"
             value={stats.total}
             icon={<Receipt className="w-4 h-4" />}
             variant="primary"
@@ -204,7 +204,7 @@ export function AdminOrders({
             label="Pendientes"
             value={stats.pending}
             icon={<Clock className="w-4 h-4" />}
-            subtitle="Requieren atencion"
+            subtitle="Requieren atención"
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -226,7 +226,7 @@ export function AdminOrders({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 dark:text-stone-500" />
           <Input
             type="text"
-            placeholder="Buscar por numero, estudiante o curso..."
+            placeholder="Buscar por número, estudiante o curso..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-10 bg-background"
@@ -267,13 +267,13 @@ export function AdminOrders({
           onValueChange={(value) => setMethodFilter(value as MethodFilter)}
         >
           <SelectTrigger className="w-full sm:w-44 bg-background">
-            <SelectValue placeholder="Metodo" />
+            <SelectValue placeholder="Método" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">
               <span className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-stone-400" />
-                Todos los metodos
+                Todos los métodos
               </span>
             </SelectItem>
             <SelectItem value="mercadopago">MercadoPago</SelectItem>
@@ -286,10 +286,10 @@ export function AdminOrders({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p className="text-sm text-stone-500 dark:text-stone-400">
           {filteredOrders.length === 0
-            ? 'No se encontraron ordenes'
+            ? 'No se encontraron órdenes'
             : filteredOrders.length === 1
               ? '1 orden'
-              : `${filteredOrders.length} ordenes`}
+              : `${filteredOrders.length} órdenes`}
           {(searchQuery || statusFilter !== 'all' || methodFilter !== 'all') &&
             orders.length !== filteredOrders.length && (
               <span className="text-stone-400 dark:text-stone-500">
@@ -303,7 +303,7 @@ export function AdminOrders({
             Ordenar por:
           </span>
           <div className="flex items-center gap-3">
-            {renderSortButton('orderNumber', 'Numero')}
+            {renderSortButton('orderNumber', 'Número')}
             {renderSortButton('amount', 'Monto')}
             {renderSortButton('status', 'Estado')}
             {renderSortButton('createdAt', 'Fecha')}
@@ -327,7 +327,7 @@ export function AdminOrders({
               Estado
             </div>
             <div className="col-span-1 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-              Metodo
+              Método
             </div>
             <div className="col-span-2 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
               Acciones
@@ -355,8 +355,8 @@ export function AdminOrders({
           </h3>
           <p className="text-sm text-stone-500 dark:text-stone-400 text-center max-w-sm">
             {searchQuery || statusFilter !== 'all' || methodFilter !== 'all'
-              ? 'No se encontraron ordenes con los filtros aplicados'
-              : 'No hay ordenes registradas en la plataforma'}
+              ? 'No se encontraron órdenes con los filtros aplicados'
+              : 'No hay órdenes registradas en la plataforma'}
           </p>
           {(searchQuery || statusFilter !== 'all' || methodFilter !== 'all') && (
             <Button

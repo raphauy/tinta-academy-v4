@@ -114,7 +114,7 @@ export function AdminUsersClient({ users, stats }: AdminUsersClientProps) {
         onOpenChange={setDeleteDialogOpen}
         type="delete"
         title="Eliminar usuario"
-        description={`¿Estas seguro de que deseas eliminar a "${deleteDisplayName}"? Solo se pueden eliminar usuarios sin ordenes. Para usuarios con historial, usa la opcion de Desactivar.`}
+        description={`¿Estás seguro de que deseas eliminar a "${deleteDisplayName}"? Solo se pueden eliminar usuarios sin órdenes. Para usuarios con historial, usa la opción de Desactivar.`}
         confirmLabel="Eliminar usuario"
         onConfirm={handleDeleteConfirm}
       />
@@ -126,8 +126,8 @@ export function AdminUsersClient({ users, stats }: AdminUsersClientProps) {
         title={isUserActive ? 'Desactivar usuario' : 'Activar usuario'}
         description={
           isUserActive
-            ? `¿Estas seguro de que deseas desactivar a "${toggleDisplayName}"? El usuario no podra iniciar sesion pero su historial se mantendra.`
-            : `¿Estas seguro de que deseas reactivar a "${toggleDisplayName}"? El usuario podra volver a iniciar sesion.`
+            ? `¿Estás seguro de que deseas desactivar a "${toggleDisplayName}"? El usuario no podrá iniciar sesión pero su historial se mantendrá.`
+            : `¿Estás seguro de que deseas reactivar a "${toggleDisplayName}"? El usuario podrá volver a iniciar sesión.`
         }
         confirmLabel={isUserActive ? 'Desactivar' : 'Activar'}
         onConfirm={handleToggleStatusConfirm}

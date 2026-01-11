@@ -171,7 +171,7 @@ export function AdminCoupons({
           className="bg-[#143F3B] hover:bg-[#0e2c29] text-white dark:bg-[#143F3B] dark:hover:bg-[#1e5a54]"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Nuevo Cupon
+          Nuevo Cupón
         </Button>
       </div>
 
@@ -204,7 +204,7 @@ export function AdminCoupons({
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 dark:text-stone-500" />
           <Input
             type="text"
-            placeholder="Buscar por codigo o descripcion..."
+            placeholder="Buscar por código o descripción..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 pr-10 bg-white dark:bg-stone-900"
@@ -268,7 +268,7 @@ export function AdminCoupons({
           {filteredCoupons.length === 0
             ? 'No se encontraron cupones'
             : filteredCoupons.length === 1
-              ? '1 cupon'
+              ? '1 cupón'
               : `${filteredCoupons.length} cupones`}
           {(searchQuery || statusFilter !== 'all') &&
             coupons.length !== filteredCoupons.length && (
@@ -283,7 +283,7 @@ export function AdminCoupons({
             Ordenar por:
           </span>
           <div className="flex items-center gap-3">
-            {renderSortButton('code', 'Codigo')}
+            {renderSortButton('code', 'Código')}
             {renderSortButton('discountPercent', 'Descuento')}
             {renderSortButton('currentUses', 'Usos')}
             {renderSortButton('createdAt', 'Fecha')}
@@ -295,7 +295,7 @@ export function AdminCoupons({
         <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden">
           <div className="hidden lg:grid lg:grid-cols-12 gap-4 px-4 py-3 bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-700">
             <div className="col-span-3 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-              Cupon
+              Cupón
             </div>
             <div className="col-span-1 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
               Descuento

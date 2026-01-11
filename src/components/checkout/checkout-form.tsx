@@ -91,12 +91,12 @@ function PaymentMethodSelector({
                 <span className="font-semibold">MercadoPago</span>
                 {!isMercadoPagoEnabled && (
                   <Badge variant="secondary" className="text-xs">
-                    Proximamente
+                    Próximamente
                   </Badge>
                 )}
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                Tarjeta de credito, debito o efectivo
+                Tarjeta de crédito, débito o efectivo
               </p>
             </div>
           </div>
@@ -138,7 +138,7 @@ function PaymentMethodSelector({
                 <span className="font-semibold">Transferencia Bancaria</span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                Pago en dolares via transferencia
+                Pago en dólares vía transferencia
               </p>
             </div>
           </div>
@@ -146,7 +146,7 @@ function PaymentMethodSelector({
             <span className="font-semibold">
               USD {pricing.finalPriceUSD.toFixed(2)}
             </span>
-            <p className="text-xs text-muted-foreground">Dolares</p>
+            <p className="text-xs text-muted-foreground">Dólares</p>
           </div>
         </div>
       </button>
@@ -180,7 +180,7 @@ function CouponInput({
 
   const handleApply = async () => {
     if (!couponCode.trim()) {
-      setError('Ingresa un codigo de cupon')
+      setError('Ingresa un código de cupón')
       return
     }
 
@@ -196,14 +196,14 @@ function CouponInput({
       }
 
       if (!result.data?.valid) {
-        setError(result.data?.errorMessage || 'Cupon no valido')
+        setError(result.data?.errorMessage || 'Cupón no válido')
         return
       }
 
       onApply(result.data)
       setCouponCode('')
     } catch {
-      setError('Error al validar el cupon')
+      setError('Error al validar el cupón')
     } finally {
       setIsValidating(false)
     }
@@ -225,7 +225,7 @@ function CouponInput({
           onClick={onRemove}
           disabled={disabled}
           className="ml-auto p-1 hover:bg-green-200 rounded-full transition-colors"
-          aria-label="Quitar cupon"
+          aria-label="Quitar cupón"
         >
           <X className="w-4 h-4 text-green-600" />
         </button>
@@ -242,7 +242,7 @@ function CouponInput({
       >
         <span className="flex items-center gap-2 text-muted-foreground">
           <Tag className="w-4 h-4" />
-          Tengo un cupon
+          Tengo un cupón
         </span>
         <ChevronDown
           className={`w-4 h-4 text-muted-foreground transition-transform ${
@@ -256,7 +256,7 @@ function CouponInput({
           <div className="flex gap-2">
             <Input
               type="text"
-              placeholder="Codigo de cupon"
+              placeholder="Código de cupón"
               value={couponCode}
               onChange={(e) => {
                 setCouponCode(e.target.value.toUpperCase())
@@ -356,7 +356,7 @@ export function CheckoutForm({ context }: CheckoutFormProps) {
       }
     } catch (error) {
       console.error('Checkout error:', error)
-      toast.error('Error al procesar el checkout')
+      toast.error('Error al procesar la compra')
     } finally {
       setIsSubmitting(false)
     }
@@ -364,12 +364,12 @@ export function CheckoutForm({ context }: CheckoutFormProps) {
 
   const handleCouponApply = (result: ValidateCouponResult) => {
     setAppliedCoupon(result)
-    toast.success(`Cupon aplicado: ${result.discountPercent}% de descuento`)
+    toast.success(`Cupón aplicado: ${result.discountPercent}% de descuento`)
   }
 
   const handleCouponRemove = () => {
     setAppliedCoupon(null)
-    toast.info('Cupon eliminado')
+    toast.info('Cupón eliminado')
   }
 
   const submitButtonText = () => {
@@ -387,7 +387,7 @@ export function CheckoutForm({ context }: CheckoutFormProps) {
         <div>
           <h1 className="text-2xl font-bold">Finalizar compra</h1>
           <p className="text-muted-foreground mt-1">
-            Completa tu inscripcion a {context.course.title}
+            Completa tu inscripción a {context.course.title}
           </p>
         </div>
 
@@ -403,7 +403,7 @@ export function CheckoutForm({ context }: CheckoutFormProps) {
         {/* Payment Method Selector */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Metodo de pago</CardTitle>
+            <CardTitle className="text-lg">Método de pago</CardTitle>
             <CardDescription>
               Selecciona como deseas realizar el pago
             </CardDescription>
@@ -424,7 +424,7 @@ export function CheckoutForm({ context }: CheckoutFormProps) {
               <p className="text-sm text-amber-800">
                 <strong>Nota:</strong> Al seleccionar transferencia bancaria, te
                 mostraremos los datos de la cuenta para realizar el pago. Tu
-                inscripcion quedara pendiente hasta confirmar la transferencia.
+                inscripción quedará pendiente hasta confirmar la transferencia.
               </p>
             </CardContent>
           </Card>
@@ -449,7 +449,7 @@ export function CheckoutForm({ context }: CheckoutFormProps) {
 
         {/* Security Notice */}
         <p className="text-xs text-center text-muted-foreground">
-          Tus datos estan protegidos. Al continuar aceptas nuestros terminos y
+          Tus datos están protegidos. Al continuar aceptas nuestros términos y
           condiciones.
         </p>
       </div>

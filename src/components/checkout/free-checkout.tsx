@@ -67,7 +67,7 @@ export function FreeCheckout({ context }: FreeCheckoutProps) {
         await updateSession({ role: result.data.newRole })
       }
 
-      toast.success('Inscripcion completada', {
+      toast.success('Inscripción completada', {
         description: 'Te has inscrito exitosamente al curso',
       })
 
@@ -91,8 +91,8 @@ export function FreeCheckout({ context }: FreeCheckoutProps) {
           <CardTitle className="text-xl">Curso Gratuito</CardTitle>
           <CardDescription className="text-base">
             {coupon
-              ? `Con tu cupon ${coupon.code} este curso es gratuito`
-              : 'Este curso no tiene costo de inscripcion'}
+              ? `Con tu cupón ${coupon.code} este curso es gratuito`
+              : 'Este curso no tiene costo de inscripción'}
           </CardDescription>
         </CardHeader>
 

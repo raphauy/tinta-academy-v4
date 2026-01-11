@@ -203,12 +203,12 @@ export function CreateEducatorDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="bio">Biografia</Label>
+            <Label htmlFor="bio">Biografía</Label>
             <Textarea
               id="bio"
               value={formData.bio}
               onChange={(e) => setFormData((prev) => ({ ...prev, bio: e.target.value }))}
-              placeholder="Breve descripcion profesional..."
+              placeholder="Breve descripción profesional..."
               rows={3}
               className="bg-white dark:bg-stone-900 border-stone-300 dark:border-stone-600"
             />

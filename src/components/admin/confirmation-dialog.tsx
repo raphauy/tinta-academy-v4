@@ -139,7 +139,7 @@ export function DeleteConfirmationDialog({
       onOpenChange={onOpenChange}
       type="delete"
       title={`Eliminar ${itemType}`}
-      description={`¿Estas seguro de que deseas eliminar "${itemName}"? Esta accion no se puede deshacer.`}
+      description={`¿Estás seguro de que deseas eliminar "${itemName}"? Esta acción no se puede deshacer.`}
       confirmLabel="Eliminar"
       onConfirm={onConfirm}
     />
@@ -167,7 +167,7 @@ export function DeactivateConfirmationDialog({
       onOpenChange={onOpenChange}
       type="deactivate"
       title={`Desactivar ${itemType}`}
-      description={`¿Estas seguro de que deseas desactivar "${itemName}"? Podras reactivarlo mas tarde.`}
+      description={`¿Estás seguro de que deseas desactivar "${itemName}"? Podrás reactivarlo más tarde.`}
       confirmLabel="Desactivar"
       onConfirm={onConfirm}
     />

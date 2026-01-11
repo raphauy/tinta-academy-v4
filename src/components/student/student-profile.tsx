@@ -348,13 +348,13 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
       </ProfileSection>
 
       {/* Address Section */}
-      <ProfileSection icon={MapPin} title="Direccion">
+      <ProfileSection icon={MapPin} title="Dirección">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="address">Direccion</Label>
+            <Label htmlFor="address">Dirección</Label>
             <Input
               id="address"
-              placeholder="Calle y numero"
+              placeholder="Calle y número"
               {...register('address')}
               disabled={isPending || readOnly}
             />
@@ -371,7 +371,7 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="zip">Codigo Postal</Label>
+            <Label htmlFor="zip">Código Postal</Label>
             <Input
               id="zip"
               placeholder="11000"
@@ -381,7 +381,7 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="country">Pais</Label>
+            <Label htmlFor="country">País</Label>
             <Input
               id="country"
               placeholder="Uruguay"
@@ -393,7 +393,7 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
       </ProfileSection>
 
       {/* Billing Section */}
-      <ProfileSection icon={Receipt} title="Datos de Facturacion">
+      <ProfileSection icon={Receipt} title="Datos de Facturación">
         <div className="space-y-4">
           {/* Use personal data switch */}
           <div className="flex items-center justify-between gap-4 pb-4 border-b border-stone-200 dark:border-stone-700">
@@ -402,7 +402,7 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
                 Usar mis datos personales
               </p>
               <p className="text-sm text-stone-500 dark:text-stone-400">
-                Copiar nombre, CI y direccion a los datos de facturacion
+                Copiar nombre, CI y dirección a los datos de facturación
               </p>
             </div>
             <Switch
@@ -414,7 +414,7 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="billingName">Nombre o Razon Social</Label>
+              <Label htmlFor="billingName">Nombre o Razón Social</Label>
               <Input
                 id="billingName"
                 placeholder="Nombre para factura"
@@ -435,10 +435,10 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="billingAddress">Direccion de Facturacion</Label>
+            <Label htmlFor="billingAddress">Dirección de Facturación</Label>
             <Textarea
               id="billingAddress"
-              placeholder="Direccion completa para facturacion"
+              placeholder="Dirección completa para facturación"
               {...register('billingAddress')}
               disabled={isPending || readOnly}
               rows={2}

@@ -61,7 +61,7 @@ function transformTag(prismaTag: PrismaTag): Tag {
 // Configure hero content
 const heroContent: HeroContent = {
   headline: "Tu Pasaporte a la Cultura del Vino",
-  subheadline: "Tinta Academy es un centro de formación especializado en la educación sobre vinos donde vas a descubrir, enriquecer y elevar tu conocimiento sobre la cultura del vino con una perspectiva global.",
+  subheadline: "Centro de formación especializado en la educación sobre vinos donde vas a descubrir, enriquecer y elevar tu conocimiento sobre la cultura del vino con una perspectiva global.",
   ctaText: "Ver Cursos",
   videoUrl: "" // Using placeholder for now
 }

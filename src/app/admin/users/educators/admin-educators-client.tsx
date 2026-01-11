@@ -157,10 +157,10 @@ export function AdminEducatorsClient({ educators, stats }: AdminEducatorsClientP
         title="Eliminar educador"
         description={
           educatorToDelete
-            ? `¿Estas seguro de eliminar a ${educatorToDelete.name}? ${
+            ? `¿Estás seguro de eliminar a ${educatorToDelete.name}? ${
                 educatorToDelete.coursesCount > 0
                   ? `Este educador tiene ${educatorToDelete.coursesCount} curso(s) asociado(s).`
-                  : 'Esta accion no se puede deshacer.'
+                  : 'Esta acción no se puede deshacer.'
               }`
             : ''
         }

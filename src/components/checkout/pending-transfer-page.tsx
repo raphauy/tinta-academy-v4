@@ -321,7 +321,7 @@ export function PendingTransferPage({
         <h1 className="text-2xl font-bold">Pendiente de Pago</h1>
         <p className="text-muted-foreground">
           Tu orden ha sido creada. Realiza la transferencia para completar tu
-          inscripcion.
+          inscripción.
         </p>
       </div>
 
@@ -437,14 +437,14 @@ export function PendingTransferPage({
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Numero de cuenta</span>
+                    <span className="text-muted-foreground">Número de cuenta</span>
                     <div className="flex items-center gap-2">
                       <span className="font-mono font-medium">
                         {account.accountNumber}
                       </span>
                       <CopyButton
                         text={account.accountNumber}
-                        label="Numero de cuenta"
+                        label="Número de cuenta"
                       />
                     </div>
                   </div>
@@ -478,13 +478,13 @@ export function PendingTransferPage({
               a cualquiera de las cuentas indicadas
             </li>
             <li>
-              En el concepto o referencia de la transferencia, incluye tu numero
+              En el concepto o referencia de la transferencia, incluye tu número
               de orden:{' '}
               <strong className="text-foreground">{order.orderNumber}</strong>
             </li>
-            <li>Una vez realizada la transferencia, marcala como enviada abajo</li>
+            <li>Una vez realizada la transferencia, márcala como enviada abajo</li>
             <li>
-              Verificaremos el pago y te confirmaremos la inscripcion por email
+              Verificaremos el pago y te confirmaremos la inscripción por email
             </li>
           </ol>
 
@@ -494,7 +494,7 @@ export function PendingTransferPage({
               <div>
                 <p className="font-medium text-amber-800">Importante</p>
                 <p className="text-amber-700 mt-1">
-                  Las transferencias pueden demorar hasta 48 horas habiles en ser
+                  Las transferencias pueden demorar hasta 48 horas hábiles en ser
                   verificadas. Te notificaremos por email cuando tu pago sea
                   confirmado.
                 </p>
@@ -508,7 +508,7 @@ export function PendingTransferPage({
       {!transferMarked ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Ya realice la transferencia</CardTitle>
+            <CardTitle className="text-lg">Ya realicé la transferencia</CardTitle>
             <CardDescription>
               Marca tu transferencia como enviada para que podamos verificarla
             </CardDescription>
@@ -517,7 +517,7 @@ export function PendingTransferPage({
             {/* Reference Number */}
             <div className="space-y-2">
               <Label htmlFor="reference">
-                Numero de referencia (opcional)
+                Número de referencia (opcional)
               </Label>
               <Input
                 id="reference"
@@ -527,7 +527,7 @@ export function PendingTransferPage({
                 disabled={isSubmitting || isUploading}
               />
               <p className="text-xs text-muted-foreground">
-                Si tu banco te proporciono un numero de comprobante
+                Si tu banco te proporcionó un número de comprobante
               </p>
             </div>
 
@@ -592,7 +592,7 @@ export function PendingTransferPage({
                       <div className="flex flex-col items-center gap-2">
                         <Upload className="w-8 h-8 text-verde-uva-600" />
                         <p className="text-sm text-verde-uva-600 font-medium">
-                          Suelta el archivo aqui
+                          Suelta el archivo aquí
                         </p>
                       </div>
                     ) : (
@@ -647,12 +647,12 @@ export function PendingTransferPage({
                 </h3>
                 <p className="text-sm text-green-700">
                   Estamos verificando tu pago. Te notificaremos por email cuando
-                  este confirmado.
+                  esté confirmado.
                 </p>
               </div>
               <Button asChild variant="outline" className="mt-4">
                 <Link href="/student/orders">
-                  Ver mis ordenes
+                  Ver mis órdenes
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>

@@ -247,7 +247,7 @@ export function OrderDetailDialog({
                 <Ticket className="w-4 h-4 text-emerald-500 mt-0.5" />
                 <div className="flex-1">
                   <p className="text-xs text-stone-500 dark:text-stone-400">
-                    Cupon aplicado
+                    Cupón aplicado
                   </p>
                   <p className="font-medium text-emerald-600 dark:text-emerald-400">
                     {order.coupon.code} (-{order.discountPercent}%)

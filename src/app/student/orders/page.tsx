@@ -6,8 +6,8 @@ import { StudentOrders } from '@/components/student/student-orders'
 import { StudentOrdersListSkeleton } from '@/components/student/skeletons'
 
 export const metadata = {
-  title: 'Mis Ordenes - Tinta Academy',
-  description: 'Historial de ordenes y compras',
+  title: 'Mis Órdenes - Tinta Academy',
+  description: 'Historial de órdenes y compras',
 }
 
 interface StudentOrdersPageProps {

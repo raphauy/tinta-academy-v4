@@ -66,9 +66,9 @@ export function StudentOrders({ orders, viewAs }: StudentOrdersProps) {
             <Receipt className="w-6 h-6 text-verde-uva-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Mis Ordenes</h1>
+            <h1 className="text-2xl font-bold">Mis Órdenes</h1>
             <p className="text-sm text-muted-foreground">
-              {orders.length} {orders.length === 1 ? 'orden' : 'ordenes'} en total
+              {orders.length} {orders.length === 1 ? 'orden' : 'órdenes'} en total
             </p>
           </div>
         </div>
@@ -121,7 +121,7 @@ export function StudentOrders({ orders, viewAs }: StudentOrdersProps) {
       ) : orders.length > 0 ? (
         <div className="text-center py-12">
           <Receipt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="font-semibold mb-1">No hay ordenes en este filtro</h3>
+          <h3 className="font-semibold mb-1">No hay órdenes en este filtro</h3>
           <p className="text-sm text-muted-foreground">
             Prueba seleccionando otro filtro
           </p>
@@ -129,7 +129,7 @@ export function StudentOrders({ orders, viewAs }: StudentOrdersProps) {
       ) : (
         <div className="text-center py-12">
           <ShoppingBag className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="font-semibold mb-1">No tienes ordenes todavia</h3>
+          <h3 className="font-semibold mb-1">No tienes órdenes todavía</h3>
           <p className="text-sm text-muted-foreground mb-4">
             Explora nuestros cursos y realiza tu primera compra
           </p>

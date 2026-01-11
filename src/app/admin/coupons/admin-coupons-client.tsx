@@ -57,8 +57,8 @@ export function AdminCouponsClient({ coupons }: AdminCouponsClientProps) {
       const coupon = result.data
       toast.success(
         coupon.isActive
-          ? 'Cupon activado correctamente'
-          : 'Cupon desactivado correctamente'
+          ? 'Cupón activado correctamente'
+          : 'Cupón desactivado correctamente'
       )
       router.refresh()
     } else {
@@ -79,7 +79,7 @@ export function AdminCouponsClient({ coupons }: AdminCouponsClientProps) {
 
     const result = await deleteCouponAction(couponToDelete.id)
     if (result.success) {
-      toast.success('Cupon eliminado correctamente')
+      toast.success('Cupón eliminado correctamente')
       setCouponToDelete(null)
       router.refresh()
     } else {
@@ -100,7 +100,7 @@ export function AdminCouponsClient({ coupons }: AdminCouponsClientProps) {
     if (selectedCoupon) {
       const result = await updateCouponAction(selectedCoupon.id, formattedData)
       if (result.success) {
-        toast.success('Cupon actualizado correctamente')
+        toast.success('Cupón actualizado correctamente')
         router.refresh()
       } else {
         toast.error(result.error)
@@ -109,7 +109,7 @@ export function AdminCouponsClient({ coupons }: AdminCouponsClientProps) {
     } else {
       const result = await createCouponAction(formattedData)
       if (result.success) {
-        toast.success('Cupon creado correctamente')
+        toast.success('Cupón creado correctamente')
         router.refresh()
       } else {
         toast.error(result.error)
@@ -138,10 +138,10 @@ export function AdminCouponsClient({ coupons }: AdminCouponsClientProps) {
       <ConfirmationDialog
         open={isDeleteOpen}
         onOpenChange={setIsDeleteOpen}
-        title="Eliminar cupon"
+        title="Eliminar cupón"
         description={
           couponToDelete
-            ? `¿Estas seguro de eliminar el cupon "${couponToDelete.code}"? Esta accion no se puede deshacer.`
+            ? `¿Estás seguro de eliminar el cupón "${couponToDelete.code}"? Esta acción no se puede deshacer.`
             : ''
         }
         confirmLabel="Eliminar"

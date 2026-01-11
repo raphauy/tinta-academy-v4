@@ -103,12 +103,12 @@ export function CouponFormDialog({
             </div>
             <div>
               <DialogTitle>
-                {isEditing ? 'Editar Cupon' : 'Nuevo Cupon'}
+                {isEditing ? 'Editar Cupón' : 'Nuevo Cupón'}
               </DialogTitle>
               <DialogDescription>
                 {isEditing
-                  ? 'Modifica los datos del cupon de descuento'
-                  : 'Crea un nuevo cupon de descuento'}
+                  ? 'Modifica los datos del cupón de descuento'
+                  : 'Crea un nuevo cupón de descuento'}
               </DialogDescription>
             </div>
           </div>
@@ -117,7 +117,7 @@ export function CouponFormDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="code">Codigo *</Label>
+              <Label htmlFor="code">Código *</Label>
               <Input
                 id="code"
                 value={formData.code}
@@ -151,7 +151,7 @@ export function CouponFormDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="maxUses">Usos maximos *</Label>
+              <Label htmlFor="maxUses">Usos máximos *</Label>
               <Input
                 id="maxUses"
                 type="number"
@@ -168,7 +168,7 @@ export function CouponFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="minPurchaseAmount">Monto minimo (USD)</Label>
+              <Label htmlFor="minPurchaseAmount">Monto mínimo (USD)</Label>
               <Input
                 id="minPurchaseAmount"
                 type="number"
@@ -182,14 +182,14 @@ export function CouponFormDialog({
                       : undefined,
                   })
                 }
-                placeholder="Sin minimo"
+                placeholder="Sin mínimo"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="validFrom">Valido desde</Label>
+              <Label htmlFor="validFrom">Válido desde</Label>
               <Input
                 id="validFrom"
                 type="date"
@@ -230,7 +230,7 @@ export function CouponFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Descripcion</Label>
+            <Label htmlFor="description">Descripción</Label>
             <Textarea
               id="description"
               value={formData.description || ''}
@@ -240,7 +240,7 @@ export function CouponFormDialog({
                   description: e.target.value || undefined,
                 })
               }
-              placeholder="Nota interna sobre el cupon..."
+              placeholder="Nota interna sobre el cupón..."
               rows={2}
             />
           </div>
@@ -248,7 +248,7 @@ export function CouponFormDialog({
           <div className="flex items-center justify-between py-2 px-3 bg-stone-50 dark:bg-stone-800/50 rounded-lg">
             <div>
               <p className="font-medium text-sm text-stone-900 dark:text-stone-100">
-                Cupon activo
+                Cupón activo
               </p>
               <p className="text-xs text-stone-500 dark:text-stone-400">
                 Los cupones inactivos no pueden ser usados
@@ -277,7 +277,7 @@ export function CouponFormDialog({
               className="bg-[#143F3B] hover:bg-[#0e2c29] text-white"
             >
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {isEditing ? 'Guardar cambios' : 'Crear cupon'}
+              {isEditing ? 'Guardar cambios' : 'Crear cupón'}
             </Button>
           </DialogFooter>
         </form>

@@ -139,7 +139,7 @@ export function AdminBankDataClient({ accounts }: AdminBankDataClientProps) {
         title="Eliminar cuenta bancaria"
         description={
           accountToDelete
-            ? `¿Estas seguro de eliminar la cuenta "${accountToDelete.bankName} - ${accountToDelete.accountNumber}"? Si tiene ordenes asociadas, sera desactivada en lugar de eliminada.`
+            ? `¿Estás seguro de eliminar la cuenta "${accountToDelete.bankName} - ${accountToDelete.accountNumber}"? Si tiene órdenes asociadas, será desactivada en lugar de eliminada.`
             : ''
         }
         confirmLabel="Eliminar"

@@ -163,7 +163,7 @@ export function CheckoutSummary({
             <span className="text-verde-uva-700">{displayPrice}</span>
           </div>
           <p className="text-xs text-muted-foreground text-right">
-            {currency === 'UYU' ? 'Pesos uruguayos' : 'Dolares americanos'}
+            {currency === 'UYU' ? 'Pesos uruguayos' : 'Dólares americanos'}
           </p>
         </div>
       </CardContent>

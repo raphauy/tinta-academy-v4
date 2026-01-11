@@ -205,9 +205,9 @@ export function EducatorCourseRow({
               </span>
             )}
 
-            {course.priceUSD > 0 ? (
+            {course.priceUSD > 0 || (course.priceUYU ?? 0) > 0 ? (
               <span className="inline-flex items-center gap-1 font-semibold text-foreground">
-                USD {formatNumber(course.priceUSD)}
+                {course.priceUSD > 0 ? `USD ${formatNumber(course.priceUSD)}` : `UYU ${formatNumber(course.priceUYU ?? 0)}`}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 font-semibold text-foreground">

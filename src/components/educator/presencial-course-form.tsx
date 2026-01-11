@@ -242,7 +242,7 @@ export function PresencialCourseForm({
       formData.append('slug', data.slug)
       formData.append('type', data.type)
       formData.append('priceUSD', data.priceUSD.toString())
-      if (data.priceUYU) {
+      if (data.priceUYU !== undefined && data.priceUYU !== null) {
         formData.append('priceUYU', data.priceUYU.toString())
       }
 
@@ -450,16 +450,16 @@ export function PresencialCourseForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Descripcion</Label>
+            <Label htmlFor="description">Descripción</Label>
             <Textarea
               id="description"
-              placeholder="Descripcion del curso..."
+              placeholder="Descripción del curso..."
               rows={8}
               {...register('description')}
             />
             {watchType === 'wset' && (
               <p className="text-xs text-muted-foreground">
-                Para cursos WSET, se usa una descripcion por defecto segun el nivel. Puedes editarla si lo deseas.
+                Para cursos WSET, se usa una descripción por defecto según el nivel. Puedes editarla si lo deseas.
               </p>
             )}
           </div>
@@ -497,7 +497,7 @@ export function PresencialCourseForm({
             aspectRatio="auto"
           />
           <p className="mt-2 text-sm text-muted-foreground">
-            Recomendado: imagen de 1200x630px (proporcion 16:9)
+            Recomendado: imagen de 1200x630px (proporción 16:9)
           </p>
         </CardContent>
       </Card>
@@ -516,18 +516,18 @@ export function PresencialCourseForm({
       {/* Total Duration */}
       <Card>
         <CardHeader>
-          <CardTitle>Duracion Total</CardTitle>
+          <CardTitle>Duración Total</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <Label htmlFor="duration">Duracion del Curso</Label>
+            <Label htmlFor="duration">Duración del Curso</Label>
             <Input
               id="duration"
               placeholder="Ej: 16 horas presenciales + 12 horas de estudio"
               {...register('duration')}
             />
             <p className="text-xs text-muted-foreground">
-              Describe la duracion total del curso incluyendo horas presenciales
+              Describe la duración total del curso incluyendo horas presenciales
               y de estudio si aplica.
             </p>
           </div>
@@ -537,7 +537,7 @@ export function PresencialCourseForm({
       {/* Location */}
       <Card>
         <CardHeader>
-          <CardTitle>Ubicacion</CardTitle>
+          <CardTitle>Ubicación</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

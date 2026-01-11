@@ -415,9 +415,9 @@ export function MaterialsSection({
             )}
 
             <div className="space-y-2">
-              <Label>Descripcion (opcional)</Label>
+              <Label>Descripción (opcional)</Label>
               <Textarea
-                placeholder="Breve descripcion del material..."
+                placeholder="Breve descripción del material..."
                 rows={8}
                 value={newMaterial.description}
                 onChange={(e) =>
@@ -456,7 +456,7 @@ export function MaterialsSection({
             <AlertDialogHeader>
               <AlertDialogTitle>Eliminar material</AlertDialogTitle>
               <AlertDialogDescription>
-                ¿Estas seguro de que deseas eliminar este material? Esta accion
+                ¿Estás seguro de que deseas eliminar este material? Esta acción
                 no se puede deshacer.
               </AlertDialogDescription>
             </AlertDialogHeader>

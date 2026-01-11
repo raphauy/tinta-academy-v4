@@ -273,7 +273,7 @@ export function StudentCourseDetail({ enrollment, viewAs }: StudentCourseDetailP
                     </span>
                     {course.startTime && endTime && (
                       <span className="text-muted-foreground">
-                        {' '}- {course.startTime} a {endTime} hs
+                        {' '}- {course.startTime} a {endTime} h
                       </span>
                     )}
                   </div>

@@ -168,7 +168,7 @@ export function CourseDatesSection({
             />
             {endTime && startTime && (
               <p className="text-sm text-muted-foreground">
-                Horario: {startTime} a {endTime} hs
+                Horario: {startTime} a {endTime} h
               </p>
             )}
           </div>
@@ -213,7 +213,7 @@ export function CourseDatesSection({
                     {startTime && endTime && (
                       <span className="text-muted-foreground">
                         {' '}
-                        - {startTime} a {endTime} hs
+                        - {startTime} a {endTime} h
                       </span>
                     )}
                   </span>
@@ -254,14 +254,14 @@ export function CourseDatesSection({
 
           {/* Registration deadline */}
           <div className="space-y-2">
-            <Label>Fecha Limite de Inscripcion</Label>
+            <Label>Fecha Límite de Inscripción</Label>
             <DatePicker
               value={registrationDeadline}
               onChange={handleRegistrationDeadlineChange}
-              placeholder="Seleccionar fecha limite"
+              placeholder="Seleccionar fecha límite"
             />
             <p className="text-xs text-muted-foreground">
-              Despues de esta fecha no se aceptaran nuevas inscripciones.
+              Después de esta fecha no se aceptarán nuevas inscripciones.
             </p>
           </div>
         </div>
