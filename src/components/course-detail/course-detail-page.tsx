@@ -213,31 +213,37 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
           />
         </div>
         <div className="relative container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-3xl">
-            <p className="text-sm uppercase tracking-wider mb-2 opacity-80">
-              {getCourseTypeName(course.type, course.wsetLevel)} • {course.modality}
-            </p>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              {course.title}
-            </h1>
-            {course.startDate && (
-              <h2 className="text-xl opacity-90">
-                {formatMonthYear(course.startDate)}
-              </h2>
-            )}
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="inline-block px-3 py-1 rounded-full bg-white/20 text-sm">
-                {getStatusText(course.status)}
-              </span>
-              {course.tags.length > 0 && course.tags.map((tag) => (
-                <span
-                  key={tag.id}
-                  className="px-3 py-1 bg-verde-uva-500 text-white text-sm rounded-full font-medium"
-                >
-                  {tag.name}
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+            <div className="max-w-3xl">
+              <p className="text-sm uppercase tracking-wider mb-2 opacity-80">
+                {getCourseTypeName(course.type, course.wsetLevel)} • {course.modality}
+              </p>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+                {course.title}
+              </h1>
+              {course.startDate && (
+                <h2 className="text-xl opacity-90">
+                  {formatMonthYear(course.startDate)}
+                </h2>
+              )}
+              <div className="mt-4">
+                <span className="inline-block px-3 py-1 rounded-md bg-white/20 text-sm font-medium">
+                  {getStatusText(course.status)}
                 </span>
-              ))}
+              </div>
             </div>
+            {course.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2 md:justify-end">
+                {course.tags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="px-3 py-1 bg-white dark:bg-gray-800 text-foreground dark:text-white text-sm rounded-full font-medium"
+                  >
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
