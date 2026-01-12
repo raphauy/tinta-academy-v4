@@ -34,6 +34,7 @@ import { CheckoutSummary } from './checkout-summary'
 
 interface CheckoutFormProps {
   context: CheckoutContext
+  paymentError?: boolean
 }
 
 type PaymentMethod = 'mercadopago' | 'bank_transfer'
@@ -53,8 +54,8 @@ function PaymentMethodSelector({
   onSelect,
   pricing,
 }: PaymentMethodSelectorProps) {
-  // MercadoPago temporarily disabled
-  const isMercadoPagoEnabled = false
+  // MercadoPago enabled for testing
+  const isMercadoPagoEnabled = true
 
   return (
     <div className="space-y-3">
@@ -296,9 +297,12 @@ function CouponInput({
 // MAIN CHECKOUT FORM
 // ============================================
 
-export function CheckoutForm({ context }: CheckoutFormProps) {
+export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
   const router = useRouter()
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bank_transfer')
+  // Pre-select MercadoPago if coming from a payment error
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    paymentError ? 'mercadopago' : 'bank_transfer'
+  )
   const [appliedCoupon, setAppliedCoupon] = useState<ValidateCouponResult | null>(
     context.couponValidation
   )

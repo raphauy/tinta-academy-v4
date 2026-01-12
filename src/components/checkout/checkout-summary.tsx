@@ -118,7 +118,7 @@ export function CheckoutSummary({
         <div className="space-y-2 text-sm text-muted-foreground border-t pt-4">
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4" />
-            <span>{formatDate(course.startDate)}</span>
+            <span suppressHydrationWarning>{formatDate(course.startDate)}</span>
           </div>
           {course.duration && (
             <div className="flex items-center gap-1.5">

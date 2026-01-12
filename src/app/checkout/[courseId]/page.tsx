@@ -9,6 +9,7 @@ import {
   CheckoutForm,
   CheckoutFormSkeleton,
 } from '@/components/checkout'
+import { PaymentFailedToast } from '@/components/checkout/payment-failed-toast'
 
 export async function generateMetadata({
   params,
@@ -26,9 +27,10 @@ export async function generateMetadata({
 interface CheckoutContentProps {
   courseId: string
   couponCode?: string
+  paymentError?: boolean
 }
 
-async function CheckoutContent({ courseId, couponCode }: CheckoutContentProps) {
+async function CheckoutContent({ courseId, couponCode, paymentError }: CheckoutContentProps) {
   // Get session
   const session = await auth()
 
@@ -64,7 +66,7 @@ async function CheckoutContent({ courseId, couponCode }: CheckoutContentProps) {
   }
 
   // Otherwise, show full checkout form
-  return <CheckoutForm context={context} />
+  return <CheckoutForm context={context} paymentError={paymentError} />
 }
 
 interface CheckoutPageProps {
@@ -77,11 +79,14 @@ export default async function CheckoutPage({
   searchParams,
 }: CheckoutPageProps) {
   const { courseId } = await params
-  const { coupon } = await searchParams
+  const { coupon, error } = await searchParams
+
+  const paymentError = error === 'payment_failed'
 
   return (
     <Suspense fallback={<CheckoutFormSkeleton />}>
-      <CheckoutContent courseId={courseId} couponCode={coupon} />
+      <CheckoutContent courseId={courseId} couponCode={coupon} paymentError={paymentError} />
+      {paymentError && <PaymentFailedToast />}
     </Suspense>
   )
 }
