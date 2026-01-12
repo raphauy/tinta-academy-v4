@@ -3,6 +3,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSession } from 'next-auth/react'
 import {
   CheckCircle,
   Calendar,
@@ -91,18 +92,22 @@ function useWindowSize() {
 }
 
 export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
+  const { update: updateSession } = useSession()
   const windowSize = useWindowSize()
   const [showConfetti, setShowConfetti] = useState(true)
   const { course } = order
 
   useEffect(() => {
+    // Update session with student role (in case it was just assigned by webhook)
+    updateSession({ role: 'student' })
+
     // Stop confetti after 5 seconds
     const timer = setTimeout(() => {
       setShowConfetti(false)
     }, 5000)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [updateSession])
 
   return (
     <div className="relative min-h-[calc(100vh-80px)]">
