@@ -303,7 +303,7 @@ export async function processCheckoutMercadoPago(
     successUrl: `${appUrl}/checkout/success/${order.id}`,
     failureUrl: `${appUrl}/checkout/${order.courseId}?error=payment_failed`,
     pendingUrl: `${appUrl}/checkout/success/${order.id}?pending=true`,
-    webhookUrl: `${appUrl}/api/webhooks/mercadopago`,
+    webhookUrl: `${appUrl}/api/webhooks/mp-production`,
   })
 
   // Save preference ID to order

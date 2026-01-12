@@ -7,7 +7,9 @@ export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/', '/api/auth', '/cursos', '/wset', '/about', '/contact']
+  // Note: /checkout is public because MP redirects may not send session cookies properly
+  // Each checkout page handles its own auth verification
+  const publicRoutes = ['/', '/api/auth', '/cursos', '/wset', '/about', '/contact', '/checkout']
   const isPublicRoute = publicRoutes.some(
     (route) =>
       pathname === route || (route !== '/' && pathname.startsWith(`${route}/`))
