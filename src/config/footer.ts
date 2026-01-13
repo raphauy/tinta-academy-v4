@@ -2,23 +2,23 @@ import type { FooterLinks, ContactInfo } from '@/types/landing'
 
 export const footerLinks: FooterLinks = {
   about: [
-    { label: "Sobre nosotros", href: "/about" },
-    { label: "Nuestro equipo", href: "/team" },
-    { label: "Blog", href: "/blog" }
+    { label: "Sobre nosotros", href: "#" },
+    { label: "Nuestro equipo", href: "#" },
+    { label: "Blog", href: "#" }
   ],
   courses: [
-    { label: "Certificaciones WSET", href: "/cursos?type=wset" },
-    { label: "Talleres", href: "/cursos?type=taller" },
-    { label: "Catas", href: "/cursos?type=cata" }
+    { label: "Certificaciones WSET", href: "/?type=wset#catalogo" },
+    { label: "Talleres", href: "/?type=taller#catalogo" },
+    { label: "Catas", href: "/?type=cata#catalogo" }
   ],
   legal: [
     { label: "Política de Ajustes Razonables", href: "/politicas/ajuste-razonable" },
     { label: "Política de Conflicto de Intereses", href: "/politicas/conflicto-intereses" }
   ],
   social: [
-    { label: "Instagram", href: "https://instagram.com/tintaacademy" },
-    { label: "LinkedIn", href: "https://linkedin.com/company/tintaacademy" },
-    { label: "YouTube", href: "https://youtube.com/tintaacademy" }
+    { label: "Instagram", href: "#" },
+    { label: "LinkedIn", href: "#" },
+    { label: "YouTube", href: "#" }
   ]
 }
 

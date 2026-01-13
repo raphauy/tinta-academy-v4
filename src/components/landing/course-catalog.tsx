@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import type { Course, Tag, CourseFilters } from '@/types/landing'
 import { CourseCard } from './course-card'
 import { X, ChevronDown } from 'lucide-react'
@@ -28,8 +29,38 @@ export function CourseCatalog({
   onViewCourse,
   onFilter,
 }: CourseCatalogProps) {
-  const [filters, setFilters] = useState<CourseFilters>(initialFilters || {})
-  const [showFilters, setShowFilters] = useState(false)
+  const searchParams = useSearchParams()
+
+  // Read filters from URL params (client-side) to handle Link navigation
+  const urlFilters = useMemo((): CourseFilters => {
+    const modality = searchParams.get('modality') as CourseFilters['modality']
+    const type = searchParams.get('type') as CourseFilters['type']
+    const tagIdsParam = searchParams.get('tagIds')
+    const tagIds = tagIdsParam ? tagIdsParam.split(',').filter(Boolean) : undefined
+
+    return {
+      modality: modality || undefined,
+      type: type || undefined,
+      tagIds: tagIds?.length ? tagIds : undefined,
+    }
+  }, [searchParams])
+
+  // Use URL filters if available, otherwise fall back to initialFilters
+  const effectiveInitialFilters = urlFilters.type || urlFilters.modality || urlFilters.tagIds?.length
+    ? urlFilters
+    : (initialFilters || {})
+
+  const [filters, setFilters] = useState<CourseFilters>(effectiveInitialFilters)
+  const hasInitialFilters = !!(effectiveInitialFilters?.modality || effectiveInitialFilters?.type || effectiveInitialFilters?.tagIds?.length)
+  const [showFilters, setShowFilters] = useState(hasInitialFilters)
+
+  // Sync filters when URL changes (client-side navigation)
+  useEffect(() => {
+    if (urlFilters.type || urlFilters.modality || urlFilters.tagIds?.length) {
+      setFilters(urlFilters)
+      setShowFilters(true)
+    }
+  }, [urlFilters])
   const [showPastCourses, setShowPastCourses] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 

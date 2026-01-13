@@ -56,7 +56,7 @@ export function LandingCatalogo({
       <WSETSection onCTA={scrollToCatalog} />
 
       {/* Catalog */}
-      <div ref={catalogRef}>
+      <div ref={catalogRef} id="catalogo">
         <CourseCatalog
           upcomingCourses={upcomingCourses}
           pastCourses={pastCourses}
@@ -126,7 +126,7 @@ export function LandingContent({
       <WSETSection onCTA={scrollToCatalog} />
 
       {/* Catalog */}
-      <div ref={catalogRef} id="catalog">
+      <div ref={catalogRef} id="catalogo">
         <CourseCatalog
           upcomingCourses={upcomingCourses}
           pastCourses={pastCourses}

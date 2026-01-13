@@ -181,7 +181,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
             </h4>
             <ul className="space-y-1">
               {links.about.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Button
                     variant="ghost"
                     onClick={() => onNavigate?.(link.href)}
@@ -201,14 +201,13 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
             </h4>
             <ul className="space-y-1">
               {links.courses.map((link) => (
-                <li key={link.href}>
-                  <Button
-                    variant="ghost"
-                    onClick={() => onNavigate?.(link.href)}
-                    className="h-auto p-1 text-white/70 hover:text-white hover:bg-transparent text-sm font-normal"
+                <li key={link.label}>
+                  <Link
+                    href={link.href}
+                    className="block p-1 text-white/70 hover:text-white text-sm"
                   >
                     {link.label}
-                  </Button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -221,7 +220,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
             </h4>
             <ul className="space-y-1">
               {links.legal.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     href={link.href}
                     className="block p-1 text-white/70 hover:text-white text-sm"
@@ -241,10 +240,9 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
             <div className="flex gap-3">
               {links.social.map((link) => (
                 <a
-                  key={link.href}
+                  key={link.label}
                   href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  {...(link.href !== '#' && { target: '_blank', rel: 'noopener noreferrer' })}
                   aria-label={link.label}
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-white hover:bg-verde-uva-500 hover:text-white transition-colors"
                 >
