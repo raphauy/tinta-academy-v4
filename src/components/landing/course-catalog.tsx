@@ -100,6 +100,16 @@ export function CourseCatalog({
   const filteredUpcoming = filterCourses(upcomingCourses)
   const filteredPast = filterCourses(pastCourses)
 
+  // Only show tags that are used by at least one course
+  const usedTags = useMemo(() => {
+    const allCourses = [...upcomingCourses, ...pastCourses]
+    const usedTagIds = new Set<string>()
+    allCourses.forEach(course => {
+      course.tags.forEach(tag => usedTagIds.add(tag.id))
+    })
+    return tags.filter(tag => usedTagIds.has(tag.id))
+  }, [upcomingCourses, pastCourses, tags])
+
   const activeFiltersCount =
     (filters.modality ? 1 : 0) + (filters.type ? 1 : 0) + (filters.tagIds?.length || 0)
   const hasActiveFilters = activeFiltersCount > 0
@@ -162,8 +172,8 @@ export function CourseCatalog({
               showType={true}
               currentType={filters.type || 'all'}
               onTypeChange={handleTypeChange}
-              showTags={tags.length > 0}
-              tags={tags}
+              showTags={usedTags.length > 0}
+              tags={usedTags}
               selectedTagIds={filters.tagIds || []}
               onTagToggle={handleTagToggle}
               hasActiveFilters={hasActiveFilters}

@@ -140,7 +140,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
                 Newsletter
               </h3>
               <p className="text-white/70 mb-6">
-                Mantente actualizado con nuestros cursos, eventos y promociones exclusivas.
+                Mantente actualizado sobre nuestros cursos, talleres y experiencias.
               </p>
 
               {subscribed ? (
