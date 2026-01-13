@@ -84,11 +84,11 @@ export function UserMenu({ user }: UserMenuProps) {
             alt={displayName}
             width={36}
             height={36}
-            className="h-9 w-9 rounded-full object-cover"
+            className="h-9 w-9 flex-shrink-0 rounded-full object-cover"
             unoptimized
           />
         ) : (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary">
             <span className="text-sm font-medium text-primary-foreground">
               {initials}
             </span>
