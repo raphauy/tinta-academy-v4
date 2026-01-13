@@ -26,6 +26,7 @@ import { UserDropdown, type UserDropdownUser } from './user-dropdown'
 interface PublicHeaderProps {
   user?: UserDropdownUser | null
   onScrollToCatalog?: () => void
+  onScrollToWSET?: () => void
 }
 
 const roleLabels: Record<string, string> = {
@@ -278,12 +279,19 @@ function LandingUserMenu({ user }: { user: UserDropdownUser }) {
  * Used by landing page and public app shell
  * Mobile menu matches AppShell style (left sidebar with overlay)
  */
-export function PublicHeader({ user, onScrollToCatalog }: PublicHeaderProps) {
+export function PublicHeader({ user, onScrollToCatalog, onScrollToWSET }: PublicHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleCursosClick = () => {
     if (onScrollToCatalog) {
       onScrollToCatalog()
+    }
+    setMobileMenuOpen(false)
+  }
+
+  const handleWSETClick = () => {
+    if (onScrollToWSET) {
+      onScrollToWSET()
     }
     setMobileMenuOpen(false)
   }
@@ -304,13 +312,23 @@ export function PublicHeader({ user, onScrollToCatalog }: PublicHeaderProps) {
 
             {/* Center Navigation - Desktop */}
             <nav className="hidden md:flex items-center gap-2">
-              <Button
-                asChild
-                variant="ghost"
-                className="text-foreground hover:bg-muted text-base font-medium"
-              >
-                <Link href="/wset">WSET</Link>
-              </Button>
+              {onScrollToWSET ? (
+                <Button
+                  variant="ghost"
+                  onClick={handleWSETClick}
+                  className="text-foreground hover:bg-muted text-base font-medium"
+                >
+                  WSET
+                </Button>
+              ) : (
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="text-foreground hover:bg-muted text-base font-medium"
+                >
+                  <Link href="/#wset">WSET</Link>
+                </Button>
+              )}
               {onScrollToCatalog ? (
                 <Button
                   variant="ghost"
@@ -416,13 +434,22 @@ export function PublicHeader({ user, onScrollToCatalog }: PublicHeaderProps) {
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto py-4 px-4">
               <div className="flex flex-col gap-1">
-                <Link
-                  href="/wset"
-                  onClick={handleLinkClick}
-                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-foreground hover:bg-muted transition-colors"
-                >
-                  WSET
-                </Link>
+                {onScrollToWSET ? (
+                  <button
+                    onClick={handleWSETClick}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-foreground hover:bg-muted transition-colors text-left"
+                  >
+                    WSET
+                  </button>
+                ) : (
+                  <Link
+                    href="/#wset"
+                    onClick={handleLinkClick}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-foreground hover:bg-muted transition-colors"
+                  >
+                    WSET
+                  </Link>
+                )}
                 {onScrollToCatalog ? (
                   <button
                     onClick={handleCursosClick}

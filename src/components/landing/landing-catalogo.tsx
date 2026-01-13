@@ -28,9 +28,14 @@ export function LandingCatalogo({
   onNavigate,
 }: LandingCatalogoProps) {
   const catalogRef = useRef<HTMLDivElement>(null)
+  const wsetRef = useRef<HTMLDivElement>(null)
 
   const scrollToCatalog = () => {
     catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const scrollToWSET = () => {
+    wsetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const handleHeroCTA = () => {
@@ -41,7 +46,7 @@ export function LandingCatalogo({
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <PublicHeader user={user} onScrollToCatalog={scrollToCatalog} />
+      <PublicHeader user={user} onScrollToCatalog={scrollToCatalog} onScrollToWSET={scrollToWSET} />
 
       {/* Hero */}
       <Hero
@@ -53,7 +58,9 @@ export function LandingCatalogo({
       <EducationSection onCTA={scrollToCatalog} />
 
       {/* WSET Section */}
-      <WSETSection onCTA={scrollToCatalog} />
+      <div ref={wsetRef} id="wset">
+        <WSETSection onCTA={scrollToCatalog} />
+      </div>
 
       {/* Catalog */}
       <div ref={catalogRef} id="catalogo">
@@ -97,10 +104,15 @@ export function LandingContent({
   onFilter,
 }: Omit<LandingCatalogoProps, 'educators' | 'onLogin' | 'onRegister'>) {
   const catalogRef = useRef<HTMLDivElement>(null)
+  const wsetRef = useRef<HTMLDivElement>(null)
   const { user } = useLandingShell()
 
   const scrollToCatalog = () => {
     catalogRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const scrollToWSET = () => {
+    wsetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const handleHeroCTA = () => {
@@ -111,7 +123,7 @@ export function LandingContent({
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Transparent over hero */}
-      <PublicHeader user={user} onScrollToCatalog={scrollToCatalog} />
+      <PublicHeader user={user} onScrollToCatalog={scrollToCatalog} onScrollToWSET={scrollToWSET} />
 
       {/* Hero */}
       <Hero
@@ -123,7 +135,9 @@ export function LandingContent({
       <EducationSection onCTA={scrollToCatalog} />
 
       {/* WSET Section */}
-      <WSETSection onCTA={scrollToCatalog} />
+      <div ref={wsetRef} id="wset">
+        <WSETSection onCTA={scrollToCatalog} />
+      </div>
 
       {/* Catalog */}
       <div ref={catalogRef} id="catalogo">
