@@ -16,9 +16,10 @@ export const footerLinks: FooterLinks = {
     { label: "Política de Conflicto de Intereses", href: "/politicas/conflicto-intereses" }
   ],
   social: [
-    { label: "Instagram", href: "#" },
-    { label: "LinkedIn", href: "#" },
-    { label: "YouTube", href: "#" }
+    { label: "Instagram", href: "https://www.instagram.com/tinta.wine" },
+    { label: "Facebook", href: "https://www.facebook.com/tintawineoficial" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/company/tintawine" },
+    { label: "TikTok", href: "https://www.tiktok.com/@tinta.wine" }
   ]
 }
 
