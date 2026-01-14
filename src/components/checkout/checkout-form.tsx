@@ -139,15 +139,26 @@ function PaymentMethodSelector({
                 <span className="font-semibold">Transferencia Bancaria</span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">
-                Pago en dólares vía transferencia
+                {pricing.finalPriceUSD > 0 ? 'Pago en dólares vía transferencia' : 'Pago en pesos vía transferencia'}
               </p>
             </div>
           </div>
           <div className="text-right">
-            <span className="font-semibold">
-              USD {pricing.finalPriceUSD.toFixed(2)}
-            </span>
-            <p className="text-xs text-muted-foreground">Dólares</p>
+            {pricing.finalPriceUSD > 0 ? (
+              <>
+                <span className="font-semibold">
+                  USD {pricing.finalPriceUSD.toFixed(2)}
+                </span>
+                <p className="text-xs text-muted-foreground">Dólares</p>
+              </>
+            ) : (
+              <>
+                <span className="font-semibold">
+                  $ {pricing.finalPriceUYU.toLocaleString('es-UY')}
+                </span>
+                <p className="text-xs text-muted-foreground">UYU</p>
+              </>
+            )}
           </div>
         </div>
       </button>
@@ -326,11 +337,14 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
       }
     : context.pricing
 
+  // Determine currency for bank transfer based on available prices
+  const bankTransferCurrency = currentPricing.finalPriceUSD > 0 ? 'USD' : 'UYU'
+
   const handleSubmit = async () => {
     setIsSubmitting(true)
 
     try {
-      const currency = paymentMethod === 'mercadopago' ? 'UYU' : 'USD'
+      const currency = paymentMethod === 'mercadopago' ? 'UYU' : bankTransferCurrency
       const couponCode = appliedCoupon?.valid ? appliedCoupon.coupon?.code : undefined
 
       // For bank transfer, use first available bank account
@@ -381,7 +395,11 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
     if (paymentMethod === 'mercadopago') {
       return `Pagar $ ${currentPricing.finalPriceUYU.toLocaleString('es-UY')}`
     }
-    return `Pagar USD ${currentPricing.finalPriceUSD.toFixed(2)}`
+    // Bank transfer: show USD if available, otherwise UYU
+    if (currentPricing.finalPriceUSD > 0) {
+      return `Pagar USD ${currentPricing.finalPriceUSD.toFixed(2)}`
+    }
+    return `Pagar $ ${currentPricing.finalPriceUYU.toLocaleString('es-UY')}`
   }
 
   return (
@@ -464,7 +482,7 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
           course={context.course}
           pricing={currentPricing}
           coupon={appliedCoupon?.coupon}
-          currency={paymentMethod === 'mercadopago' ? 'UYU' : 'USD'}
+          currency={paymentMethod === 'mercadopago' ? 'UYU' : bankTransferCurrency}
         />
       </div>
     </div>

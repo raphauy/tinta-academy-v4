@@ -446,7 +446,11 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                 </CardHeader>
                 <CardContent>
                   <p className="text-4xl font-bold text-primary">
-                    USD {course.priceUSD.toLocaleString('es-AR')}
+                    {course.priceUSD > 0
+                      ? `USD ${course.priceUSD.toLocaleString('es-AR')}`
+                      : (course.priceUYU ?? 0) > 0
+                        ? `UYU ${course.priceUYU?.toLocaleString('es-AR')}`
+                        : 'Gratis'}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">IVA incluido</p>
 

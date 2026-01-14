@@ -112,7 +112,7 @@ function calculatePricing(
     discountAmountUYU,
     finalPriceUSD,
     finalPriceUYU,
-    isFree: finalPriceUSD === 0,
+    isFree: finalPriceUSD === 0 && finalPriceUYU === 0,
   }
 }
 
