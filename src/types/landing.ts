@@ -35,6 +35,7 @@ export interface Course {
   /** Enrolled count - only for presencial courses */
   enrolledCount?: number | null
   priceUSD: number
+  priceUYU?: number | null
   /** Location - "Online" for online courses, city name for presencial */
   location: string
   address?: string | null

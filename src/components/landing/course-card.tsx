@@ -180,7 +180,11 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
             {!isPast && (
               <div className="text-right">
                 <p className="text-xl font-bold text-primary">
-                  {course.priceUSD === 0 ? 'Gratis' : `USD ${course.priceUSD}`}
+                  {course.priceUSD > 0
+                    ? `USD ${course.priceUSD}`
+                    : (course.priceUYU ?? 0) > 0
+                      ? `UYU ${course.priceUYU}`
+                      : 'Gratis'}
                 </p>
               </div>
             )}

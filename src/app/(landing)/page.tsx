@@ -31,6 +31,7 @@ function transformCourse(prismaCourse: PrismaCourseWithRelations): Course {
     maxCapacity: prismaCourse.maxCapacity,
     enrolledCount: prismaCourse.enrolledCount,
     priceUSD: prismaCourse.priceUSD,
+    priceUYU: prismaCourse.priceUYU,
     location: prismaCourse.location || (prismaCourse.modality === 'online' ? 'Online' : ''),
     address: prismaCourse.address,
     imageUrl: prismaCourse.imageUrl || '/placeholder-course.jpg',
