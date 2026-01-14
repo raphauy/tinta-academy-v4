@@ -307,6 +307,13 @@ export async function publishCourseAction(
     }
   }
 
+  if (!course.startDate) {
+    return {
+      success: false,
+      error: 'El curso debe tener al menos una fecha de clase para ser publicado',
+    }
+  }
+
   try {
     await publishCourse(courseId)
 
