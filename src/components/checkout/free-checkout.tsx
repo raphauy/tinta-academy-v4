@@ -150,12 +150,12 @@ export function FreeCheckout({ context }: FreeCheckoutProps) {
               <div className="flex justify-between items-center text-sm mb-2">
                 <span>Precio original</span>
                 <span className="line-through text-muted-foreground">
-                  USD {pricing.originalPriceUSD.toFixed(2)}
+                  USD {pricing.originalPriceUSD % 1 === 0 ? pricing.originalPriceUSD : pricing.originalPriceUSD.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm text-green-700">
                 <span>Descuento ({pricing.discountPercent}%)</span>
-                <span>-USD {pricing.discountAmountUSD.toFixed(2)}</span>
+                <span>-USD {pricing.discountAmountUSD % 1 === 0 ? pricing.discountAmountUSD : pricing.discountAmountUSD.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center font-semibold mt-2 pt-2 border-t border-green-200">
                 <span>Total</span>

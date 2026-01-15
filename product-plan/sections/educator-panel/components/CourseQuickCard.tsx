@@ -32,7 +32,7 @@ export function CourseQuickCard({ course, onView, onEdit }: CourseQuickCardProps
 
   const formatPrice = () => {
     if (course.priceUSD === 0 || course.priceUYU === 0) return 'Gratis'
-    if (course.priceUSD) return `US$ ${course.priceUSD}`
+    if (course.priceUSD) return `USD ${course.priceUSD}`
     if (course.priceUYU) return `$ ${course.priceUYU.toLocaleString()}`
     return 'Sin precio'
   }

@@ -64,20 +64,23 @@ export function CheckoutSummary({
   coupon,
   currency,
 }: CheckoutSummaryProps) {
+  const formatUSD = (amount: number) =>
+    amount % 1 === 0 ? amount.toString() : amount.toFixed(2)
+
   const displayPrice =
     currency === 'UYU'
-      ? `$ ${pricing.finalPriceUYU.toLocaleString('es-UY')}`
-      : `USD ${pricing.finalPriceUSD.toFixed(2)}`
+      ? `UYU ${pricing.finalPriceUYU.toLocaleString('es-UY')}`
+      : `USD ${formatUSD(pricing.finalPriceUSD)}`
 
   const originalPrice =
     currency === 'UYU'
-      ? `$ ${pricing.originalPriceUYU.toLocaleString('es-UY')}`
-      : `USD ${pricing.originalPriceUSD.toFixed(2)}`
+      ? `UYU ${pricing.originalPriceUYU.toLocaleString('es-UY')}`
+      : `USD ${formatUSD(pricing.originalPriceUSD)}`
 
   const discountAmount =
     currency === 'UYU'
-      ? `$ ${pricing.discountAmountUYU.toLocaleString('es-UY')}`
-      : `USD ${pricing.discountAmountUSD.toFixed(2)}`
+      ? `UYU ${pricing.discountAmountUYU.toLocaleString('es-UY')}`
+      : `USD ${formatUSD(pricing.discountAmountUSD)}`
 
   return (
     <Card className="sticky top-8">

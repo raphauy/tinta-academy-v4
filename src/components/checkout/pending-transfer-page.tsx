@@ -386,7 +386,7 @@ export function PendingTransferPage({
           <div className="flex items-center justify-between pt-3 border-t">
             <span className="font-medium">Total a transferir</span>
             <span className="text-2xl font-bold text-verde-uva-700">
-              {order.currency} {order.finalAmount.toFixed(2)}
+              {order.currency} {order.finalAmount % 1 === 0 ? order.finalAmount : order.finalAmount.toFixed(2)}
             </span>
           </div>
         </CardContent>
@@ -473,7 +473,7 @@ export function PendingTransferPage({
             <li>
               Realiza la transferencia por{' '}
               <strong className="text-foreground">
-                {order.currency} {order.finalAmount.toFixed(2)}
+                {order.currency} {order.finalAmount % 1 === 0 ? order.finalAmount : order.finalAmount.toFixed(2)}
               </strong>{' '}
               a cualquiera de las cuentas indicadas
             </li>

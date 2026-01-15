@@ -147,16 +147,16 @@ function PaymentMethodSelector({
             {pricing.finalPriceUSD > 0 ? (
               <>
                 <span className="font-semibold">
-                  USD {pricing.finalPriceUSD.toFixed(2)}
+                  USD {pricing.finalPriceUSD % 1 === 0 ? pricing.finalPriceUSD : pricing.finalPriceUSD.toFixed(2)}
                 </span>
                 <p className="text-xs text-muted-foreground">Dólares</p>
               </>
             ) : (
               <>
                 <span className="font-semibold">
-                  $ {pricing.finalPriceUYU.toLocaleString('es-UY')}
+                  UYU {pricing.finalPriceUYU.toLocaleString('es-UY')}
                 </span>
-                <p className="text-xs text-muted-foreground">UYU</p>
+                <p className="text-xs text-muted-foreground">Pesos uruguayos</p>
               </>
             )}
           </div>
@@ -393,13 +393,13 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
   const submitButtonText = () => {
     if (isSubmitting) return 'Procesando...'
     if (paymentMethod === 'mercadopago') {
-      return `Pagar $ ${currentPricing.finalPriceUYU.toLocaleString('es-UY')}`
+      return `Pagar UYU ${currentPricing.finalPriceUYU.toLocaleString('es-UY')}`
     }
     // Bank transfer: show USD if available, otherwise UYU
     if (currentPricing.finalPriceUSD > 0) {
-      return `Pagar USD ${currentPricing.finalPriceUSD.toFixed(2)}`
+      return `Pagar USD ${currentPricing.finalPriceUSD % 1 === 0 ? currentPricing.finalPriceUSD : currentPricing.finalPriceUSD.toFixed(2)}`
     }
-    return `Pagar $ ${currentPricing.finalPriceUYU.toLocaleString('es-UY')}`
+    return `Pagar UYU ${currentPricing.finalPriceUYU.toLocaleString('es-UY')}`
   }
 
   return (

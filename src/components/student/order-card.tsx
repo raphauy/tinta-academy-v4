@@ -63,9 +63,9 @@ function formatDate(date: Date): string {
 
 function formatAmount(amount: number, currency: string): string {
   if (currency === 'UYU') {
-    return `$ ${amount.toLocaleString('es-UY')}`
+    return `UYU ${amount.toLocaleString('es-UY')}`
   }
-  return `USD ${amount.toFixed(2)}`
+  return `USD ${amount % 1 === 0 ? amount : amount.toFixed(2)}`
 }
 
 export function OrderCard({ order, viewAs, onCancel }: OrderCardProps) {

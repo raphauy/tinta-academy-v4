@@ -126,12 +126,10 @@ function formatDateTime(date: Date): string {
 }
 
 function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat('es-UY', {
-    style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(amount)
+  if (currency === 'UYU') {
+    return `UYU ${amount.toLocaleString('es-UY', { maximumFractionDigits: 2 })}`
+  }
+  return `USD ${amount % 1 === 0 ? amount : amount.toFixed(2)}`
 }
 
 export function OrderRow({

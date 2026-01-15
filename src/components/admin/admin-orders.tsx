@@ -218,7 +218,7 @@ export function AdminOrders({
           />
           <AdminMetricCard
             label="Ingresos UYU"
-            value={`$ ${formatNumber(stats.totalRevenueUYU)}`}
+            value={`UYU ${formatNumber(stats.totalRevenueUYU)}`}
             icon={<Wallet className="w-4 h-4" />}
           />
         </div>

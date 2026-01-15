@@ -245,7 +245,7 @@ export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
                 <span>
                   {order.paymentMethod === 'free'
                     ? 'Gratis'
-                    : `${order.currency} ${order.finalAmount.toFixed(2)}`}
+                    : `${order.currency} ${order.finalAmount % 1 === 0 ? order.finalAmount : order.finalAmount.toFixed(2)}`}
                 </span>
               </div>
             </div>

@@ -165,7 +165,7 @@ export function StudentDetailDialog({
                     : student.totalSpentUSD > 0
                       ? `USD ${formatNumber(student.totalSpentUSD)}`
                       : student.totalSpentUYU > 0
-                        ? `$ ${formatNumber(student.totalSpentUYU)}`
+                        ? `UYU ${formatNumber(student.totalSpentUYU)}`
                         : '-'}
                 </p>
                 <p className="text-xs text-stone-500 dark:text-stone-400">Gastado</p>
