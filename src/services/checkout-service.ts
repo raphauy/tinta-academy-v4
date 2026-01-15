@@ -96,7 +96,10 @@ function calculatePricing(
   discountPercent: number
 ): Pricing {
   const originalPriceUSD = priceUSD
-  const originalPriceUYU = priceUYU ?? Math.round(priceUSD * DEFAULT_USD_TO_UYU_RATE)
+  // Use priceUYU if provided and > 0, otherwise calculate from USD
+  const originalPriceUYU = priceUYU && priceUYU > 0
+    ? priceUYU
+    : Math.round(priceUSD * DEFAULT_USD_TO_UYU_RATE)
 
   const discountAmountUSD = Math.round((originalPriceUSD * discountPercent / 100) * 100) / 100
   const discountAmountUYU = Math.round(originalPriceUYU * discountPercent / 100)
