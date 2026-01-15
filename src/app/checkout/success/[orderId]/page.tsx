@@ -1,5 +1,6 @@
 import { redirect, notFound } from 'next/navigation'
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { getOrderById } from '@/services/order-service'
 import { getStudentByUserId } from '@/services/student-service'
 import { SuccessPage } from '@/components/checkout/success-page'
@@ -57,8 +58,17 @@ export default async function CheckoutSuccessPage({ params }: PageProps) {
     notFound()
   }
 
-  // Verify user owns this order
-  if (order.userId !== session.user.id) {
+  // Get user role from database
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  })
+
+  // Verify user owns this order OR is superadmin
+  const isOwner = order.userId === session.user.id
+  const isSuperadmin = user?.role === 'superadmin'
+
+  if (!isOwner && !isSuperadmin) {
     redirect('/student')
   }
 
