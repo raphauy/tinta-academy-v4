@@ -11,20 +11,29 @@ import {
   Ticket,
   MessageSquare,
   Calendar,
+  Ban,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import type { Order, OrderStatus, PaymentMethod } from '@prisma/client'
 
 type OrderWithRelations = Order & {
   user: { id: string; email: string; name: string | null }
   course: { id: string; title: string }
   coupon?: { id: string; code: string; discountPercent: number } | null
+  cancelledBy?: { id: string; name: string | null; email: string } | null
 }
 
 interface OrderRowProps {
   order: OrderWithRelations
   onViewDetails?: () => void
   onMarkAsPaid?: () => void
+  onCancel?: () => void
 }
 
 const statusConfig: Record<
@@ -129,6 +138,7 @@ export function OrderRow({
   order,
   onViewDetails,
   onMarkAsPaid,
+  onCancel,
 }: OrderRowProps) {
   const status = statusConfig[order.status] || statusConfig.created
   const method = methodConfig[order.paymentMethod] || methodConfig.mercadopago
@@ -136,6 +146,7 @@ export function OrderRow({
   const canMarkAsPaid =
     order.status === 'payment_processing' ||
     (order.status === 'pending_payment' && order.paymentMethod === 'bank_transfer')
+  const canCancel = ['created', 'pending_payment', 'payment_processing'].includes(order.status)
   const hasDiscount = order.discountPercent > 0
   const displayName = order.user.name || order.user.email.split('@')[0]
 
@@ -204,12 +215,30 @@ export function OrderRow({
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${status.className}`}
-            >
-              <StatusIcon className="w-3 h-3" />
-              {status.label}
-            </span>
+            {order.status === 'cancelled' && order.cancelledBy ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border cursor-help ${status.className}`}
+                    >
+                      <StatusIcon className="w-3 h-3" />
+                      {status.label}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Cancelada por {order.cancelledBy.name || order.cancelledBy.email}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${status.className}`}
+              >
+                <StatusIcon className="w-3 h-3" />
+                {status.label}
+              </span>
+            )}
             <span
               className={`inline-flex items-center justify-center w-7 h-6 rounded text-[10px] font-bold ${method.className}`}
             >
@@ -236,6 +265,17 @@ export function OrderRow({
                 title="Marcar como pagado"
               >
                 <CheckCircle className="w-4 h-4" />
+              </Button>
+            )}
+            {canCancel && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onCancel}
+                className="h-8 w-8 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50"
+                title="Cancelar orden"
+              >
+                <Ban className="w-4 h-4" />
               </Button>
             )}
           </div>
@@ -300,12 +340,30 @@ export function OrderRow({
         </div>
 
         <div className="col-span-2">
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${status.className}`}
-          >
-            <StatusIcon className="w-3 h-3" />
-            {status.label}
-          </span>
+          {order.status === 'cancelled' && order.cancelledBy ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border cursor-help ${status.className}`}
+                  >
+                    <StatusIcon className="w-3 h-3" />
+                    {status.label}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Cancelada por {order.cancelledBy.name || order.cancelledBy.email}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <span
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border ${status.className}`}
+            >
+              <StatusIcon className="w-3 h-3" />
+              {status.label}
+            </span>
+          )}
           {order.transferReference && (
             <div
               className="mt-1 flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400"
@@ -336,6 +394,17 @@ export function OrderRow({
           >
             <Eye className="w-4 h-4" />
           </Button>
+          {canCancel && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onCancel}
+              className="h-8 w-8 text-stone-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 opacity-0 group-hover:opacity-100"
+              title="Cancelar orden"
+            >
+              <Ban className="w-4 h-4" />
+            </Button>
+          )}
           {canMarkAsPaid ? (
             <Button
               variant="ghost"

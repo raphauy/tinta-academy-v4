@@ -91,7 +91,7 @@ export function ConfirmationDialog({
               <DialogTitle>{title}</DialogTitle>
             </div>
           </div>
-          <DialogDescription className="pt-2">{description}</DialogDescription>
+          <DialogDescription className="pt-2 whitespace-pre-line">{description}</DialogDescription>
         </DialogHeader>
 
         <DialogFooter>

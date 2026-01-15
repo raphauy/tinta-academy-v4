@@ -64,6 +64,13 @@ const orderWithRelations = {
   },
   coupon: true,
   bankAccount: true,
+  cancelledBy: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+    },
+  },
 }
 
 // ============================================
@@ -260,12 +267,13 @@ export async function setMercadoPagoPreference(orderId: string, preferenceId: st
 /**
  * Cancel an order
  */
-export async function cancelOrder(orderId: string) {
+export async function cancelOrder(orderId: string, cancelledById?: string) {
   return prisma.order.update({
     where: { id: orderId },
     data: {
       status: 'cancelled',
       cancelledAt: new Date(),
+      cancelledById,
     },
     include: orderWithRelations,
   })

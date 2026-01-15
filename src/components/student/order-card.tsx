@@ -2,9 +2,15 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Calendar, CreditCard, Building2, Gift, ArrowRight } from 'lucide-react'
+import { Calendar, CreditCard, Building2, Gift, ArrowRight, Ban } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface OrderCardProps {
   order: {
@@ -22,8 +28,10 @@ interface OrderCardProps {
       type: string
       imageUrl: string | null
     }
+    cancelledBy?: { id: string; name: string | null; email: string } | null
   }
   viewAs?: string
+  onCancel?: (orderId: string) => void
 }
 
 const statusConfig: Record<
@@ -60,7 +68,7 @@ function formatAmount(amount: number, currency: string): string {
   return `USD ${amount.toFixed(2)}`
 }
 
-export function OrderCard({ order, viewAs }: OrderCardProps) {
+export function OrderCard({ order, viewAs, onCancel }: OrderCardProps) {
   const status = statusConfig[order.status] || {
     label: order.status,
     variant: 'secondary' as const,
@@ -74,6 +82,7 @@ export function OrderCard({ order, viewAs }: OrderCardProps) {
   const showTransferButton =
     order.status === 'pending_payment' && order.paymentMethod === 'bank_transfer'
   const showCourseButton = order.status === 'paid'
+  const canCancel = ['created', 'pending_payment', 'payment_processing'].includes(order.status)
 
   return (
     <div className="bg-card rounded-2xl border border-border p-4 hover:shadow-md transition-shadow">
@@ -99,18 +108,36 @@ export function OrderCard({ order, viewAs }: OrderCardProps) {
               </p>
               <h3 className="font-semibold line-clamp-1">{order.course.title}</h3>
             </div>
-            <Badge
-              variant={status.variant}
-              className={
-                order.status === 'paid'
-                  ? 'bg-green-100 text-green-800 hover:bg-green-100'
-                  : order.status === 'pending_payment'
-                    ? 'bg-amber-100 text-amber-800 hover:bg-amber-100'
-                    : ''
-              }
-            >
-              {status.label}
-            </Badge>
+            {order.status === 'cancelled' && order.cancelledBy ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge
+                      variant={status.variant}
+                      className="cursor-help"
+                    >
+                      {status.label}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Cancelada por {order.cancelledBy.name || order.cancelledBy.email}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <Badge
+                variant={status.variant}
+                className={
+                  order.status === 'paid'
+                    ? 'bg-green-100 text-green-800 hover:bg-green-100'
+                    : order.status === 'pending_payment'
+                      ? 'bg-amber-100 text-amber-800 hover:bg-amber-100'
+                      : ''
+                }
+              >
+                {status.label}
+              </Badge>
+            )}
           </div>
 
           {/* Details Row */}
@@ -128,25 +155,38 @@ export function OrderCard({ order, viewAs }: OrderCardProps) {
             </div>
           </div>
 
-          {/* Action Button */}
-          {(showTransferButton || showCourseButton) && (
-            <div className="mt-auto pt-3">
-              {showTransferButton && (
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/checkout/pending/${order.id}`}>
-                    Ver datos de transferencia
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-              )}
-              {showCourseButton && (
-                <Button asChild variant="outline" size="sm">
-                  <Link
-                    href={`/student/courses/${order.course.id}${viewAs ? `?viewAs=${viewAs}` : ''}`}
-                  >
-                    Ver curso
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
+          {/* Action Buttons */}
+          {(showTransferButton || showCourseButton || canCancel) && (
+            <div className="mt-auto pt-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-2">
+                {showTransferButton && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/checkout/pending/${order.id}`}>
+                      Ver datos de transferencia
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                )}
+                {showCourseButton && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      href={`/student/courses/${order.course.id}${viewAs ? `?viewAs=${viewAs}` : ''}`}
+                    >
+                      Ver curso
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
+              {canCancel && onCancel && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onCancel(order.id)}
+                  className="border-red-200 text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-300"
+                >
+                  <Ban className="w-4 h-4 mr-2" />
+                  Cancelar orden
                 </Button>
               )}
             </div>

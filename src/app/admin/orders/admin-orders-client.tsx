@@ -7,12 +7,13 @@ import type { Order } from '@prisma/client'
 import { AdminOrders } from '@/components/admin/admin-orders'
 import { OrderDetailDialog } from '@/components/admin/order-detail-dialog'
 import { ConfirmationDialog } from '@/components/admin/confirmation-dialog'
-import { confirmTransferPaymentAction } from './actions'
+import { confirmTransferPaymentAction, cancelOrderAction } from './actions'
 
 type OrderWithRelations = Order & {
   user: { id: string; email: string; name: string | null }
   course: { id: string; title: string }
   coupon?: { id: string; code: string; discountPercent: number } | null
+  cancelledBy?: { id: string; name: string | null; email: string } | null
 }
 
 interface AdminOrdersClientProps {
@@ -25,6 +26,8 @@ export function AdminOrdersClient({ orders }: AdminOrdersClientProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [orderToConfirm, setOrderToConfirm] = useState<OrderWithRelations | null>(null)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [orderToCancel, setOrderToCancel] = useState<OrderWithRelations | null>(null)
+  const [isCancelOpen, setIsCancelOpen] = useState(false)
 
   const handleViewDetails = (orderId: string) => {
     const order = orders.find((o) => o.id === orderId)
@@ -66,12 +69,45 @@ export function AdminOrdersClient({ orders }: AdminOrdersClientProps) {
     }
   }
 
+  const handleCancelOrder = (orderId: string) => {
+    const order = orders.find((o) => o.id === orderId)
+    if (order) {
+      setOrderToCancel(order)
+      setIsCancelOpen(true)
+    }
+  }
+
+  const handleConfirmCancel = async () => {
+    if (!orderToCancel) return
+
+    const result = await cancelOrderAction(orderToCancel.id)
+    if (result.success) {
+      toast.success('Orden cancelada correctamente')
+      setOrderToCancel(null)
+      router.refresh()
+    } else {
+      toast.error(result.error)
+    }
+  }
+
+  const handleCancelFromDialog = async (orderId: string) => {
+    const result = await cancelOrderAction(orderId)
+    if (result.success) {
+      toast.success('Orden cancelada correctamente')
+      setIsDetailOpen(false)
+      router.refresh()
+    } else {
+      toast.error(result.error)
+    }
+  }
+
   return (
     <>
       <AdminOrders
         orders={orders}
         onViewDetails={handleViewDetails}
         onMarkAsPaid={handleMarkAsPaid}
+        onCancelOrder={handleCancelOrder}
       />
 
       <OrderDetailDialog
@@ -79,6 +115,7 @@ export function AdminOrdersClient({ orders }: AdminOrdersClientProps) {
         onOpenChange={setIsDetailOpen}
         order={selectedOrder}
         onMarkAsPaid={handleMarkAsPaidFromDialog}
+        onCancel={handleCancelFromDialog}
       />
 
       <ConfirmationDialog
@@ -92,6 +129,20 @@ export function AdminOrdersClient({ orders }: AdminOrdersClientProps) {
         }
         confirmLabel="Confirmar pago"
         onConfirm={handleConfirmPayment}
+      />
+
+      <ConfirmationDialog
+        open={isCancelOpen}
+        onOpenChange={setIsCancelOpen}
+        type="cancel"
+        title="Cancelar orden"
+        description={
+          orderToCancel
+            ? `¿Estás seguro de cancelar esta orden?\n\n• Orden: ${orderToCancel.orderNumber}\n• Alumno: ${orderToCancel.user.name || orderToCancel.user.email}\n• Curso: ${orderToCancel.course.title}\n• Fecha: ${new Date(orderToCancel.createdAt).toLocaleDateString('es-UY', { day: 'numeric', month: 'long', year: 'numeric' })}\n\nEsta acción no se puede deshacer.`
+            : ''
+        }
+        confirmLabel="Cancelar orden"
+        onConfirm={handleConfirmCancel}
       />
     </>
   )

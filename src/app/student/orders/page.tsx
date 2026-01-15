@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { resolveStudentForPage } from '@/lib/view-as'
 import { getOrdersByUserId } from '@/services/order-service'
-import { StudentOrders } from '@/components/student/student-orders'
+import { StudentOrdersClient } from './student-orders-client'
 import { StudentOrdersListSkeleton } from '@/components/student/skeletons'
 
 export const metadata = {
@@ -51,9 +51,10 @@ async function OrdersContent({ viewAs }: { viewAs: string | undefined }) {
       type: order.course.type,
       imageUrl: order.course.imageUrl,
     },
+    cancelledBy: order.cancelledBy,
   }))
 
-  return <StudentOrders orders={ordersData} viewAs={viewAs} />
+  return <StudentOrdersClient orders={ordersData} viewAs={viewAs} />
 }
 
 export default async function StudentOrdersPage({

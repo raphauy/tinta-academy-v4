@@ -20,10 +20,11 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  otpTokens OtpToken[]
-  student   Student?
-  educator  Educator?
-  orders    Order[]
+  otpTokens       OtpToken[]
+  student         Student?
+  educator        Educator?
+  orders          Order[]   @relation("UserOrders")
+  cancelledOrders Order[]   @relation("CancelledOrders")
 
   @@index([email])
   @@index([isActive])
@@ -301,14 +302,16 @@ model Order {
   updatedAt         DateTime      @updatedAt
   paidAt            DateTime?
   cancelledAt       DateTime?
+  cancelledById     String?       // user who cancelled the order
   refundedAt        DateTime?
 
   // Relations
-  user        User         @relation(fields: [userId], references: [id])
+  user        User         @relation("UserOrders", fields: [userId], references: [id])
   course      Course       @relation(fields: [courseId], references: [id])
   student     Student?     @relation(fields: [studentId], references: [id])
   bankAccount BankAccount? @relation(fields: [bankAccountId], references: [id])
   coupon      Coupon?      @relation(fields: [couponId], references: [id])
+  cancelledBy User?        @relation("CancelledOrders", fields: [cancelledById], references: [id])
 
   @@index([userId])
   @@index([courseId])

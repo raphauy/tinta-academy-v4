@@ -212,7 +212,7 @@ export async function cancelOrderAction(
       return { success: false, error: 'Esta orden ya fue reembolsada' }
     }
 
-    await cancelOrderService(orderId)
+    await cancelOrderService(orderId, authResult.userId)
 
     revalidatePath('/admin/orders')
     revalidatePath('/admin')

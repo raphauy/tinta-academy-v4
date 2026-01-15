@@ -28,6 +28,7 @@ type OrderWithRelations = Order & {
   user: { id: string; email: string; name: string | null }
   course: { id: string; title: string }
   coupon?: { id: string; code: string; discountPercent: number } | null
+  cancelledBy?: { id: string; name: string | null; email: string } | null
 }
 
 type SortField = 'orderNumber' | 'amount' | 'status' | 'createdAt'
@@ -71,12 +72,14 @@ export interface AdminOrdersProps {
   orders: OrderWithRelations[]
   onViewDetails?: (id: string) => void
   onMarkAsPaid?: (id: string) => void
+  onCancelOrder?: (id: string) => void
 }
 
 export function AdminOrders({
   orders,
   onViewDetails,
   onMarkAsPaid,
+  onCancelOrder,
 }: AdminOrdersProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -341,6 +344,7 @@ export function AdminOrders({
                 order={order}
                 onViewDetails={() => onViewDetails?.(order.id)}
                 onMarkAsPaid={() => onMarkAsPaid?.(order.id)}
+                onCancel={() => onCancelOrder?.(order.id)}
               />
             ))}
           </div>

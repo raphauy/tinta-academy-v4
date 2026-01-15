@@ -6,7 +6,7 @@ import { Receipt, ShoppingBag } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { OrderCard } from './order-card'
 
-type OrderStatus = 'all' | 'pending' | 'paid'
+type OrderFilter = 'all' | 'pending' | 'paid' | 'cancelled'
 
 interface Order {
   id: string
@@ -23,21 +23,24 @@ interface Order {
     type: string
     imageUrl: string | null
   }
+  cancelledBy?: { id: string; name: string | null; email: string } | null
 }
 
 interface StudentOrdersProps {
   orders: Order[]
   viewAs?: string
+  onCancelOrder?: (orderId: string) => void
 }
 
-const filterTabs: { value: OrderStatus; label: string }[] = [
+const filterTabs: { value: OrderFilter; label: string }[] = [
   { value: 'all', label: 'Todas' },
   { value: 'pending', label: 'Pendientes' },
   { value: 'paid', label: 'Pagadas' },
+  { value: 'cancelled', label: 'Canceladas' },
 ]
 
-export function StudentOrders({ orders, viewAs }: StudentOrdersProps) {
-  const [filter, setFilter] = useState<OrderStatus>('all')
+export function StudentOrders({ orders, viewAs, onCancelOrder }: StudentOrdersProps) {
+  const [filter, setFilter] = useState<OrderFilter>('all')
 
   const filteredOrders = orders.filter((order) => {
     if (filter === 'all') return true
@@ -49,6 +52,9 @@ export function StudentOrders({ orders, viewAs }: StudentOrdersProps) {
     if (filter === 'paid') {
       return order.status === 'paid'
     }
+    if (filter === 'cancelled') {
+      return order.status === 'cancelled'
+    }
     return true
   })
 
@@ -56,6 +62,7 @@ export function StudentOrders({ orders, viewAs }: StudentOrdersProps) {
     ['created', 'pending_payment', 'payment_processing'].includes(o.status)
   ).length
   const paidCount = orders.filter((o) => o.status === 'paid').length
+  const cancelledCount = orders.filter((o) => o.status === 'cancelled').length
 
   return (
     <div className="space-y-6">
@@ -83,7 +90,9 @@ export function StudentOrders({ orders, viewAs }: StudentOrdersProps) {
                 ? orders.length
                 : tab.value === 'pending'
                   ? pendingCount
-                  : paidCount
+                  : tab.value === 'paid'
+                    ? paidCount
+                    : cancelledCount
 
             return (
               <Button
@@ -115,7 +124,12 @@ export function StudentOrders({ orders, viewAs }: StudentOrdersProps) {
       {filteredOrders.length > 0 ? (
         <div className="space-y-4">
           {filteredOrders.map((order) => (
-            <OrderCard key={order.id} order={order} viewAs={viewAs} />
+            <OrderCard
+              key={order.id}
+              order={order}
+              viewAs={viewAs}
+              onCancel={onCancelOrder}
+            />
           ))}
         </div>
       ) : orders.length > 0 ? (

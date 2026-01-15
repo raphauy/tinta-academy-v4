@@ -27,6 +27,7 @@ import {
   Loader2,
   FileImage,
   ExternalLink,
+  Ban,
 } from 'lucide-react'
 import { useState } from 'react'
 import type { Order, OrderStatus, PaymentMethod } from '@prisma/client'
@@ -35,6 +36,7 @@ type OrderWithRelations = Order & {
   user: { id: string; email: string; name: string | null }
   course: { id: string; title: string }
   coupon?: { id: string; code: string; discountPercent: number } | null
+  cancelledBy?: { id: string; name: string | null; email: string } | null
 }
 
 interface OrderDetailDialogProps {
@@ -42,6 +44,7 @@ interface OrderDetailDialogProps {
   onOpenChange: (open: boolean) => void
   order: OrderWithRelations | null
   onMarkAsPaid?: (orderId: string) => Promise<void>
+  onCancel?: (orderId: string) => Promise<void>
 }
 
 const statusConfig: Record<
@@ -120,6 +123,7 @@ export function OrderDetailDialog({
   onOpenChange,
   order,
   onMarkAsPaid,
+  onCancel,
 }: OrderDetailDialogProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -131,6 +135,7 @@ export function OrderDetailDialog({
   const canMarkAsPaid =
     order.status === 'payment_processing' ||
     (order.status === 'pending_payment' && order.paymentMethod === 'bank_transfer')
+  const canCancel = ['created', 'pending_payment', 'payment_processing'].includes(order.status)
   const displayName = order.user.name || order.user.email.split('@')[0]
 
   const copyToClipboard = (text: string, field: string) => {
@@ -144,6 +149,17 @@ export function OrderDetailDialog({
     setLoading(true)
     try {
       await onMarkAsPaid(order.id)
+      onOpenChange(false)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCancel = async () => {
+    if (!onCancel) return
+    setLoading(true)
+    try {
+      await onCancel(order.id)
       onOpenChange(false)
     } finally {
       setLoading(false)
@@ -327,6 +343,17 @@ export function OrderDetailDialog({
           >
             Cerrar
           </Button>
+          {canCancel && onCancel && (
+            <Button
+              variant="destructive"
+              onClick={handleCancel}
+              disabled={loading}
+            >
+              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              <Ban className="w-4 h-4 mr-2" />
+              Cancelar orden
+            </Button>
+          )}
           {canMarkAsPaid && onMarkAsPaid && (
             <Button
               onClick={handleMarkAsPaid}
