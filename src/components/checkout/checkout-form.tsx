@@ -413,15 +413,6 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
           </p>
         </div>
 
-        {/* Coupon Input */}
-        <CouponInput
-          courseId={context.course.id}
-          appliedCoupon={appliedCoupon}
-          onApply={handleCouponApply}
-          onRemove={handleCouponRemove}
-          disabled={isSubmitting}
-        />
-
         {/* Payment Method Selector */}
         <Card>
           <CardHeader>
@@ -438,6 +429,15 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
             />
           </CardContent>
         </Card>
+
+        {/* Coupon Input */}
+        <CouponInput
+          courseId={context.course.id}
+          appliedCoupon={appliedCoupon}
+          onApply={handleCouponApply}
+          onRemove={handleCouponRemove}
+          disabled={isSubmitting}
+        />
 
         {/* Bank Account Info (shown when bank_transfer selected) */}
         {paymentMethod === 'bank_transfer' && context.bankAccounts.length > 0 && (

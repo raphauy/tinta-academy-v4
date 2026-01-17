@@ -45,3 +45,5 @@ dev.log
 
 # audit files (internal use only)
 /plans/audit/
+
+.automaker
