@@ -41,7 +41,7 @@
     {
       "id": 6,
       "name": "Workflows - Templates",
-      "status": "pending",
+      "status": "planned",
       "descriptionFile": "fase-6.md",
       "tasksFile": "fase-6.tasks.json"
     },

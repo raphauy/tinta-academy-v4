@@ -1,0 +1,168 @@
+[
+  {
+    "id": "6.01",
+    "category": "services",
+    "description": "Create workflow template service for CRUD operations",
+    "steps": [
+      "Create src/services/workflow-template-service.ts",
+      "Implement getWorkflowTemplates(educatorId) - list all workflows with step count",
+      "Implement getWorkflowTemplate(id, educatorId) - get single with steps and template info",
+      "Implement createWorkflowTemplate(data) - create with initial steps if provided",
+      "Implement updateWorkflowTemplate(id, data) - update name, description, isActive",
+      "Implement deleteWorkflowTemplate(id, educatorId) - soft delete or hard if not assigned to courses",
+      "Implement addWorkflowStep(workflowId, stepData) - add step with order calculation",
+      "Implement updateWorkflowStep(stepId, data) - update trigger, offset, template",
+      "Implement deleteWorkflowStep(stepId) - delete and reorder remaining steps",
+      "Implement reorderWorkflowSteps(workflowId, stepIds[]) - bulk update order field",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "6.02",
+    "category": "server-actions",
+    "description": "Create server actions for workflow CRUD operations",
+    "steps": [
+      "Create src/app/educator/workflows/actions.ts",
+      "Define Zod schemas: createWorkflowSchema, updateWorkflowSchema, workflowStepSchema",
+      "Implement createWorkflowAction(formData) - validate and call service",
+      "Implement updateWorkflowAction(id, formData) - validate ownership and update",
+      "Implement deleteWorkflowAction(id) - validate ownership and delete",
+      "Implement addStepAction(workflowId, stepData) - add step to workflow",
+      "Implement updateStepAction(stepId, data) - update step",
+      "Implement deleteStepAction(stepId) - delete step",
+      "Implement reorderStepsAction(workflowId, stepIds) - reorder steps",
+      "Add revalidatePath for /educator/workflows after mutations",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "6.03",
+    "category": "ui",
+    "description": "Create trigger selector component for workflow steps",
+    "steps": [
+      "Create src/components/educator/workflows/trigger-selector.tsx",
+      "Accept props: triggerType, triggerOffset, triggerClassIndex, onChange callbacks",
+      "Create Select for trigger type with options: course_start, course_end, exam_date, class_date, registration_deadline",
+      "Create Input for offset with label 'días' and radio/toggle for 'antes/después' (negative/positive)",
+      "Conditionally show Input for class index when triggerType is 'class_date'",
+      "Display human-readable summary (e.g., '3 días antes del inicio del curso')",
+      "Use shadcn Select, Input, Label, RadioGroup components",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "6.04",
+    "category": "ui",
+    "description": "Create workflow step card component",
+    "steps": [
+      "Create src/components/educator/workflows/workflow-step-card.tsx",
+      "Accept props: step data, templates list, onUpdate, onDelete, dragHandleProps",
+      "Display step number/order indicator",
+      "Include TriggerSelector for trigger configuration",
+      "Add Select for email template selection with template name preview",
+      "Add delete button with confirmation (use AlertDialog)",
+      "Style as Card with visual hierarchy",
+      "Add drag handle icon (GripVertical from lucide-react) for reordering",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "6.05",
+    "category": "ui",
+    "description": "Create workflow timeline visualization component",
+    "steps": [
+      "Create src/components/educator/workflows/workflow-timeline.tsx",
+      "Accept props: steps array with trigger info and template names",
+      "Display vertical timeline with connected nodes",
+      "Each node shows: trigger description, template name, offset",
+      "Use relative positioning for visual flow",
+      "Color-code by trigger type (optional enhancement)",
+      "Handle empty state with placeholder message",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "6.06",
+    "category": "ui",
+    "description": "Create workflow form component with step builder",
+    "steps": [
+      "Create src/components/educator/workflows/workflow-form.tsx as client component",
+      "Accept props: initialData (for edit), templates list, onSubmit action",
+      "Use react-hook-form with Zod resolver for validation",
+      "Include fields: name (required), description (optional)",
+      "Manage steps array in form state",
+      "Render WorkflowStepCard for each step",
+      "Add 'Agregar paso' button that adds new step with defaults",
+      "Implement drag-and-drop reordering with @dnd-kit/core (or simple up/down buttons as fallback)",
+      "Include WorkflowTimeline as preview sidebar",
+      "Add Submit button with loading state",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "6.07",
+    "category": "ui",
+    "description": "Create workflows list page",
+    "steps": [
+      "Create src/app/educator/workflows/page.tsx as async Server Component",
+      "Get educatorId from session, redirect if not authenticated",
+      "Fetch workflows using getWorkflowTemplates service",
+      "Display Table with columns: Nombre, Descripción, Pasos, Cursos asignados, Estado, Acciones",
+      "Show step count badge",
+      "Show isActive as Badge (Activo/Inactivo)",
+      "Add actions: Edit (link), Delete (with confirmation)",
+      "Add 'Crear Workflow' button linking to /educator/workflows/create",
+      "Handle empty state with call-to-action",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "6.08",
+    "category": "ui",
+    "description": "Create workflow creation page",
+    "steps": [
+      "Create src/app/educator/workflows/create/page.tsx as async Server Component",
+      "Get educatorId from session, redirect if not authenticated",
+      "Fetch templates using getTemplates service for dropdown",
+      "Render WorkflowForm with empty initialData",
+      "Pass createWorkflowAction as onSubmit",
+      "Add breadcrumb navigation",
+      "Redirect to /educator/workflows after successful creation",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "6.09",
+    "category": "ui",
+    "description": "Create workflow edit page",
+    "steps": [
+      "Create src/app/educator/workflows/[id]/edit/page.tsx as async Server Component",
+      "Get workflowId from params, educatorId from session",
+      "Fetch workflow using getWorkflowTemplate, return 404 if not found",
+      "Fetch templates using getTemplates service",
+      "Render WorkflowForm with workflow data as initialData",
+      "Pass updateWorkflowAction as onSubmit",
+      "Add breadcrumb navigation",
+      "Redirect to /educator/workflows after successful update",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  }
+]
