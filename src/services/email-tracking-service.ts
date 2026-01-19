@@ -76,6 +76,19 @@ async function updateRecipientFromEvent(
 ): Promise<void> {
   const updateData = getUpdateDataFromEvent(event)
 
+  // If this is a click event, also set openedAt if not already set
+  // (you can't click without opening the email first)
+  if (event.type === 'email.clicked') {
+    const recipient = await prisma.emailRecipient.findUnique({
+      where: { id: recipientId },
+      select: { openedAt: true }
+    })
+
+    if (recipient && !recipient.openedAt) {
+      updateData.openedAt = new Date(event.created_at)
+    }
+  }
+
   if (Object.keys(updateData).length > 0) {
     await prisma.emailRecipient.update({
       where: { id: recipientId },
@@ -92,6 +105,19 @@ async function updateWorkflowExecutionFromEvent(
   event: ResendWebhookEvent
 ): Promise<void> {
   const updateData = getUpdateDataFromEvent(event)
+
+  // If this is a click event, also set openedAt if not already set
+  // (you can't click without opening the email first)
+  if (event.type === 'email.clicked') {
+    const execution = await prisma.workflowExecution.findUnique({
+      where: { id: executionId },
+      select: { openedAt: true }
+    })
+
+    if (execution && !execution.openedAt) {
+      updateData.openedAt = new Date(event.created_at)
+    }
+  }
 
   if (Object.keys(updateData).length > 0) {
     await prisma.workflowExecution.update({
