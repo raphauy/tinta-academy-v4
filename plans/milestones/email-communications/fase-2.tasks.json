@@ -1,0 +1,170 @@
+[
+  {
+    "id": "2.01",
+    "category": "config",
+    "description": "Install Tiptap editor packages",
+    "steps": [
+      "Run: pnpm add @tiptap/react @tiptap/starter-kit @tiptap/extension-link @tiptap/pm",
+      "Verify packages are added to package.json",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "2.02",
+    "category": "server-actions",
+    "description": "Create template server actions for CRUD operations",
+    "steps": [
+      "Create src/app/educator/templates/actions.ts with 'use server' directive",
+      "Define createTemplateSchema with Zod: name (string, min 1), subject (string, min 1), body (string, min 1)",
+      "Implement createTemplateAction(formData) - validates, gets educatorId from session, calls createTemplate service, revalidates path",
+      "Define updateTemplateSchema extending createTemplateSchema",
+      "Implement updateTemplateAction(id, formData) - validates ownership, updates via service, revalidates path",
+      "Implement deleteTemplateAction(id) - checks ownership, checks if in use via isTemplateInUse, deletes via service, revalidates path",
+      "Implement duplicateTemplateAction(id) - gets template, creates copy with '(Copia)' suffix in name",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "2.03",
+    "category": "ui",
+    "description": "Create Tiptap rich text editor component",
+    "steps": [
+      "Create src/components/educator/templates/template-editor.tsx",
+      "Import useEditor, EditorContent from @tiptap/react",
+      "Import StarterKit from @tiptap/starter-kit",
+      "Import Link extension from @tiptap/extension-link",
+      "Define TemplateEditorProps: { content: string, onChange: (html: string) => void, placeholder?: string }",
+      "Configure editor with StarterKit (bold, italic, bulletList, orderedList) and Link extension",
+      "Create toolbar with buttons: Bold, Italic, Bullet List, Ordered List, Link",
+      "Style toolbar and editor content area with Tailwind (border, padding, min-height)",
+      "Handle onChange to emit HTML content on editor updates",
+      "Export component as default",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "2.04",
+    "category": "ui",
+    "description": "Create variable inserter component for template variables",
+    "steps": [
+      "Create src/components/educator/templates/variable-inserter.tsx",
+      "Import AVAILABLE_VARIABLES from @/lib/email/template-variables",
+      "Import DropdownMenu components from @/components/ui/dropdown-menu",
+      "Import Button from @/components/ui/button",
+      "Define VariableInserterProps: { onInsert: (variable: string) => void }",
+      "Create dropdown menu with trigger button labeled 'Insertar variable'",
+      "Map AVAILABLE_VARIABLES to DropdownMenuItems showing variable key and description",
+      "On item click, call onInsert with the full variable syntax e.g. '{{studentName}}'",
+      "Style with appropriate icons (e.g., Variable or Braces icon from lucide-react)",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "2.05",
+    "category": "ui",
+    "description": "Create template preview component with sample data",
+    "steps": [
+      "Create src/components/educator/templates/template-preview.tsx",
+      "Import renderTemplate, TemplateVariables from @/lib/email/template-variables",
+      "Define SAMPLE_VARIABLES constant with example data for all variables",
+      "Define TemplatePreviewProps: { subject: string, body: string }",
+      "Create component that renders subject and body with SAMPLE_VARIABLES applied",
+      "Use Card component for preview container with 'Preview' header",
+      "Render subject in a styled header area",
+      "Render body HTML safely using dangerouslySetInnerHTML inside a prose-styled container",
+      "Add subtle styling to differentiate preview from edit area (background color, border)",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "2.06",
+    "category": "ui",
+    "description": "Create template form component combining all elements",
+    "steps": [
+      "Create src/components/educator/templates/template-form.tsx",
+      "Import useForm from react-hook-form with zodResolver",
+      "Import Input, Button, Label from shadcn/ui components",
+      "Import TemplateEditor, VariableInserter, TemplatePreview components",
+      "Define templateFormSchema with Zod: name, subject, body (all required strings)",
+      "Define TemplateFormProps: { defaultValues?, onSubmit: (data) => Promise<void>, isLoading?: boolean }",
+      "Create form with fields: Name (Input), Subject (Input with VariableInserter), Body (TemplateEditor with VariableInserter)",
+      "Add ref to editor to enable inserting variables at cursor position",
+      "Create two-column layout: left side form, right side TemplatePreview (on larger screens)",
+      "Wire up form submission to onSubmit prop",
+      "Show loading state on submit button",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "2.07",
+    "category": "ui",
+    "description": "Create templates list page with table and actions",
+    "steps": [
+      "Create src/app/educator/templates/page.tsx as async Server Component",
+      "Import getTemplatesByEducator from @/services/email-template-service",
+      "Import getCurrentUser helper to get session/educatorId",
+      "Import Table, TableHeader, TableRow, TableCell from shadcn/ui",
+      "Import Button, Link components",
+      "Fetch templates for current educator",
+      "Create page header with title 'Plantillas de Email' and 'Crear plantilla' button linking to /educator/templates/create",
+      "Create table with columns: Nombre, Asunto, Fecha creacion, Acciones",
+      "Add action buttons per row: Editar (link), Duplicar (button), Eliminar (button with confirmation dialog)",
+      "Create client component for delete action with AlertDialog confirmation",
+      "Handle empty state with message and CTA to create first template",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "2.08",
+    "category": "ui",
+    "description": "Create template create page",
+    "steps": [
+      "Create src/app/educator/templates/create/page.tsx as Server Component wrapper",
+      "Create src/app/educator/templates/create/create-template-client.tsx as Client Component",
+      "Import TemplateForm component",
+      "Import createTemplateAction from actions",
+      "Import useRouter from next/navigation for redirect after success",
+      "Import toast from sonner for success/error feedback",
+      "Implement form submission: call createTemplateAction, show toast, redirect to /educator/templates on success",
+      "Add page header with title 'Crear Plantilla' and back link to /educator/templates",
+      "Handle and display validation errors from server action",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "2.09",
+    "category": "ui",
+    "description": "Create template edit page",
+    "steps": [
+      "Create src/app/educator/templates/[id]/edit/page.tsx as async Server Component",
+      "Import getTemplateById from @/services/email-template-service",
+      "Fetch template data, handle not found with notFound()",
+      "Create src/app/educator/templates/[id]/edit/edit-template-client.tsx as Client Component",
+      "Pass template data as defaultValues to TemplateForm",
+      "Import updateTemplateAction from actions",
+      "Implement form submission: call updateTemplateAction with template id, show toast, redirect on success",
+      "Add page header with title 'Editar Plantilla' and template name",
+      "Add back link to /educator/templates",
+      "Handle and display validation errors",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  }
+]

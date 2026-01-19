@@ -6,14 +6,14 @@
     {
       "id": 1,
       "name": "Schema y Servicios Base",
-      "status": "implementing",
+      "status": "completed",
       "descriptionFile": "fase-1.md",
       "tasksFile": "fase-1.tasks.json"
     },
     {
       "id": 2,
       "name": "Gestion de Plantillas",
-      "status": "pending",
+      "status": "planned",
       "descriptionFile": "fase-2.md",
       "tasksFile": "fase-2.tasks.json"
     },
