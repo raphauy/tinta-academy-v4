@@ -168,7 +168,7 @@ export function RecipientSelector({
             className="flex items-center gap-2 cursor-pointer"
           >
             <UserCheck className="h-4 w-4 text-muted-foreground" />
-            Seleccion personalizada
+            Selección personalizada
           </Label>
         </div>
       </RadioGroup>
@@ -246,7 +246,7 @@ export function RecipientSelector({
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                       {searchQuery
-                        ? 'No se encontraron estudiantes con esa busqueda'
+                        ? 'No se encontraron estudiantes con esa búsqueda'
                         : 'No hay estudiantes disponibles'}
                     </TableCell>
                   </TableRow>
