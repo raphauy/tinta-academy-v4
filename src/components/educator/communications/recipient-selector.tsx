@@ -148,142 +148,144 @@ export function RecipientSelector({
       <RadioGroup
         value={value.mode}
         onValueChange={(v) => handleModeChange(v as 'course' | 'custom')}
-        className="space-y-3"
+        className="space-y-4"
       >
-        <div className="flex items-center space-x-3">
-          <RadioGroupItem value="course" id="mode-course" />
-          <Label
-            htmlFor="mode-course"
-            className="flex items-center gap-2 cursor-pointer"
-          >
-            <Users className="h-4 w-4 text-muted-foreground" />
-            Todos los estudiantes de un curso
-          </Label>
+        <div className="rounded-lg border p-4 space-y-3">
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="course" id="mode-course" />
+            <Label
+              htmlFor="mode-course"
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <Users className="h-4 w-4 text-muted-foreground" />
+              Todos los estudiantes de un curso
+            </Label>
+          </div>
+
+          {value.mode === 'course' && (
+            <div className="ml-7 space-y-2">
+              <Select
+                value={value.courseId || ''}
+                onValueChange={handleCourseChange}
+              >
+                <SelectTrigger className="w-full max-w-md">
+                  <SelectValue placeholder="Seleccionar curso..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.map((course) => (
+                    <SelectItem key={course.id} value={course.id}>
+                      <span className="flex items-center justify-between gap-4 w-full">
+                        <span>{course.title}</span>
+                        <Badge variant="secondary" className="ml-2">
+                          {course.studentCount} estudiantes
+                        </Badge>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center space-x-3">
-          <RadioGroupItem value="custom" id="mode-custom" />
-          <Label
-            htmlFor="mode-custom"
-            className="flex items-center gap-2 cursor-pointer"
-          >
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-            Selección personalizada
-          </Label>
+        <div className="rounded-lg border p-4 space-y-4">
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="custom" id="mode-custom" />
+            <Label
+              htmlFor="mode-custom"
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
+              Selección personalizada
+            </Label>
+          </div>
+
+          {value.mode === 'custom' && (
+            <div className="ml-7 space-y-4">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre o email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSelectAll}
+                >
+                  Seleccionar todos
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDeselectAll}
+                >
+                  Deseleccionar todos
+                </Button>
+              </div>
+
+              <div className="border rounded-md">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]"></TableHead>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Cursos inscritos</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredStudents.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                          {searchQuery
+                            ? 'No se encontraron estudiantes con esa búsqueda'
+                            : 'No hay estudiantes disponibles'}
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredStudents.map((student) => (
+                        <TableRow key={student.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={value.studentIds.includes(student.id)}
+                              onCheckedChange={(checked) =>
+                                handleStudentToggle(student.id, checked === true)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {getStudentDisplayName(student)}
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {student.email}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {student.courses.map((course, idx) => (
+                                <Badge key={idx} variant="secondary">
+                                  {course}
+                                </Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
         </div>
       </RadioGroup>
-
-      {/* Course selection mode */}
-      {value.mode === 'course' && (
-        <div className="ml-7 space-y-2">
-          <Select value={value.courseId || ''} onValueChange={handleCourseChange}>
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue placeholder="Seleccionar curso..." />
-            </SelectTrigger>
-            <SelectContent>
-              {courses.map((course) => (
-                <SelectItem key={course.id} value={course.id}>
-                  <span className="flex items-center justify-between gap-4 w-full">
-                    <span>{course.title}</span>
-                    <Badge variant="secondary" className="ml-2">
-                      {course.studentCount} estudiantes
-                    </Badge>
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Custom selection mode */}
-      {value.mode === 'custom' && (
-        <div className="ml-7 space-y-4">
-          {/* Search input */}
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nombre o email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-
-          {/* Select/Deselect all buttons */}
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleSelectAll}
-            >
-              Seleccionar todos
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleDeselectAll}
-            >
-              Deseleccionar todos
-            </Button>
-          </div>
-
-          {/* Students table */}
-          <div className="border rounded-md">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]"></TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Cursos inscritos</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStudents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                      {searchQuery
-                        ? 'No se encontraron estudiantes con esa búsqueda'
-                        : 'No hay estudiantes disponibles'}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredStudents.map((student) => (
-                    <TableRow key={student.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={value.studentIds.includes(student.id)}
-                          onCheckedChange={(checked) =>
-                            handleStudentToggle(student.id, checked === true)
-                          }
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {getStudentDisplayName(student)}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {student.email}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-1">
-                          {student.courses.map((course, idx) => (
-                            <Badge key={idx} variant="secondary">
-                              {course}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-      )}
 
       {/* Selected count badge */}
       <div className="flex items-center gap-2 pt-2">

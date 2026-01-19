@@ -11,13 +11,24 @@ import {
   Send,
   CheckCircle2,
   Loader2,
+  Sparkles,
+  Circle,
+  AlertTriangle,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   RecipientSelector,
   type CourseForSelection,
@@ -50,9 +61,24 @@ interface NewSendClientProps {
 type Step = 1 | 2 | 3
 
 const STEPS = [
-  { number: 1, label: 'Destinatarios', icon: Users },
-  { number: 2, label: 'Plantilla', icon: FileText },
-  { number: 3, label: 'Revisar y enviar', icon: Send },
+  {
+    number: 1,
+    label: 'Destinatarios',
+    description: 'Define el nombre y el público de la campaña.',
+    icon: Users,
+  },
+  {
+    number: 2,
+    label: 'Plantilla',
+    description: 'Elige el email que vas a enviar.',
+    icon: FileText,
+  },
+  {
+    number: 3,
+    label: 'Confirmación',
+    description: 'Revisa el envío y programa la fecha.',
+    icon: Send,
+  },
 ] as const
 
 export function NewSendClient({
@@ -139,6 +165,22 @@ export function NewSendClient({
 
   const canSend = campaignName.trim() && canProceedFromStep1 && canProceedFromStep2
 
+  const scheduleSummary = useMemo(() => {
+    if (schedule.mode === 'scheduled') {
+      return scheduledAtFormatted || 'Programado'
+    }
+    return 'Enviar ahora'
+  }, [schedule.mode, scheduledAtFormatted])
+
+  const recipientSummary = useMemo(() => {
+    if (recipients.mode === 'course') {
+      return selectedCourseName
+        ? `${selectedCourseName} (${recipientCount})`
+        : 'Selecciona un curso'
+    }
+    return `${recipientCount} seleccionados`
+  }, [recipients.mode, selectedCourseName, recipientCount])
+
   // Handlers
   const handleNext = () => {
     if (step < 3) {
@@ -196,215 +238,309 @@ export function NewSendClient({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Campaign name input */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Nombre de la campaña</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="max-w-md">
-            <Label htmlFor="campaign-name" className="sr-only">
-              Nombre de la campaña
-            </Label>
-            <Input
-              id="campaign-name"
-              placeholder="Ej: Recordatorio inicio de clases"
-              value={campaignName}
-              onChange={(e) => setCampaignName(e.target.value)}
-            />
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              Un nombre descriptivo para identificar este envío
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="space-y-8">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span className="rounded-full bg-muted px-3 py-1">
+            Paso {step} de 3
+          </span>
+          <span className="hidden sm:inline">{STEPS[step - 1].label}</span>
+        </div>
 
-      {/* Step indicators */}
-      <div className="flex items-center justify-center gap-2">
-        {STEPS.map((s, idx) => (
-          <div key={s.number} className="flex items-center">
-            <div
-              className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                step === s.number
-                  ? 'bg-primary text-primary-foreground'
-                  : step > s.number
-                    ? 'bg-primary/20 text-primary'
-                    : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {step > s.number ? (
-                <CheckCircle2 className="h-4 w-4" />
-              ) : (
-                <s.icon className="h-4 w-4" />
-              )}
-              <span className="hidden sm:inline">{s.label}</span>
-              <span className="sm:hidden">{s.number}</span>
-            </div>
-            {idx < STEPS.length - 1 && (
+        <div className="grid gap-3 md:grid-cols-3">
+          {STEPS.map((s) => {
+            const isActive = step === s.number
+            const isComplete = step > s.number
+            return (
               <div
-                className={`mx-2 h-px w-8 ${
-                  step > s.number ? 'bg-primary' : 'bg-border'
+                key={s.number}
+                className={`rounded-lg border p-4 transition-colors ${
+                  isActive
+                    ? 'border-primary/60 bg-background shadow-sm'
+                    : isComplete
+                      ? 'border-primary/20 bg-muted/30'
+                      : 'bg-background'
                 }`}
-              />
-            )}
-          </div>
-        ))}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      {isComplete ? (
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      ) : (
+                        <s.icon className="h-4 w-4 text-muted-foreground" />
+                      )}
+                      {s.label}
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {s.description}
+                    </p>
+                  </div>
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {s.number}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
-      {/* Step content */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {step === 1 && (
-              <>
-                <Users className="h-5 w-5" />
-                Seleccionar destinatarios
-              </>
-            )}
-            {step === 2 && (
-              <>
-                <FileText className="h-5 w-5" />
-                Seleccionar plantilla
-              </>
-            )}
-            {step === 3 && (
-              <>
-                <Send className="h-5 w-5" />
-                Revisar y enviar
-              </>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Step 1: Recipients */}
-          {step === 1 && (
-            <RecipientSelector
-              courses={courses}
-              students={students}
-              value={recipients}
-              onChange={setRecipients}
-            />
-          )}
-
-          {/* Step 2: Template */}
-          {step === 2 && (
-            <TemplateSelector
-              templates={templates}
-              value={selectedTemplateId}
-              onChange={setSelectedTemplateId}
-            />
-          )}
-
-          {/* Step 3: Review */}
-          {step === 3 && (
-            <div className="space-y-6">
-              {/* Schedule picker */}
-              <div className="rounded-lg border p-4">
-                <h3 className="mb-4 font-medium">Cuándo enviar</h3>
-                <SchedulePicker value={schedule} onChange={setSchedule} />
-              </div>
-
-              {/* Summary */}
-              <div className="rounded-lg border p-4">
-                <h3 className="mb-4 font-medium">Resumen del envío</h3>
-                <dl className="space-y-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground">Nombre:</dt>
-                    <dd className="font-medium">
-                      {campaignName || '(sin nombre)'}
-                    </dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground">Destinatarios:</dt>
-                    <dd>
-                      <Badge variant="secondary">
-                        {recipientCount}{' '}
-                        {recipientCount === 1 ? 'estudiante' : 'estudiantes'}
-                      </Badge>
-                    </dd>
-                  </div>
-                  {recipients.mode === 'course' && selectedCourseName && (
-                    <div className="flex items-center justify-between">
-                      <dt className="text-muted-foreground">Curso:</dt>
-                      <dd className="font-medium">{selectedCourseName}</dd>
-                    </div>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground">Plantilla:</dt>
-                    <dd className="font-medium">
-                      {selectedTemplate?.name || '(ninguna)'}
-                    </dd>
-                  </div>
-                  {schedule.mode === 'scheduled' && scheduledAtFormatted && (
-                    <div className="flex items-center justify-between">
-                      <dt className="text-muted-foreground">Programado:</dt>
-                      <dd className="font-medium">{scheduledAtFormatted}</dd>
-                    </div>
-                  )}
-                </dl>
-              </div>
-
-              {/* Template preview */}
-              {selectedTemplate && (
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="space-y-6">
+          <Card>
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-start gap-3 text-base">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                  {step}
+                </span>
                 <div>
-                  <div className="mb-3 flex items-center gap-3">
-                    <h3 className="font-medium">Vista previa del email</h3>
-                    {showCourseWarning && (
-                      <span className="text-sm text-destructive">
-                        Atención: la plantilla usa variables de curso y no seleccionaste un curso
-                      </span>
-                    )}
+                  <div className="font-semibold">
+                    {step === 1 && 'Destinatarios y nombre'}
+                    {step === 2 && 'Seleccionar plantilla'}
+                    {step === 3 && 'Revisar y confirmar envío'}
                   </div>
-                  <TemplatePreview
-                    subject={selectedTemplate.subject}
-                    body={selectedTemplate.body}
-                    variables={previewVariables}
-                  />
+                  <CardDescription>
+                    {step === 1 &&
+                      'Configura el nombre interno y a quién se enviará.'}
+                    {step === 2 &&
+                      'Escoge una plantilla y revisa su contenido.'}
+                    {step === 3 &&
+                      'Define el momento de envío y verifica el resumen.'}
+                  </CardDescription>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {step === 1 && (
+                <div className="space-y-6">
+                  <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px]">
+                    <div>
+                      <Label htmlFor="campaign-name" className="text-sm font-medium">
+                        Nombre de la campaña
+                      </Label>
+                      <Input
+                        id="campaign-name"
+                        placeholder="Ej: Recordatorio inicio de clases"
+                        value={campaignName}
+                        onChange={(e) => setCampaignName(e.target.value)}
+                        className="mt-2"
+                      />
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Úsalo para reconocer este envío en el historial.
+                      </p>
+                    </div>
+                    <div className="rounded-lg border bg-muted/30 p-4 text-sm">
+                      <p className="font-medium">Consejo rápido</p>
+                      <p className="mt-1 text-muted-foreground">
+                        Un nombre claro ayuda a comparar resultados luego.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="mb-3 text-sm font-medium text-muted-foreground">
+                      Selección de destinatarios
+                    </div>
+                    <RecipientSelector
+                      courses={courses}
+                      students={students}
+                      value={recipients}
+                      onChange={setRecipients}
+                    />
+                  </div>
                 </div>
               )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Navigation buttons */}
-      <div className="flex items-center justify-between">
-        <Button
-          variant="outline"
-          onClick={handleBack}
-          disabled={step === 1 || isSending}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Atrás
-        </Button>
+              {step === 2 && (
+                <div className="space-y-4">
+                  <TemplateSelector
+                    templates={templates}
+                    value={selectedTemplateId}
+                    onChange={setSelectedTemplateId}
+                  />
+                  {showCourseWarning && (
+                    <Alert variant="destructive">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>La plantilla usa variables de curso</AlertTitle>
+                      <AlertDescription>
+                        Selecciona un curso en el paso anterior para evitar campos
+                        vacíos.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              )}
 
-        {step < 3 ? (
-          <Button
-            onClick={handleNext}
-            disabled={
-              (step === 1 && !canProceedFromStep1) ||
-              (step === 2 && !canProceedFromStep2)
-            }
-          >
-            Siguiente
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        ) : (
-          <Button onClick={handleSendClick} disabled={!canSend || isSending}>
-            {isSending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {step === 3 && (
+                <div className="space-y-6">
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <div className="rounded-lg border bg-muted/10 p-4 lg:col-span-2">
+                      <h3 className="mb-4 font-medium">Cuándo enviar</h3>
+                      <SchedulePicker value={schedule} onChange={setSchedule} />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium">Vista previa del email</h3>
+                    </div>
+                    {selectedTemplate ? (
+                      <TemplatePreview
+                        subject={selectedTemplate.subject}
+                        body={selectedTemplate.body}
+                        variables={previewVariables}
+                      />
+                    ) : (
+                      <div className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+                        Selecciona una plantilla para ver la vista previa
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={step === 1 || isSending}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Atrás
+            </Button>
+
+            {step < 3 ? (
+              <Button
+                onClick={handleNext}
+                disabled={
+                  (step === 1 && !canProceedFromStep1) ||
+                  (step === 2 && !canProceedFromStep2)
+                }
+              >
+                Siguiente
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             ) : (
-              <Send className="mr-2 h-4 w-4" />
+              <Button onClick={handleSendClick} disabled={!canSend || isSending}>
+                {isSending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="mr-2 h-4 w-4" />
+                )}
+                {isSending
+                  ? (schedule.mode === 'scheduled'
+                      ? 'Programando...'
+                      : 'Enviando...')
+                  : (schedule.mode === 'scheduled'
+                      ? 'Programar envío'
+                      : 'Enviar ahora')}
+              </Button>
             )}
-            {isSending
-              ? (schedule.mode === 'scheduled' ? 'Programando...' : 'Enviando...')
-              : (schedule.mode === 'scheduled' ? 'Programar envío' : 'Enviar ahora')}
-          </Button>
-        )}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="space-y-4 lg:sticky lg:top-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Resumen de la campaña
+                </CardTitle>
+                <CardDescription>
+                  Se actualiza a medida que completas los pasos.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      {campaignName.trim() ? (
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Circle className="h-4 w-4" />
+                      )}
+                      Nombre
+                    </div>
+                    <div className="text-right font-medium">
+                      {campaignName || 'Sin nombre'}
+                    </div>
+                  </div>
+
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      {canProceedFromStep1 ? (
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Circle className="h-4 w-4" />
+                      )}
+                      Destinatarios
+                    </div>
+                    <div className="text-right font-medium">
+                      {recipientSummary}
+                    </div>
+                  </div>
+
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      {canProceedFromStep2 ? (
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      ) : (
+                        <Circle className="h-4 w-4" />
+                      )}
+                      Plantilla
+                    </div>
+                    <div className="text-right font-medium">
+                      {selectedTemplate?.name || 'Sin seleccionar'}
+                    </div>
+                  </div>
+
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      Envío
+                    </div>
+                    <div className="text-right font-medium">{scheduleSummary}</div>
+                  </div>
+                </div>
+
+                {!canSend && (
+                  <Alert>
+                    <AlertTitle>Completa los pasos</AlertTitle>
+                    <AlertDescription>
+                      Revisa que tengas nombre, destinatarios y plantilla antes de
+                      enviar.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {showCourseWarning && (
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Variables de curso detectadas</AlertTitle>
+                    <AlertDescription>
+                      Selecciona un curso para evitar datos vacíos.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+              <CardFooter className="border-t text-sm text-muted-foreground">
+                Avanza paso a paso para un envío más seguro.
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
       </div>
 
-      {/* Confirmation dialog */}
       <SendConfirmationDialog
         open={showConfirmDialog}
         onOpenChange={setShowConfirmDialog}
