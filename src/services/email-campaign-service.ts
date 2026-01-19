@@ -431,3 +431,97 @@ export async function cancelScheduledCampaign(
     }
   })
 }
+
+// =============================================================================
+// Campaign History & Detail Queries
+// =============================================================================
+
+/**
+ * Get campaigns with aggregated stats for history view
+ */
+export async function getCampaignsWithStats(
+  educatorId: string,
+  filters?: {
+    courseId?: string
+    status?: EmailCampaignStatus
+    dateFrom?: Date
+    dateTo?: Date
+  }
+) {
+  return prisma.emailCampaign.findMany({
+    where: {
+      educatorId,
+      ...(filters?.courseId && { courseId: filters.courseId }),
+      ...(filters?.status && { status: filters.status }),
+      ...(filters?.dateFrom || filters?.dateTo
+        ? {
+            createdAt: {
+              ...(filters?.dateFrom && { gte: filters.dateFrom }),
+              ...(filters?.dateTo && { lte: filters.dateTo })
+            }
+          }
+        : {})
+    },
+    include: {
+      template: {
+        select: {
+          id: true,
+          name: true,
+          subject: true
+        }
+      },
+      course: {
+        select: {
+          id: true,
+          title: true
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  })
+}
+
+/**
+ * Get paginated recipients for a campaign
+ */
+export async function getCampaignRecipients(
+  campaignId: string,
+  options?: {
+    skip?: number
+    take?: number
+  }
+) {
+  const { skip = 0, take = 50 } = options || {}
+
+  const [recipients, total] = await Promise.all([
+    prisma.emailRecipient.findMany({
+      where: { campaignId },
+      include: {
+        student: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            user: {
+              select: {
+                email: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: { createdAt: 'asc' },
+      skip,
+      take
+    }),
+    prisma.emailRecipient.count({
+      where: { campaignId }
+    })
+  ])
+
+  return {
+    recipients,
+    total,
+    hasMore: skip + take < total
+  }
+}
