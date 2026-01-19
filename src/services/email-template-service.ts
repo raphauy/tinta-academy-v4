@@ -2,11 +2,24 @@ import { prisma } from '@/lib/prisma'
 
 /**
  * Get all email templates for an educator
+ * Optionally filter by search query (searches name, subject, and body)
  */
-export async function getTemplatesByEducator(educatorId: string) {
+export async function getTemplatesByEducator(
+  educatorId: string,
+  search?: string
+) {
   return prisma.emailTemplate.findMany({
-    where: { educatorId },
-    orderBy: { updatedAt: 'desc' }
+    where: {
+      educatorId,
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { subject: { contains: search, mode: 'insensitive' } },
+          { body: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+    },
+    orderBy: { createdAt: 'desc' },
   })
 }
 

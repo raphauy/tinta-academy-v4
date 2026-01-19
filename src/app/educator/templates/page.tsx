@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { Plus, Mail } from "lucide-react"
+import { Plus, Mail, Search } from "lucide-react"
 
 import { auth } from "@/lib/auth"
 import { getEducatorByUserId } from "@/services/educator-service"
@@ -15,12 +15,20 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { TemplateActions } from "./components/template-actions"
+import { TemplateSearch } from "./components/template-search"
 
 export const metadata = {
   title: "Plantillas de Email | Tinta Academy",
 }
 
-export default async function TemplatesPage() {
+interface TemplatesPageProps {
+  searchParams: Promise<{ q?: string }>
+}
+
+export default async function TemplatesPage({
+  searchParams,
+}: TemplatesPageProps) {
+  const { q: search } = await searchParams
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -40,12 +48,12 @@ export default async function TemplatesPage() {
     redirect("/")
   }
 
-  const templates = await getTemplatesByEducator(educator.id)
+  const templates = await getTemplatesByEducator(educator.id, search)
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold">Plantillas de Email</h1>
           <p className="text-muted-foreground">
@@ -60,8 +68,11 @@ export default async function TemplatesPage() {
         </Button>
       </div>
 
+      {/* Search */}
+      <TemplateSearch />
+
       {/* Content */}
-      {templates.length === 0 ? (
+      {templates.length === 0 && !search ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
           <Mail className="h-12 w-12 text-muted-foreground/50" />
           <h3 className="mt-4 text-lg font-semibold">
@@ -77,6 +88,17 @@ export default async function TemplatesPage() {
               Crear tu primera plantilla
             </Link>
           </Button>
+        </div>
+      ) : templates.length === 0 && search ? (
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12">
+          <Search className="h-12 w-12 text-muted-foreground/50" />
+          <h3 className="mt-4 text-lg font-semibold">
+            No se encontraron plantillas
+          </h3>
+          <p className="mt-2 text-sm text-muted-foreground text-center max-w-sm">
+            No hay plantillas que coincidan con &quot;{search}&quot;.
+            Intenta con otro término de búsqueda.
+          </p>
         </div>
       ) : (
         <div className="rounded-lg border bg-background">
