@@ -546,5 +546,5 @@ Antes de entregar código UI, verificar:
 - [ ] Manejo de errores con `toast.error()`
 - [ ] ActionResult type para server actions
 - [ ] Accesibilidad: Labels en inputs
-- [ ] Textos en español
+- [ ] **Textos en español correcto** (tildes: á é í ó ú, eñes: ñ)
 - [ ] Usa colores semánticos de Tailwind (no colores hardcodeados)
