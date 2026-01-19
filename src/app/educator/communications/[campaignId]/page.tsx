@@ -9,46 +9,68 @@ import {
   Send,
   Users,
   Calendar,
+  FileText,
+  BookOpen,
+  Globe,
 } from 'lucide-react'
+import type { EmailCampaignStatus } from '@prisma/client'
 
-import { formatInTimezone } from '@/lib/timezone-utils'
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { getCampaignById } from '@/services/email-campaign-service'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { CampaignStatsCard } from '@/components/educator/communications/campaign-stats-card'
+import { CampaignRecipientsTable } from '@/components/educator/communications/campaign-recipients-table'
+import { LocalDateTime } from '@/components/shared/local-date-time'
+import { CancelCampaignButton } from './cancel-campaign-button'
 
-const statusConfig = {
-  draft: { label: 'Borrador', icon: Clock, variant: 'secondary' as const },
-  scheduled: { label: 'Programado', icon: Clock, variant: 'outline' as const },
-  sending: { label: 'Enviando', icon: Send, variant: 'default' as const },
-  sent: { label: 'Enviado', icon: CheckCircle2, variant: 'default' as const },
-  partially_sent: {
-    label: 'Parcial',
-    icon: XCircle,
-    variant: 'destructive' as const,
+const statusConfig: Record<
+  EmailCampaignStatus,
+  {
+    label: string
+    icon: typeof Clock
+    variant: 'default' | 'secondary' | 'outline' | 'destructive'
+    description: string
+  }
+> = {
+  draft: {
+    label: 'Borrador',
+    icon: FileText,
+    variant: 'secondary',
+    description: 'La campaña aún no ha sido enviada',
   },
-  cancelled: { label: 'Cancelado', icon: XCircle, variant: 'secondary' as const },
-}
-
-const recipientStatusConfig = {
-  pending: { label: 'Pendiente', variant: 'secondary' as const },
-  sending: { label: 'Enviando', variant: 'outline' as const },
-  sent: { label: 'Enviado', variant: 'default' as const },
-  delivered: { label: 'Entregado', variant: 'default' as const },
-  opened: { label: 'Abierto', variant: 'default' as const },
-  clicked: { label: 'Click', variant: 'default' as const },
-  bounced: { label: 'Rebotado', variant: 'destructive' as const },
-  failed: { label: 'Fallido', variant: 'destructive' as const },
+  scheduled: {
+    label: 'Programado',
+    icon: Clock,
+    variant: 'outline',
+    description: 'La campaña está programada para enviarse',
+  },
+  sending: {
+    label: 'Enviando',
+    icon: Send,
+    variant: 'default',
+    description: 'La campaña se está enviando en este momento',
+  },
+  sent: {
+    label: 'Enviado',
+    icon: CheckCircle2,
+    variant: 'default',
+    description: 'La campaña fue enviada exitosamente',
+  },
+  partially_sent: {
+    label: 'Envío parcial',
+    icon: XCircle,
+    variant: 'destructive',
+    description: 'Algunos emails no pudieron ser enviados',
+  },
+  cancelled: {
+    label: 'Cancelado',
+    icon: XCircle,
+    variant: 'secondary',
+    description: 'La campaña fue cancelada antes de enviarse',
+  },
 }
 
 interface PageProps {
@@ -78,176 +100,142 @@ export default async function CampaignDetailPage({ params }: PageProps) {
   const status = statusConfig[campaign.status]
   const StatusIcon = status.icon
 
+  // Determine the primary date to display
+  const primaryDate = campaign.sentAt || campaign.scheduledAt || campaign.createdAt
+  const dateLabel = campaign.sentAt
+    ? 'Enviado el'
+    : campaign.scheduledAt
+      ? 'Programado para'
+      : 'Creado el'
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" asChild>
-              <Link href="/educator/communications">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-            </Button>
-            <h1 className="text-2xl font-bold">{campaign.name}</h1>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-3">
+          <Button variant="ghost" size="sm" className="-ml-2" asChild>
+            <Link href="/educator/communications/history">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Volver al historial
+            </Link>
+          </Button>
+
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{campaign.name}</h1>
+            <p className="mt-1 text-muted-foreground">{status.description}</p>
           </div>
-          <div className="ml-10 flex items-center gap-3">
-            <Badge variant={status.variant} className="gap-1">
-              <StatusIcon className="h-3 w-3" />
+
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={status.variant} className="gap-1.5 px-2.5 py-1">
+              <StatusIcon className="h-3.5 w-3.5" />
               {status.label}
             </Badge>
+
             {campaign.course && (
-              <span className="text-sm text-muted-foreground">
-                Curso: {campaign.course.title}
-              </span>
+              <Badge variant="outline" className="gap-1.5 px-2.5 py-1">
+                <BookOpen className="h-3.5 w-3.5" />
+                {campaign.course.title}
+              </Badge>
             )}
           </div>
         </div>
+
+        {/* Actions */}
+        {campaign.status === 'scheduled' && (
+          <CancelCampaignButton
+            campaignId={campaign.id}
+            campaignName={campaign.name}
+          />
+        )}
       </div>
 
-      {/* Stats cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Destinatarios</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{campaign.totalRecipients}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Enviados</CardTitle>
-            <Send className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{campaign.sentCount}</div>
-            <p className="text-xs text-muted-foreground">
-              {campaign.totalRecipients > 0
-                ? `${Math.round((campaign.sentCount / campaign.totalRecipients) * 100)}%`
-                : '0%'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Fallidos</CardTitle>
-            <XCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{campaign.failedCount}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Fecha</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm font-medium">
-              {campaign.sentAt
-                ? formatInTimezone(
-                    campaign.sentAt,
-                    campaign.timezone,
-                    "d MMM yyyy, HH:mm"
-                  )
-                : campaign.scheduledAt
-                  ? `Programado: ${formatInTimezone(
-                      campaign.scheduledAt,
-                      campaign.timezone,
-                      "d MMM, HH:mm"
-                    )}`
-                  : 'Sin fecha'}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Template info */}
+      {/* Campaign Info Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-lg">
             <Mail className="h-5 w-5" />
-            Plantilla utilizada
+            Información del envío
           </CardTitle>
+          <CardDescription>
+            Detalles de la plantilla y programación de la campaña
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <dl className="space-y-2 text-sm">
-            <div className="flex gap-2">
-              <dt className="font-medium">Nombre:</dt>
-              <dd className="text-muted-foreground">{campaign.template.name}</dd>
+        <CardContent className="space-y-4">
+          {/* Row 1: Asunto, Enviado el */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Asunto</p>
+              <p className="font-medium">{campaign.template.subject}</p>
             </div>
-            <div className="flex gap-2">
-              <dt className="font-medium">Asunto:</dt>
-              <dd className="text-muted-foreground">{campaign.template.subject}</dd>
+
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                <Calendar className="h-3.5 w-3.5" />
+                {dateLabel}
+              </p>
+              <p className="font-medium">
+                <LocalDateTime
+                  date={primaryDate}
+                  formatStr="EEEE d 'de' MMMM 'de' yyyy, HH:mm"
+                />
+              </p>
             </div>
-          </dl>
+          </div>
+
+          {/* Row 2: Curso, Plantilla */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Curso</p>
+              <p className={campaign.course ? 'font-medium' : 'text-muted-foreground'}>
+                {campaign.course?.title || 'Sin curso específico'}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground">Plantilla</p>
+              <p className="font-medium">{campaign.template.name}</p>
+            </div>
+          </div>
+
+          {/* Timezone (only for scheduled campaigns) */}
+          {campaign.status === 'scheduled' && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                <Globe className="h-3.5 w-3.5" />
+                Zona horaria
+              </p>
+              <p className="font-medium">{campaign.timezone}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Recipients table */}
+      {/* Stats Card */}
+      <CampaignStatsCard
+        totalRecipients={campaign.totalRecipients}
+        sentCount={campaign.sentCount}
+        deliveredCount={campaign.deliveredCount}
+        openedCount={campaign.openedCount}
+        clickedCount={campaign.clickedCount}
+        failedCount={campaign.failedCount}
+      />
+
+      {/* Recipients Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Destinatarios ({campaign.recipients.length})</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Users className="h-5 w-5" />
+            Destinatarios
+            <Badge variant="secondary" className="ml-1">
+              {campaign.recipients.length}
+            </Badge>
+          </CardTitle>
+          <CardDescription>
+            Estado de entrega individual para cada destinatario
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {campaign.recipients.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">
-              No hay destinatarios
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Enviado</TableHead>
-                  <TableHead>Error</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {campaign.recipients.map((recipient) => {
-                  const recipientStatus = recipientStatusConfig[recipient.status]
-                  const studentName = [
-                    recipient.student.firstName,
-                    recipient.student.lastName,
-                  ]
-                    .filter(Boolean)
-                    .join(' ') || recipient.email
-
-                  return (
-                    <TableRow key={recipient.id}>
-                      <TableCell className="font-medium">{studentName}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {recipient.email}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={recipientStatus.variant}>
-                          {recipientStatus.label}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {recipient.sentAt
-                          ? new Date(recipient.sentAt).toLocaleTimeString('es', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
-                          : '-'}
-                      </TableCell>
-                      <TableCell className="max-w-xs truncate text-sm text-destructive">
-                        {recipient.errorMessage || '-'}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          )}
+          <CampaignRecipientsTable recipients={campaign.recipients} />
         </CardContent>
       </Card>
     </div>

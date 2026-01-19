@@ -1,5 +1,3 @@
-import { format } from 'date-fns'
-import { es } from 'date-fns/locale'
 import { Mail } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { LocalDateTime } from '@/components/shared/local-date-time'
 import type { EmailDeliveryStatus } from '@prisma/client'
 
 interface Recipient {
@@ -46,11 +45,6 @@ const statusConfig: Record<
   clicked: { label: 'Click', variant: 'default' },
   bounced: { label: 'Rebotado', variant: 'destructive' },
   failed: { label: 'Fallido', variant: 'destructive' },
-}
-
-function formatDate(date: Date | null): string {
-  if (!date) return '-'
-  return format(date, 'dd MMM HH:mm', { locale: es })
 }
 
 function getStudentName(student: Recipient['student']): string {
@@ -97,13 +91,13 @@ export function CampaignRecipientsTable({ recipients }: CampaignRecipientsTableP
                 <Badge variant={config.variant}>{config.label}</Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {formatDate(recipient.sentAt)}
+                <LocalDateTime date={recipient.sentAt} formatStr="dd MMM HH:mm" />
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {formatDate(recipient.deliveredAt)}
+                <LocalDateTime date={recipient.deliveredAt} formatStr="dd MMM HH:mm" />
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {formatDate(recipient.openedAt)}
+                <LocalDateTime date={recipient.openedAt} formatStr="dd MMM HH:mm" />
               </TableCell>
             </TableRow>
           )
