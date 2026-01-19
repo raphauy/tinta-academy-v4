@@ -1,0 +1,108 @@
+[
+  {
+    "id": "4.01",
+    "category": "config",
+    "description": "Install date-fns-tz and configure Vercel cron",
+    "steps": [
+      "Run: pnpm add date-fns-tz",
+      "Verify package is added to package.json",
+      "Create or update vercel.json with cron configuration:",
+      "  - Add cron for /api/cron/process-scheduled-emails every 15 minutes (*/15 * * * *)",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.02",
+    "category": "services",
+    "description": "Add scheduling functions to campaign service",
+    "steps": [
+      "Add to src/services/email-campaign-service.ts:",
+      "Implement getScheduledCampaignsDue() - returns campaigns with status 'scheduled' and scheduledAt <= now",
+      "Implement scheduleCampaign(campaignId, scheduledAt, timezone) - updates campaign with scheduled status",
+      "Implement cancelScheduledCampaign(campaignId, educatorId) - validates ownership, sets status to 'cancelled'",
+      "Create src/lib/timezone-utils.ts with helper functions:",
+      "  - getUserTimezone() for client-side timezone detection",
+      "  - formatInTimezone(date, timezone, format) using date-fns-tz",
+      "  - toUTC(date, timezone) to convert local time to UTC for storage",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.03",
+    "category": "server-actions",
+    "description": "Add schedule and cancel actions for campaigns",
+    "steps": [
+      "Update src/app/educator/communications/actions.ts:",
+      "Modify sendCampaignSchema to include optional: scheduledAt (string ISO date), timezone (string)",
+      "Update sendCampaignAction to handle scheduling:",
+      "  - If scheduledAt provided: create campaign with status 'scheduled', don't send immediately",
+      "  - If no scheduledAt: keep current immediate send behavior",
+      "Implement cancelCampaignAction(campaignId):",
+      "  - Validate campaign belongs to educator",
+      "  - Validate campaign status is 'scheduled'",
+      "  - Call cancelScheduledCampaign service",
+      "  - Revalidate path",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.04",
+    "category": "api",
+    "description": "Create cron endpoint for processing scheduled emails",
+    "steps": [
+      "Create src/app/api/cron/process-scheduled-emails/route.ts",
+      "Export async function GET(request: Request)",
+      "Verify cron secret from Authorization header (CRON_SECRET env var) for security",
+      "Call getScheduledCampaignsDue() to get pending campaigns",
+      "For each campaign: call processCampaignSend(campaignId)",
+      "Return JSON response with processed count and any errors",
+      "Add proper error handling and logging",
+      "Add CRON_SECRET to .env.example with description",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.05",
+    "category": "ui",
+    "description": "Create schedule picker component with timezone",
+    "steps": [
+      "Create src/components/educator/communications/schedule-picker.tsx",
+      "Import RadioGroup, Label, Input from shadcn/ui",
+      "Import date-fns-tz functions for timezone handling",
+      "Define SchedulePickerProps: { value: { mode: 'now' | 'scheduled', scheduledAt?: string, timezone: string }, onChange }",
+      "Create RadioGroup with options: 'Enviar ahora' and 'Programar para...'",
+      "When 'scheduled' selected, show datetime-local Input",
+      "Display user's detected timezone (from Intl.DateTimeFormat)",
+      "Store and emit dates in ISO format with timezone info",
+      "Make component a Client Component ('use client')",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "4.06",
+    "category": "ui",
+    "description": "Integrate scheduling into communications page",
+    "steps": [
+      "Update src/app/educator/communications/new-send-client.tsx:",
+      "Add SchedulePicker as step between template selection and review",
+      "Update form state to include schedule: { mode, scheduledAt?, timezone }",
+      "Update step 3 (review) to show scheduled date/time if applicable",
+      "Update SendConfirmationDialog to show different message for scheduled vs immediate",
+      "Update form submission to pass scheduledAt and timezone to sendCampaignAction",
+      "Show success message appropriate to mode: 'Email enviado' vs 'Email programado para [fecha]'",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  }
+]
