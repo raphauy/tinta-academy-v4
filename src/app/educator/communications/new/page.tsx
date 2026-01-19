@@ -54,9 +54,9 @@ export default async function NewCommunicationPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Nuevo envío</h1>
+        <h1 className="text-2xl font-bold">Nueva campaña</h1>
         <p className="text-muted-foreground">
-          Envía un email a tus estudiantes
+          Crea una campaña de email para tus estudiantes
         </p>
       </div>
 

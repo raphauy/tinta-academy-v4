@@ -19,14 +19,30 @@ const SAMPLE_VARIABLES: TemplateVariables = {
   courseUrl: "https://academy.tinta.wine/student/courses/abc123",
 }
 
+// Placeholder values when no course is selected
+export const NO_COURSE_VARIABLES: TemplateVariables = {
+  studentName: "María García",
+  studentFirstName: "María",
+  studentEmail: "maria@example.com",
+  courseName: "[Sin curso]",
+  courseStartDate: "[Sin fecha]",
+  courseEndDate: "[Sin fecha]",
+  examDate: "[Sin fecha]",
+  educatorName: "Gabriela Zimmer",
+  courseUrl: "[Sin URL]",
+}
+
 interface TemplatePreviewProps {
   subject: string
   body: string
+  /** Optional custom variables. If not provided, uses sample data */
+  variables?: TemplateVariables
 }
 
-export function TemplatePreview({ subject, body }: TemplatePreviewProps) {
-  const renderedSubject = renderTemplate(subject, SAMPLE_VARIABLES)
-  const renderedBody = renderTemplate(body, SAMPLE_VARIABLES)
+export function TemplatePreview({ subject, body, variables }: TemplatePreviewProps) {
+  const vars = variables || SAMPLE_VARIABLES
+  const renderedSubject = renderTemplate(subject, vars)
+  const renderedBody = renderTemplate(body, vars)
 
   // Preserve empty paragraphs by adding a non-breaking space
   const preservedBody = renderedBody

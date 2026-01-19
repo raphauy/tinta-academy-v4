@@ -92,7 +92,7 @@ export default async function CampaignHistoryPage({ searchParams }: PageProps) {
         <Button asChild>
           <Link href="/educator/communications/new">
             <Plus className="mr-2 h-4 w-4" />
-            Nuevo envío
+            Nueva campaña
           </Link>
         </Button>
       </div>

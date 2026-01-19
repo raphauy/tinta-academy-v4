@@ -10,6 +10,7 @@ import {
   FileText,
   Send,
   CheckCircle2,
+  Loader2,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -32,8 +33,12 @@ import {
   SchedulePicker,
   type ScheduleValue,
 } from '@/components/educator/communications/schedule-picker'
-import { TemplatePreview } from '@/components/educator/templates/template-preview'
+import {
+  TemplatePreview,
+  NO_COURSE_VARIABLES,
+} from '@/components/educator/templates/template-preview'
 import { formatInTimezone, getUserTimezone } from '@/lib/timezone-utils'
+import { usesCourseVariables } from '@/lib/email/template-variables'
 import { sendCampaignAction } from '../actions'
 
 interface NewSendClientProps {
@@ -108,6 +113,19 @@ export function NewSendClient({
     }
     return ''
   }, [schedule])
+
+  // Preview variables: use placeholders when no course is selected
+  const hasCourseSelected = recipients.mode === 'course' && !!recipients.courseId
+  const previewVariables = useMemo(() => {
+    return hasCourseSelected ? undefined : NO_COURSE_VARIABLES
+  }, [hasCourseSelected])
+
+  // Check if we need to show course variable warning
+  const showCourseWarning = useMemo(() => {
+    if (!selectedTemplate || hasCourseSelected) return false
+    const content = selectedTemplate.subject + ' ' + selectedTemplate.body
+    return usesCourseVariables(content)
+  }, [selectedTemplate, hasCourseSelected])
 
   // Validation
   const canProceedFromStep1 = useMemo(() => {
@@ -330,10 +348,18 @@ export function NewSendClient({
               {/* Template preview */}
               {selectedTemplate && (
                 <div>
-                  <h3 className="mb-3 font-medium">Vista previa del email</h3>
+                  <div className="mb-3 flex items-center gap-3">
+                    <h3 className="font-medium">Vista previa del email</h3>
+                    {showCourseWarning && (
+                      <span className="text-sm text-destructive">
+                        Atención: la plantilla usa variables de curso y no seleccionaste un curso
+                      </span>
+                    )}
+                  </div>
                   <TemplatePreview
                     subject={selectedTemplate.subject}
                     body={selectedTemplate.body}
+                    variables={previewVariables}
                   />
                 </div>
               )}
@@ -347,7 +373,7 @@ export function NewSendClient({
         <Button
           variant="outline"
           onClick={handleBack}
-          disabled={step === 1}
+          disabled={step === 1 || isSending}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Atrás
@@ -365,9 +391,15 @@ export function NewSendClient({
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={handleSendClick} disabled={!canSend}>
-            <Send className="mr-2 h-4 w-4" />
-            {schedule.mode === 'scheduled' ? 'Programar envío' : 'Enviar ahora'}
+          <Button onClick={handleSendClick} disabled={!canSend || isSending}>
+            {isSending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="mr-2 h-4 w-4" />
+            )}
+            {isSending
+              ? (schedule.mode === 'scheduled' ? 'Programando...' : 'Enviando...')
+              : (schedule.mode === 'scheduled' ? 'Programar envío' : 'Enviar ahora')}
           </Button>
         )}
       </div>

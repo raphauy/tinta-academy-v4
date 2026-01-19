@@ -126,6 +126,24 @@ export function validateVariables(template: string): {
   }
 }
 
+/**
+ * Course-related variable keys
+ */
+const COURSE_VARIABLE_KEYS = [
+  'courseName',
+  'courseStartDate',
+  'courseEndDate',
+  'examDate',
+  'courseUrl',
+]
+
+/**
+ * Check if template uses any course-related variables
+ */
+export function usesCourseVariables(template: string): boolean {
+  return COURSE_VARIABLE_KEYS.some((key) => template.includes(`{{${key}}}`))
+}
+
 // Input types for buildVariablesForStudent
 type StudentInput = {
   firstName: string | null

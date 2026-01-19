@@ -19,8 +19,24 @@ export interface TemplateVariables {
 }
 
 /**
+ * Placeholders for variables without values
+ */
+const VARIABLE_PLACEHOLDERS: Record<keyof TemplateVariables, string> = {
+  studentName: '[Sin nombre]',
+  studentFirstName: '[Sin nombre]',
+  studentEmail: '[Sin email]',
+  courseName: '[Sin curso]',
+  courseStartDate: '[Sin fecha]',
+  courseEndDate: '[Sin fecha]',
+  examDate: '[Sin fecha]',
+  educatorName: '[Sin educador]',
+  courseUrl: '[Sin URL]',
+}
+
+/**
  * Replace template variables in a string
  * Variables use the format {{variableName}}
+ * Missing values are replaced with placeholders like [Sin curso]
  */
 export function renderTemplate(
   template: string,
@@ -28,33 +44,11 @@ export function renderTemplate(
 ): string {
   let result = template
 
-  // Replace each variable
-  if (variables.studentName) {
-    result = result.replace(/\{\{studentName\}\}/g, variables.studentName)
-  }
-  if (variables.studentFirstName) {
-    result = result.replace(/\{\{studentFirstName\}\}/g, variables.studentFirstName)
-  }
-  if (variables.studentEmail) {
-    result = result.replace(/\{\{studentEmail\}\}/g, variables.studentEmail)
-  }
-  if (variables.courseName) {
-    result = result.replace(/\{\{courseName\}\}/g, variables.courseName)
-  }
-  if (variables.courseStartDate) {
-    result = result.replace(/\{\{courseStartDate\}\}/g, variables.courseStartDate)
-  }
-  if (variables.courseEndDate) {
-    result = result.replace(/\{\{courseEndDate\}\}/g, variables.courseEndDate)
-  }
-  if (variables.examDate) {
-    result = result.replace(/\{\{examDate\}\}/g, variables.examDate)
-  }
-  if (variables.educatorName) {
-    result = result.replace(/\{\{educatorName\}\}/g, variables.educatorName)
-  }
-  if (variables.courseUrl) {
-    result = result.replace(/\{\{courseUrl\}\}/g, variables.courseUrl)
+  // Replace each variable with its value or a placeholder
+  for (const key of Object.keys(VARIABLE_PLACEHOLDERS) as (keyof TemplateVariables)[]) {
+    const value = variables[key]
+    const replacement = value || VARIABLE_PLACEHOLDERS[key]
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), replacement)
   }
 
   return result
