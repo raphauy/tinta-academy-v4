@@ -11,9 +11,11 @@ import {
   processCampaignSend,
   scheduleCampaign,
   cancelScheduledCampaign,
+  getCampaignsWithStats,
 } from '@/services/email-campaign-service'
 import { getStudentsByCourse } from '@/services/student-selection-service'
 import { prisma } from '@/lib/prisma'
+import type { EmailCampaignStatus } from '@prisma/client'
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -33,6 +35,13 @@ const cancelCampaignSchema = z.object({
   campaignId: z.string().min(1, 'El ID de campaña es requerido'),
 })
 
+const getCampaignsFiltersSchema = z.object({
+  courseId: z.string().optional(),
+  status: z.enum(['draft', 'scheduled', 'sending', 'sent', 'partially_sent', 'cancelled']).optional(),
+  dateFrom: z.string().optional(), // ISO date string
+  dateTo: z.string().optional(), // ISO date string
+})
+
 // ============================================
 // TYPES
 // ============================================
@@ -48,6 +57,8 @@ type SendCampaignResult = {
   scheduled?: boolean
   scheduledAt?: string
 }
+
+type GetCampaignsResult = Awaited<ReturnType<typeof getCampaignsWithStats>>
 
 // ============================================
 // HELPER FUNCTIONS
@@ -275,6 +286,78 @@ export async function cancelCampaignAction(
     console.error('Error cancelling campaign:', error)
     const message =
       error instanceof Error ? error.message : 'Error al cancelar la campaña'
+    return {
+      success: false,
+      error: message,
+    }
+  }
+}
+
+/**
+ * Get campaigns with filters for client-side filtering with revalidation
+ */
+export async function getCampaignsAction(
+  data: z.infer<typeof getCampaignsFiltersSchema>
+): Promise<ActionResult<GetCampaignsResult>> {
+  // Validate input
+  const validated = getCampaignsFiltersSchema.safeParse(data)
+
+  if (!validated.success) {
+    return {
+      success: false,
+      error: validated.error.issues[0].message,
+    }
+  }
+
+  // Get authenticated educator
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    // Parse filters
+    const filters: {
+      courseId?: string
+      status?: EmailCampaignStatus
+      dateFrom?: Date
+      dateTo?: Date
+    } = {}
+
+    if (validated.data.courseId) {
+      filters.courseId = validated.data.courseId
+    }
+
+    if (validated.data.status) {
+      filters.status = validated.data.status as EmailCampaignStatus
+    }
+
+    if (validated.data.dateFrom) {
+      filters.dateFrom = new Date(validated.data.dateFrom)
+    }
+
+    if (validated.data.dateTo) {
+      filters.dateTo = new Date(validated.data.dateTo)
+    }
+
+    // Get campaigns with stats
+    const campaigns = await getCampaignsWithStats(educator.id, filters)
+
+    // Revalidate communications path
+    revalidatePath('/educator/communications')
+    revalidatePath('/educator/communications/history')
+
+    return {
+      success: true,
+      data: campaigns,
+    }
+  } catch (error) {
+    console.error('Error getting campaigns:', error)
+    const message =
+      error instanceof Error ? error.message : 'Error al obtener las campañas'
     return {
       success: false,
       error: message,
