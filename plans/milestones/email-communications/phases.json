@@ -27,7 +27,7 @@
     {
       "id": 4,
       "name": "Emails Programados y Cron",
-      "status": "planned",
+      "status": "completed",
       "descriptionFile": "fase-4.md",
       "tasksFile": "fase-4.tasks.json"
     },
