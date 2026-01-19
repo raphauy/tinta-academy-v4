@@ -1,0 +1,168 @@
+[
+  {
+    "id": "8.01",
+    "category": "services",
+    "description": "Create course communications history service",
+    "steps": [
+      "Create src/services/course-communications-service.ts",
+      "Implement getCourseEmailHistory(courseId) - combines campaigns and workflow executions",
+      "Include pagination support (limit, offset)",
+      "Return unified type with: id, type (campaign|workflow), subject, sentAt, recipientCount, stats",
+      "Add filter by date range",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.02",
+    "category": "services",
+    "description": "Create admin global communications history service",
+    "steps": [
+      "Create src/services/admin-communications-service.ts",
+      "Implement getGlobalEmailHistory(filters) with pagination",
+      "Support filters: educatorId, courseId, type (campaign|workflow), dateRange, status",
+      "Include educator and course info in results",
+      "Implement getGlobalEmailStats() for dashboard metrics",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.03",
+    "category": "services",
+    "description": "Implement rate limiting and batch processing for email sending",
+    "steps": [
+      "Create src/lib/email-rate-limiter.ts",
+      "Implement rate limiter with configurable delay between sends (default 100ms)",
+      "Create processBatch(recipients, batchSize=50) function",
+      "Add delay between batches to respect Resend limits",
+      "Update email-campaign-service.ts to use batch processing for >100 recipients",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.04",
+    "category": "services",
+    "description": "Implement idempotency checks for email sending",
+    "steps": [
+      "Add idempotency check in campaign sending: skip if recipient.status !== 'pending'",
+      "Add idempotency check in workflow execution: skip if execution.status !== 'pending'",
+      "Use database transaction with status update before sending",
+      "Mark as 'sending' before Resend call, then 'sent' or 'failed' after",
+      "Add logging for skipped duplicate sends",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.05",
+    "category": "services",
+    "description": "Add HTML sanitization for rich text editor content",
+    "steps": [
+      "Install DOMPurify: pnpm add isomorphic-dompurify",
+      "Create src/lib/html-sanitizer.ts",
+      "Implement sanitizeEmailHtml(html) with allowed tags (p, br, strong, em, a, ul, ol, li)",
+      "Strip dangerous attributes (onclick, onerror, etc.)",
+      "Update email-template-service createTemplate and updateTemplate to sanitize body",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.06",
+    "category": "ui",
+    "description": "Update educator sidebar with expandable Communications menu",
+    "steps": [
+      "Update src/components/shell/navigation-config.ts",
+      "Change educatorNavItems 'Comunicaciones' to have children array",
+      "Add children: Nuevo Envio (/educator/communications), Historial (/educator/communications/history), Plantillas (/educator/templates), Workflows (/educator/workflows)",
+      "Update app-shell.tsx to render nested navigation items with expand/collapse",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.07",
+    "category": "ui",
+    "description": "Create course communications history component",
+    "steps": [
+      "Create src/components/educator/course-communications-history.tsx",
+      "Display table with: date, type icon (manual/workflow), subject, recipients, open rate",
+      "Add empty state when no communications",
+      "Add loading skeleton",
+      "Support pagination with load more button",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.08",
+    "category": "ui",
+    "description": "Add Communications tab to course students page",
+    "steps": [
+      "Update src/components/educator/student-list.tsx",
+      "Add Tabs component wrapping existing content",
+      "Create 'Estudiantes' tab with current content",
+      "Create 'Comunicaciones' tab with CourseCommunciationsHistory component",
+      "Pass courseId prop to history component",
+      "Update page.tsx to pass courseId to StudentList",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.09",
+    "category": "server-actions",
+    "description": "Create admin communications server actions",
+    "steps": [
+      "Create src/app/admin/communications/actions.ts",
+      "Implement getAdminCommunicationsAction(filters, page, pageSize)",
+      "Implement getAdminCommunicationsStatsAction()",
+      "Add authorization check for superadmin role",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.10",
+    "category": "ui",
+    "description": "Implement admin global communications page with filters",
+    "steps": [
+      "Replace placeholder in src/app/admin/communications/page.tsx",
+      "Add filter controls: educator select, course select, type dropdown, date range picker, status select",
+      "Display summary stats cards (total sent, delivered rate, open rate)",
+      "Create communications table with columns: date, type, educator, course, subject, recipients, status",
+      "Add pagination",
+      "Implement client-side filter state management",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "8.11",
+    "category": "ui",
+    "description": "Final integration verification and polish",
+    "steps": [
+      "Test sidebar navigation works with expand/collapse",
+      "Test course students page tabs switch correctly",
+      "Test admin communications page filters work",
+      "Verify responsive design on mobile",
+      "Fix any styling inconsistencies",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck",
+      "Verify with pnpm build"
+    ],
+    "passes": false
+  }
+]

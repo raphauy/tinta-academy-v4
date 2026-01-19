@@ -55,7 +55,7 @@
     {
       "id": 8,
       "name": "Polish y Admin",
-      "status": "pending",
+      "status": "planned",
       "descriptionFile": "fase-8.md",
       "tasksFile": "fase-8.tasks.json"
     }
