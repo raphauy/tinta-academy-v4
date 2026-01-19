@@ -1,0 +1,141 @@
+[
+  {
+    "id": "3.01",
+    "category": "services",
+    "description": "Create student selection service for recipient filtering",
+    "steps": [
+      "Create src/services/student-selection-service.ts",
+      "Implement getStudentsForSelection(educatorId, filters?) - returns students with user email",
+      "Add filter options: courseId (optional), searchQuery (optional for name/email search)",
+      "Include query for students enrolled in educator's courses",
+      "Return type: Array<{ id, firstName, lastName, email, courses: string[] }>",
+      "Implement getStudentsByCourse(courseId, educatorId) - returns all enrolled students for a specific course",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.02",
+    "category": "services",
+    "description": "Create campaign send processing service",
+    "steps": [
+      "Add processCampaignSend function to src/services/email-campaign-service.ts",
+      "Function signature: processCampaignSend(campaignId: string) => Promise<{ sent: number, failed: number }>",
+      "Get campaign with template and recipients from database",
+      "Update campaign status to 'sending'",
+      "Loop through each recipient with status 'pending':",
+      "  - Build variables object from student and course data",
+      "  - Use renderTemplate to replace variables in subject and body",
+      "  - Call sendDynamicEmail with rendered content",
+      "  - Update recipient status to 'sent' or 'failed' with resendId or errorMessage",
+      "After all recipients processed, call updateCampaignStats",
+      "Update campaign status to 'sent' or 'partially_sent' based on results",
+      "Add 100ms delay between sends to respect Resend rate limits",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.03",
+    "category": "server-actions",
+    "description": "Create server action for sending campaign immediately",
+    "steps": [
+      "Create src/app/educator/communications/actions.ts with 'use server' directive",
+      "Define sendCampaignSchema with Zod: name, templateId, recipientMode ('course' | 'custom'), courseId?, studentIds[]",
+      "Implement sendCampaignAction(formData):",
+      "  - Validate input with Zod schema",
+      "  - Get educatorId from session",
+      "  - Verify template belongs to educator",
+      "  - Create campaign using createCampaign service (scheduledAt: null for immediate)",
+      "  - Get recipients based on mode (course students or selected studentIds)",
+      "  - Add recipients using addRecipientsToCampaign",
+      "  - Call processCampaignSend to send immediately",
+      "  - Return campaign id and send results",
+      "  - Revalidate /educator/communications path",
+      "Add proper error handling with try/catch",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.04",
+    "category": "ui",
+    "description": "Create recipient selector component",
+    "steps": [
+      "Create src/components/educator/communications/recipient-selector.tsx",
+      "Import RadioGroup, Input, Checkbox, Table, Badge from shadcn/ui",
+      "Define RecipientSelectorProps: { courses, students, value: { mode, courseId?, studentIds[] }, onChange }",
+      "Create mode selector: RadioGroup with 'Todos los estudiantes de un curso' and 'Seleccion personalizada'",
+      "For course mode: Show Select dropdown with educator's courses, display student count per course",
+      "For custom mode: Show search Input, Table with checkboxes for each student (name, email, enrolled courses)",
+      "Add 'Seleccionar todos' / 'Deseleccionar todos' buttons for custom mode",
+      "Show selected count Badge at bottom",
+      "Make component a Client Component ('use client')",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.05",
+    "category": "ui",
+    "description": "Create template selector component with preview",
+    "steps": [
+      "Create src/components/educator/communications/template-selector.tsx",
+      "Import Select, Card from shadcn/ui",
+      "Import TemplatePreview from ../templates/template-preview",
+      "Define TemplateSelectorProps: { templates: Array<{ id, name, subject, body }>, value: string | null, onChange }",
+      "Create Select dropdown showing template names",
+      "When template selected, show TemplatePreview below with sample data",
+      "Handle empty state when no template selected",
+      "Make component a Client Component ('use client')",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.06",
+    "category": "ui",
+    "description": "Create send confirmation dialog component",
+    "steps": [
+      "Create src/components/educator/communications/send-confirmation-dialog.tsx",
+      "Import AlertDialog components from shadcn/ui",
+      "Import Button, Badge from shadcn/ui",
+      "Define SendConfirmationDialogProps: { open, onOpenChange, recipientCount, templateName, onConfirm, isLoading }",
+      "Show summary: X destinatarios, plantilla 'Y'",
+      "Warning text: 'Esta accion enviara los emails inmediatamente'",
+      "Cancel and Confirm buttons (Confirm shows loading state)",
+      "Make component a Client Component ('use client')",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "3.07",
+    "category": "ui",
+    "description": "Create communications page with send form",
+    "steps": [
+      "Create src/app/educator/communications/page.tsx as async Server Component",
+      "Fetch educator's templates using getTemplatesByEducator",
+      "Fetch educator's courses with enrolled student counts",
+      "Fetch all students for selection using getStudentsForSelection",
+      "Create src/app/educator/communications/new-send-client.tsx as Client Component",
+      "Implement multi-step form state: step 1 (recipients), step 2 (template), step 3 (review)",
+      "Wire RecipientSelector for step 1 with Next button",
+      "Wire TemplateSelector for step 2 with Back/Next buttons",
+      "For step 3: show summary (recipients, template preview) and Send button",
+      "On Send click, open SendConfirmationDialog",
+      "On confirm, call sendCampaignAction, show toast with result, redirect to success or show errors",
+      "Add Input for campaign name at the top",
+      "Use Card components for each step section",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  }
+]

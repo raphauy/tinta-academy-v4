@@ -20,7 +20,7 @@
     {
       "id": 3,
       "name": "Emails Manuales - Envio",
-      "status": "pending",
+      "status": "planned",
       "descriptionFile": "fase-3.md",
       "tasksFile": "fase-3.tasks.json"
     },
