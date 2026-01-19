@@ -6,6 +6,7 @@ import PaymentRejectedEmail from '@/components/emails/payment-rejected'
 import WsetDataReminderEmail from '@/components/emails/wset-data-reminder'
 import AdminTransferNotificationEmail from '@/components/emails/admin-transfer-notification'
 import AdminPaymentNotificationEmail from '@/components/emails/admin-payment-notification'
+import DynamicEmail from '@/components/emails/dynamic-email'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const fromEmail = process.env.EMAIL_FROM || 'academy@tinta.wine'
@@ -471,4 +472,63 @@ export function getMercadoPagoRejectionReason(statusDetail: string): string {
   }
 
   return reasons[statusDetail] || 'Error en el procesamiento del pago'
+}
+
+// =============================================================================
+// Dynamic Email (for campaigns and workflows)
+// =============================================================================
+
+interface SendDynamicEmailInput {
+  to: string
+  subject: string
+  body: string // HTML content with variables already replaced
+}
+
+export interface SendDynamicEmailResult {
+  success: boolean
+  resendId?: string
+  error?: string
+}
+
+/**
+ * Send a dynamic email using the DynamicEmail template
+ * Returns the Resend message ID for tracking
+ */
+export async function sendDynamicEmail(
+  input: SendDynamicEmailInput
+): Promise<SendDynamicEmailResult> {
+  const { to, subject, body } = input
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\n========================================')
+    console.log('  DYNAMIC EMAIL (Campaign/Workflow)')
+    console.log(`  To: ${to}`)
+    console.log(`  Subject: ${subject}`)
+    console.log(`  Body preview: ${body.substring(0, 100)}...`)
+    console.log('========================================\n')
+    // Return a fake resendId for development testing
+    return { success: true, resendId: `dev-${Date.now()}` }
+  }
+
+  if (!shouldSendEmail()) {
+    return { success: false, error: 'Email sending is disabled' }
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: fromEmail,
+      to,
+      subject,
+      react: DynamicEmail({ subject, body }),
+    })
+
+    if (result.error) {
+      return { success: false, error: result.error.message }
+    }
+
+    return { success: true, resendId: result.data?.id }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return { success: false, error: errorMessage }
+  }
 }

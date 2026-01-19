@@ -1,5 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import type { EmailCampaignStatus } from '@prisma/client'
+import { sendDynamicEmail } from './email-service'
+import {
+  renderTemplate,
+  formatDateForTemplate,
+  type TemplateVariables
+} from './email-template-service'
 
 /**
  * Get all campaigns for an educator with optional filters
@@ -185,6 +191,221 @@ export async function updateCampaignStats(id: string) {
       clickedCount: statusCounts['clicked'] || 0,
       failedCount:
         (statusCounts['failed'] || 0) + (statusCounts['bounced'] || 0)
+    }
+  })
+}
+
+// =============================================================================
+// Campaign Send Processing
+// =============================================================================
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://academy.tinta.wine'
+
+/**
+ * Helper to delay execution (for rate limiting)
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+/**
+ * Process and send all pending emails for a campaign
+ * Returns count of sent and failed emails
+ */
+export async function processCampaignSend(
+  campaignId: string
+): Promise<{ sent: number; failed: number }> {
+  // Get campaign with template, recipients, course, and educator
+  const campaign = await prisma.emailCampaign.findUnique({
+    where: { id: campaignId },
+    include: {
+      template: true,
+      course: true,
+      educator: true,
+      recipients: {
+        where: { status: 'pending' },
+        include: {
+          student: {
+            include: {
+              user: {
+                select: { email: true }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+
+  if (!campaign) {
+    throw new Error('Campaign not found')
+  }
+
+  // Update campaign status to 'sending'
+  await updateCampaignStatus(campaignId, 'sending')
+
+  let sent = 0
+  let failed = 0
+
+  // Process each recipient
+  for (const recipient of campaign.recipients) {
+    // Build variables object
+    const studentName = [
+      recipient.student.firstName,
+      recipient.student.lastName
+    ]
+      .filter(Boolean)
+      .join(' ') || 'Estudiante'
+
+    const variables: TemplateVariables = {
+      studentName,
+      studentFirstName: recipient.student.firstName || 'Estudiante',
+      studentEmail: recipient.student.user.email,
+      courseName: campaign.course?.title,
+      courseStartDate: formatDateForTemplate(campaign.course?.startDate),
+      courseEndDate: formatDateForTemplate(campaign.course?.endDate),
+      examDate: formatDateForTemplate(campaign.course?.examDate),
+      educatorName: campaign.educator.name,
+      courseUrl: campaign.course
+        ? `${baseUrl}/student/courses/${campaign.course.id}`
+        : undefined
+    }
+
+    // Render template with variables
+    const renderedSubject = renderTemplate(campaign.template.subject, variables)
+    const renderedBody = renderTemplate(campaign.template.body, variables)
+
+    // Send email
+    const result = await sendDynamicEmail({
+      to: recipient.email,
+      subject: renderedSubject,
+      body: renderedBody
+    })
+
+    // Update recipient status
+    if (result.success) {
+      await prisma.emailRecipient.update({
+        where: { id: recipient.id },
+        data: {
+          status: 'sent',
+          resendId: result.resendId,
+          sentAt: new Date()
+        }
+      })
+      sent++
+    } else {
+      await prisma.emailRecipient.update({
+        where: { id: recipient.id },
+        data: {
+          status: 'failed',
+          errorMessage: result.error
+        }
+      })
+      failed++
+    }
+
+    // Add delay between sends to respect Resend rate limits (100ms)
+    if (campaign.recipients.indexOf(recipient) < campaign.recipients.length - 1) {
+      await delay(100)
+    }
+  }
+
+  // Update campaign stats
+  await updateCampaignStats(campaignId)
+
+  // Update campaign status based on results
+  const finalStatus: EmailCampaignStatus =
+    failed === 0 ? 'sent' : sent === 0 ? 'draft' : 'partially_sent'
+
+  await prisma.emailCampaign.update({
+    where: { id: campaignId },
+    data: {
+      status: finalStatus,
+      sentAt: new Date()
+    }
+  })
+
+  return { sent, failed }
+}
+
+// =============================================================================
+// Campaign Scheduling
+// =============================================================================
+
+/**
+ * Get all campaigns that are scheduled and due for sending (scheduledAt <= now)
+ */
+export async function getScheduledCampaignsDue() {
+  return prisma.emailCampaign.findMany({
+    where: {
+      status: 'scheduled',
+      scheduledAt: {
+        lte: new Date()
+      }
+    },
+    include: {
+      template: {
+        select: {
+          id: true,
+          name: true
+        }
+      },
+      educator: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    },
+    orderBy: { scheduledAt: 'asc' }
+  })
+}
+
+/**
+ * Schedule a campaign for future sending
+ */
+export async function scheduleCampaign(
+  campaignId: string,
+  scheduledAt: Date,
+  timezone: string
+) {
+  return prisma.emailCampaign.update({
+    where: { id: campaignId },
+    data: {
+      status: 'scheduled',
+      scheduledAt,
+      timezone
+    }
+  })
+}
+
+/**
+ * Cancel a scheduled campaign (validates ownership)
+ */
+export async function cancelScheduledCampaign(
+  campaignId: string,
+  educatorId: string
+) {
+  // First verify the campaign exists and belongs to the educator
+  const campaign = await prisma.emailCampaign.findFirst({
+    where: {
+      id: campaignId,
+      educatorId
+    }
+  })
+
+  if (!campaign) {
+    throw new Error('Campaign not found or access denied')
+  }
+
+  if (campaign.status !== 'scheduled') {
+    throw new Error('Only scheduled campaigns can be cancelled')
+  }
+
+  return prisma.emailCampaign.update({
+    where: { id: campaignId },
+    data: {
+      status: 'cancelled'
     }
   })
 }

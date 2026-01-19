@@ -1,4 +1,72 @@
 import { prisma } from '@/lib/prisma'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+
+// =============================================================================
+// Template Variable Types
+// =============================================================================
+
+export interface TemplateVariables {
+  studentName?: string
+  studentFirstName?: string
+  studentEmail?: string
+  courseName?: string
+  courseStartDate?: string
+  courseEndDate?: string
+  examDate?: string
+  educatorName?: string
+  courseUrl?: string
+}
+
+/**
+ * Replace template variables in a string
+ * Variables use the format {{variableName}}
+ */
+export function renderTemplate(
+  template: string,
+  variables: TemplateVariables
+): string {
+  let result = template
+
+  // Replace each variable
+  if (variables.studentName) {
+    result = result.replace(/\{\{studentName\}\}/g, variables.studentName)
+  }
+  if (variables.studentFirstName) {
+    result = result.replace(/\{\{studentFirstName\}\}/g, variables.studentFirstName)
+  }
+  if (variables.studentEmail) {
+    result = result.replace(/\{\{studentEmail\}\}/g, variables.studentEmail)
+  }
+  if (variables.courseName) {
+    result = result.replace(/\{\{courseName\}\}/g, variables.courseName)
+  }
+  if (variables.courseStartDate) {
+    result = result.replace(/\{\{courseStartDate\}\}/g, variables.courseStartDate)
+  }
+  if (variables.courseEndDate) {
+    result = result.replace(/\{\{courseEndDate\}\}/g, variables.courseEndDate)
+  }
+  if (variables.examDate) {
+    result = result.replace(/\{\{examDate\}\}/g, variables.examDate)
+  }
+  if (variables.educatorName) {
+    result = result.replace(/\{\{educatorName\}\}/g, variables.educatorName)
+  }
+  if (variables.courseUrl) {
+    result = result.replace(/\{\{courseUrl\}\}/g, variables.courseUrl)
+  }
+
+  return result
+}
+
+/**
+ * Format a date for template variables
+ */
+export function formatDateForTemplate(date: Date | null | undefined): string {
+  if (!date) return ''
+  return format(date, "d 'de' MMMM 'de' yyyy", { locale: es })
+}
 
 /**
  * Get all email templates for an educator
