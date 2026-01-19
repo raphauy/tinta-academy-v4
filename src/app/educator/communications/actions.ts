@@ -9,7 +9,10 @@ import {
   createCampaign,
   addRecipientsToCampaign,
   processCampaignSend,
+  scheduleCampaign,
+  cancelScheduledCampaign,
 } from '@/services/email-campaign-service'
+import { datetimeLocalToUTC } from '@/lib/timezone-utils'
 import { getStudentsByCourse } from '@/services/student-selection-service'
 import { prisma } from '@/lib/prisma'
 
@@ -23,7 +26,12 @@ const sendCampaignSchema = z.object({
   recipientMode: z.enum(['course', 'custom']),
   courseId: z.string().optional(),
   studentIds: z.array(z.string()).optional(),
+  scheduledAt: z.string().optional(), // ISO date string for scheduled sends
   timezone: z.string().default('America/Montevideo'),
+})
+
+const cancelCampaignSchema = z.object({
+  campaignId: z.string().min(1, 'El ID de campaña es requerido'),
 })
 
 // ============================================
@@ -38,6 +46,8 @@ type SendCampaignResult = {
   campaignId: string
   sent: number
   failed: number
+  scheduled?: boolean
+  scheduledAt?: string
 }
 
 // ============================================
@@ -90,7 +100,7 @@ export async function sendCampaignAction(
     }
   }
 
-  const { name, templateId, recipientMode, courseId, studentIds, timezone } =
+  const { name, templateId, recipientMode, courseId, studentIds, scheduledAt, timezone } =
     validated.data
 
   // Get authenticated educator
@@ -164,18 +174,44 @@ export async function sendCampaignAction(
       }))
     }
 
-    // Create campaign (scheduledAt: null for immediate send)
+    // Determine if this is a scheduled send
+    const isScheduled = !!scheduledAt
+    const scheduledAtUTC = scheduledAt
+      ? datetimeLocalToUTC(scheduledAt, timezone)
+      : undefined
+
+    // Create campaign
     const campaign = await createCampaign({
       name,
       templateId,
       educatorId: educator.id,
       courseId: recipientMode === 'course' ? courseId : undefined,
-      scheduledAt: undefined,
+      scheduledAt: scheduledAtUTC,
       timezone,
     })
 
     // Add recipients to campaign
     await addRecipientsToCampaign(campaign.id, recipients)
+
+    // Either schedule for later or send immediately
+    if (isScheduled && scheduledAtUTC) {
+      // Schedule the campaign
+      await scheduleCampaign(campaign.id, scheduledAtUTC, timezone)
+
+      // Revalidate communications path
+      revalidatePath('/educator/communications')
+
+      return {
+        success: true,
+        data: {
+          campaignId: campaign.id,
+          sent: 0,
+          failed: 0,
+          scheduled: true,
+          scheduledAt: scheduledAtUTC.toISOString(),
+        },
+      }
+    }
 
     // Process and send immediately
     const sendResult = await processCampaignSend(campaign.id)
@@ -195,6 +231,52 @@ export async function sendCampaignAction(
     console.error('Error sending campaign:', error)
     const message =
       error instanceof Error ? error.message : 'Error al enviar la campaña'
+    return {
+      success: false,
+      error: message,
+    }
+  }
+}
+
+/**
+ * Cancel a scheduled email campaign
+ */
+export async function cancelCampaignAction(
+  data: z.infer<typeof cancelCampaignSchema>
+): Promise<ActionResult> {
+  // Validate input
+  const validated = cancelCampaignSchema.safeParse(data)
+
+  if (!validated.success) {
+    return {
+      success: false,
+      error: validated.error.issues[0].message,
+    }
+  }
+
+  const { campaignId } = validated.data
+
+  // Get authenticated educator
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    // Cancel the scheduled campaign (service validates ownership and status)
+    await cancelScheduledCampaign(campaignId, educator.id)
+
+    // Revalidate communications path
+    revalidatePath('/educator/communications')
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error cancelling campaign:', error)
+    const message =
+      error instanceof Error ? error.message : 'Error al cancelar la campaña'
     return {
       success: false,
       error: message,
