@@ -12,6 +12,10 @@ import {
   BarChart3,
   User,
   Receipt,
+  Send,
+  History,
+  FileText,
+  GitBranch,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -49,7 +53,17 @@ export const educatorNavItems: NavItem[] = [
   { label: 'Mis Cursos', href: '/educator/courses', icon: BookOpen },
   { label: 'Crear Curso', href: '/educator/courses/create', icon: PlusCircle },
   { label: 'Estudiantes', href: '/educator/students', icon: Users },
-  { label: 'Comunicaciones', href: '/educator/communications', icon: MessageSquare },
+  {
+    label: 'Comunicaciones',
+    href: '/educator/communications',
+    icon: MessageSquare,
+    children: [
+      { label: 'Nuevo Envío', href: '/educator/communications', icon: Send },
+      { label: 'Historial', href: '/educator/communications/history', icon: History },
+      { label: 'Plantillas', href: '/educator/templates', icon: FileText },
+      { label: 'Workflows', href: '/educator/workflows', icon: GitBranch },
+    ],
+  },
   { label: 'Estadísticas', href: '/educator/statistics', icon: BarChart3 },
 ]
 
