@@ -75,6 +75,10 @@ model Student {
   enrollments Enrollment[]
   orders      Order[]
 
+  // Email communications relations
+  emailRecipients    EmailRecipient[]
+  workflowExecutions WorkflowExecution[]
+
   @@index([userId])
 }
 
@@ -94,6 +98,11 @@ model Educator {
 
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   courses Course[]
+
+  // Email communications relations
+  emailTemplates    EmailTemplate[]
+  emailCampaigns    EmailCampaign[]
+  workflowTemplates WorkflowTemplate[]
 
   @@index([userId])
 }
@@ -147,6 +156,10 @@ model Course {
   materials   CourseMaterial[]
   orders      Order[]
   coupons     Coupon[] // coupons restricted to this course
+
+  // Email communications relations
+  emailCampaigns  EmailCampaign[]
+  courseWorkflows CourseWorkflow[]
 
   @@index([slug])
   @@index([educatorId])
@@ -205,6 +218,9 @@ model Enrollment {
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
   course  Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Email communications relations
+  workflowExecutions WorkflowExecution[]
 
   @@unique([studentId, courseId])
   @@index([studentId])
@@ -387,4 +403,248 @@ enum PaymentMethod {
 enum Currency {
   USD
   UYU
+}
+
+// ============================================
+// EMAIL COMMUNICATIONS ENUMS
+// ============================================
+
+enum EmailCampaignStatus {
+  draft
+  scheduled
+  sending
+  sent
+  partially_sent
+  cancelled
+}
+
+enum EmailDeliveryStatus {
+  pending
+  sending
+  sent
+  delivered
+  opened
+  clicked
+  bounced
+  failed
+}
+
+enum WorkflowTriggerType {
+  course_start
+  course_end
+  exam_date
+  class_date
+  registration_deadline
+}
+
+enum CourseWorkflowStatus {
+  active
+  paused
+  completed
+}
+
+// ============================================
+// EMAIL TEMPLATES
+// ============================================
+
+model EmailTemplate {
+  id         String   @id @default(cuid())
+  name       String
+  subject    String
+  body       String   @db.Text
+
+  educatorId String
+  educator   Educator @relation(fields: [educatorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaigns     EmailCampaign[]
+  workflowSteps WorkflowStep[]
+
+  @@index([educatorId])
+}
+
+// ============================================
+// EMAIL CAMPAIGNS (manual sends)
+// ============================================
+
+model EmailCampaign {
+  id         String   @id @default(cuid())
+  name       String
+
+  templateId String
+  template   EmailTemplate @relation(fields: [templateId], references: [id])
+
+  educatorId String
+  educator   Educator @relation(fields: [educatorId], references: [id])
+
+  courseId String?
+  course   Course?  @relation(fields: [courseId], references: [id])
+
+  scheduledAt DateTime?
+  timezone    String
+
+  status EmailCampaignStatus @default(draft)
+
+  totalRecipients Int @default(0)
+  sentCount       Int @default(0)
+  deliveredCount  Int @default(0)
+  openedCount     Int @default(0)
+  clickedCount    Int @default(0)
+  failedCount     Int @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  sentAt    DateTime?
+
+  recipients EmailRecipient[]
+
+  @@index([educatorId])
+  @@index([courseId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model EmailRecipient {
+  id String @id @default(cuid())
+
+  campaignId String
+  campaign   EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  email String
+
+  status EmailDeliveryStatus @default(pending)
+
+  resendId    String?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  clickedAt   DateTime?
+
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([campaignId, studentId])
+  @@index([campaignId])
+  @@index([studentId])
+  @@index([status])
+  @@index([resendId])
+}
+
+// ============================================
+// WORKFLOWS (automation)
+// ============================================
+
+model WorkflowTemplate {
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  educatorId String
+  educator   Educator @relation(fields: [educatorId], references: [id])
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  steps           WorkflowStep[]
+  courseWorkflows CourseWorkflow[]
+
+  @@index([educatorId])
+  @@index([isActive])
+}
+
+model WorkflowStep {
+  id String @id @default(cuid())
+
+  workflowTemplateId String
+  workflowTemplate   WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id], onDelete: Cascade)
+
+  templateId String
+  template   EmailTemplate @relation(fields: [templateId], references: [id])
+
+  triggerType       WorkflowTriggerType
+  triggerOffset     Int
+  triggerClassIndex Int?
+
+  order Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  executions WorkflowExecution[]
+
+  @@index([workflowTemplateId])
+  @@index([templateId])
+}
+
+model CourseWorkflow {
+  id String @id @default(cuid())
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id])
+
+  workflowTemplateId String
+  workflowTemplate   WorkflowTemplate @relation(fields: [workflowTemplateId], references: [id])
+
+  status CourseWorkflowStatus @default(active)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  executions WorkflowExecution[]
+
+  @@unique([courseId, workflowTemplateId])
+  @@index([courseId])
+  @@index([workflowTemplateId])
+  @@index([status])
+}
+
+model WorkflowExecution {
+  id String @id @default(cuid())
+
+  courseWorkflowId String
+  courseWorkflow   CourseWorkflow @relation(fields: [courseWorkflowId], references: [id], onDelete: Cascade)
+
+  workflowStepId String
+  workflowStep   WorkflowStep @relation(fields: [workflowStepId], references: [id])
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id])
+
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id])
+
+  email String
+
+  scheduledAt DateTime
+
+  status EmailDeliveryStatus @default(pending)
+
+  resendId    String?
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  clickedAt   DateTime?
+
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseWorkflowId, workflowStepId, studentId])
+  @@index([courseWorkflowId])
+  @@index([workflowStepId])
+  @@index([studentId])
+  @@index([enrollmentId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@index([resendId])
 }

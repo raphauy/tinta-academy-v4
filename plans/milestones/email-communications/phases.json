@@ -6,7 +6,7 @@
     {
       "id": 1,
       "name": "Schema y Servicios Base",
-      "status": "planned",
+      "status": "implementing",
       "descriptionFile": "fase-1.md",
       "tasksFile": "fase-1.tasks.json"
     },
