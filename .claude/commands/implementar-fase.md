@@ -138,11 +138,17 @@ Por favor prueba la funcionalidad y responde 'ok' para hacer el commit.
 Solo después de la confirmación del usuario:
 
 ```bash
-git add .
+git add [archivos modificados por esta tarea]
 git commit -m "feat([milestone] [id]): [description breve]"
 ```
 
-Ejemplo: `feat(email-communications 1.01): create email template models`
+**IMPORTANTE**: Solo hacer `git add` de los archivos que modificaste en esta tarea específica. NO usar `git add .` para evitar commitear cambios no relacionados.
+
+Ejemplo:
+```bash
+git add prisma/schema.prisma
+git commit -m "feat(email-communications 1.01): create email template models"
+```
 
 ### 11. Informar progreso
 
@@ -213,6 +219,7 @@ El comando encontrará automáticamente la primera fase y tarea pendiente.
 - Verificar con `pnpm lint` y `pnpm typecheck` (en secuencia) antes de marcar como completada
 - **NO ejecutar `pnpm build`** por tarea - solo al completar la fase
 - Esperar confirmación del usuario antes del commit
+- **NO usar `git add .`** - solo agregar archivos modificados por esta tarea
 - Si todas las tareas están completas, ejecutar `pnpm build` y responder con `<promise>COMPLETE</promise>`
 - Seguir siempre la arquitectura definida en AGENT.md
 - **Solo leer skill frontend-design para tareas de categoría `ui`**
