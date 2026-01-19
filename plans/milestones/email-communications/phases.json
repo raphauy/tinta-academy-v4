@@ -34,7 +34,7 @@
     {
       "id": 5,
       "name": "Tracking y Historial",
-      "status": "pending",
+      "status": "planned",
       "descriptionFile": "fase-5.md",
       "tasksFile": "fase-5.tasks.json"
     },

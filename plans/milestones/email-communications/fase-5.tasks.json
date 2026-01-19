@@ -1,0 +1,139 @@
+[
+  {
+    "id": "5.01",
+    "category": "config",
+    "description": "Configure Resend webhook secret environment variable",
+    "steps": [
+      "Verificar con usuario que tiene configurada: RESEND_WEBHOOK_SECRET",
+      "Add RESEND_WEBHOOK_SECRET to .env.example with description: '# Resend webhook signing secret (from Resend dashboard > Webhooks)'",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.02",
+    "category": "services",
+    "description": "Create email tracking service for webhook events",
+    "steps": [
+      "Create src/services/email-tracking-service.ts",
+      "Define ResendWebhookEvent type with fields: type, created_at, data (email_id, from, to, subject)",
+      "Implement processResendWebhookEvent(event) that handles: delivered, opened, clicked, bounced, complained",
+      "For each event: find EmailRecipient by resendId, update status and appropriate timestamp (deliveredAt, openedAt, clickedAt)",
+      "After updating recipient, call updateCampaignStats(campaignId) from email-campaign-service",
+      "Also check WorkflowExecution by resendId and update if found",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.03",
+    "category": "api",
+    "description": "Create Resend webhook endpoint",
+    "steps": [
+      "Create src/app/api/webhooks/resend/route.ts",
+      "Import Webhook from 'svix' for signature verification",
+      "Implement POST handler that: reads raw body, verifies signature using RESEND_WEBHOOK_SECRET",
+      "Parse webhook payload and call processResendWebhookEvent from tracking service",
+      "Return 200 on success, 400 on invalid signature, 500 on error",
+      "Add error logging for debugging",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.04",
+    "category": "services",
+    "description": "Extend campaign service with history and detail queries",
+    "steps": [
+      "In email-campaign-service.ts, add getCampaignsWithStats(educatorId, filters) that includes aggregated stats",
+      "Add filters support: dateFrom, dateTo (for createdAt range)",
+      "Add getCampaignRecipients(campaignId, options) with pagination: skip, take",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.05",
+    "category": "ui",
+    "description": "Create campaign stats card component",
+    "steps": [
+      "Create src/components/educator/communications/campaign-stats-card.tsx",
+      "Accept props: totalRecipients, sentCount, deliveredCount, openedCount, clickedCount, failedCount",
+      "Display stats in a Card with grid of stat items",
+      "Show percentages (e.g., deliveredCount/sentCount * 100)",
+      "Use appropriate icons from lucide-react for each stat",
+      "Style with shadcn Card component",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.06",
+    "category": "ui",
+    "description": "Create campaign recipients table component",
+    "steps": [
+      "Create src/components/educator/communications/campaign-recipients-table.tsx",
+      "Accept props: recipients array with student info and tracking timestamps",
+      "Use shadcn Table component with columns: Nombre, Email, Estado, Enviado, Entregado, Abierto",
+      "Display status with Badge component (color-coded by status)",
+      "Format dates with date-fns",
+      "Handle empty state",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.07",
+    "category": "ui",
+    "description": "Create campaign history page",
+    "steps": [
+      "Create src/app/educator/communications/history/page.tsx as async Server Component",
+      "Get educatorId from session, redirect if not authenticated",
+      "Fetch campaigns using getCampaignsWithStats",
+      "Display Table with columns: Nombre, Plantilla, Curso, Fecha, Estado, Destinatarios, Abiertos",
+      "Add filter controls: course selector, status selector, date range picker",
+      "Make each row clickable to navigate to /educator/communications/[campaignId]",
+      "Handle empty state with message and link to create new campaign",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.08",
+    "category": "ui",
+    "description": "Create campaign detail page",
+    "steps": [
+      "Create src/app/educator/communications/[campaignId]/page.tsx as async Server Component",
+      "Get campaignId from params, educatorId from session",
+      "Fetch campaign with getCampaignById, return 404 if not found",
+      "Display campaign info: name, template subject, course, scheduledAt/sentAt",
+      "Include CampaignStatsCard with campaign stats",
+      "Include CampaignRecipientsTable with recipients",
+      "If status is 'scheduled', show Cancel button (implement cancel action)",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "5.09",
+    "category": "server-actions",
+    "description": "Create campaign actions for cancel and filters",
+    "steps": [
+      "Create src/app/educator/communications/actions.ts if not exists",
+      "Implement cancelCampaignAction(campaignId) - updates status to 'cancelled', validates ownership",
+      "Implement getCampaignsAction(filters) for client-side filtering with revalidation",
+      "Use Zod for input validation",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  }
+]
