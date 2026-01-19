@@ -12,7 +12,6 @@ import {
   scheduleCampaign,
   cancelScheduledCampaign,
 } from '@/services/email-campaign-service'
-import { datetimeLocalToUTC } from '@/lib/timezone-utils'
 import { getStudentsByCourse } from '@/services/student-selection-service'
 import { prisma } from '@/lib/prisma'
 
@@ -175,10 +174,9 @@ export async function sendCampaignAction(
     }
 
     // Determine if this is a scheduled send
+    // scheduledAt comes from client as ISO string (already UTC)
     const isScheduled = !!scheduledAt
-    const scheduledAtUTC = scheduledAt
-      ? datetimeLocalToUTC(scheduledAt, timezone)
-      : undefined
+    const scheduledAtDate = scheduledAt ? new Date(scheduledAt) : undefined
 
     // Create campaign
     const campaign = await createCampaign({
@@ -186,7 +184,7 @@ export async function sendCampaignAction(
       templateId,
       educatorId: educator.id,
       courseId: recipientMode === 'course' ? courseId : undefined,
-      scheduledAt: scheduledAtUTC,
+      scheduledAt: scheduledAtDate,
       timezone,
     })
 
@@ -194,9 +192,9 @@ export async function sendCampaignAction(
     await addRecipientsToCampaign(campaign.id, recipients)
 
     // Either schedule for later or send immediately
-    if (isScheduled && scheduledAtUTC) {
+    if (isScheduled && scheduledAtDate) {
       // Schedule the campaign
-      await scheduleCampaign(campaign.id, scheduledAtUTC, timezone)
+      await scheduleCampaign(campaign.id, scheduledAtDate, timezone)
 
       // Revalidate communications path
       revalidatePath('/educator/communications')
@@ -208,7 +206,7 @@ export async function sendCampaignAction(
           sent: 0,
           failed: 0,
           scheduled: true,
-          scheduledAt: scheduledAtUTC.toISOString(),
+          scheduledAt: scheduledAtDate.toISOString(),
         },
       }
     }
