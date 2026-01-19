@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import TemplateEditor from "./template-editor"
+import TemplateEditor, { type TemplateEditorRef } from "./template-editor"
 import { VariableInserter } from "./variable-inserter"
 import { TemplatePreview } from "./template-preview"
 
@@ -33,6 +33,7 @@ export function TemplateForm({
   isLoading = false,
 }: TemplateFormProps) {
   const subjectInputRef = useRef<HTMLInputElement>(null)
+  const editorRef = useRef<TemplateEditorRef>(null)
   const [bodyContent, setBodyContent] = useState(defaultValues?.body ?? "")
 
   const {
@@ -75,11 +76,10 @@ export function TemplateForm({
   }
 
   const handleBodyVariableInsert = (variable: string) => {
-    // Insert variable at the end of the body content
-    // For better UX, the user can position cursor in editor first
-    const newContent = bodyContent + variable
-    setBodyContent(newContent)
-    setValue("body", newContent, { shouldValidate: true })
+    // Insert variable at cursor position in the editor
+    if (editorRef.current) {
+      editorRef.current.insertAtCursor(variable)
+    }
   }
 
   const handleBodyChange = (html: string) => {
@@ -106,6 +106,7 @@ export function TemplateForm({
               id="name"
               {...register("name")}
               placeholder="Ej: Bienvenida al curso"
+              className="bg-background"
             />
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
@@ -126,6 +127,7 @@ export function TemplateForm({
                 ;(subjectInputRef as React.MutableRefObject<HTMLInputElement | null>).current = e
               }}
               placeholder="Ej: Bienvenido a {{courseName}}"
+              className="bg-background"
             />
             {errors.subject && (
               <p className="text-sm text-destructive">
@@ -141,6 +143,7 @@ export function TemplateForm({
               <VariableInserter onInsert={handleBodyVariableInsert} />
             </div>
             <TemplateEditor
+              ref={editorRef}
               content={bodyContent}
               onChange={handleBodyChange}
               placeholder="Escribe el contenido del email..."

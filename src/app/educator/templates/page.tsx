@@ -79,7 +79,7 @@ export default async function TemplatesPage() {
           </Button>
         </div>
       ) : (
-        <div className="rounded-lg border">
+        <div className="rounded-lg border bg-background">
           <Table>
             <TableHeader>
               <TableRow>
@@ -92,7 +92,14 @@ export default async function TemplatesPage() {
             <TableBody>
               {templates.map((template) => (
                 <TableRow key={template.id}>
-                  <TableCell className="font-medium">{template.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <Link
+                      href={`/educator/templates/${template.id}/edit`}
+                      className="hover:underline"
+                    >
+                      {template.name}
+                    </Link>
+                  </TableCell>
                   <TableCell className="max-w-[300px] truncate">
                     {template.subject}
                   </TableCell>

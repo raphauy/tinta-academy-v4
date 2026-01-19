@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useImperativeHandle, forwardRef } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Bold,
@@ -15,17 +15,18 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+export interface TemplateEditorRef {
+  insertAtCursor: (text: string) => void
+}
+
 interface TemplateEditorProps {
   content: string
   onChange: (html: string) => void
   placeholder?: string
 }
 
-export default function TemplateEditor({
-  content,
-  onChange,
-  placeholder = 'Escribe el contenido del email...',
-}: TemplateEditorProps) {
+const TemplateEditor = forwardRef<TemplateEditorRef, TemplateEditorProps>(
+  function TemplateEditor({ content, onChange, placeholder = 'Escribe el contenido del email...' }, ref) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -46,6 +47,7 @@ export default function TemplateEditor({
       }),
     ],
     content,
+    immediatelyRender: false,
     editorProps: {
       attributes: {
         class:
@@ -56,6 +58,14 @@ export default function TemplateEditor({
       onChange(editor.getHTML())
     },
   })
+
+  useImperativeHandle(ref, () => ({
+    insertAtCursor: (text: string) => {
+      if (editor) {
+        editor.chain().focus().insertContent(text).run()
+      }
+    },
+  }), [editor])
 
   useEffect(() => {
     if (editor && content !== editor.getHTML()) {
@@ -88,7 +98,7 @@ export default function TemplateEditor({
   }
 
   return (
-    <div className="border rounded-md overflow-hidden">
+    <div className="border rounded-md overflow-hidden bg-background">
       <div className="flex items-center gap-1 p-2 border-b bg-muted/50">
         <Button
           type="button"
@@ -162,4 +172,6 @@ export default function TemplateEditor({
       )}
     </div>
   )
-}
+})
+
+export default TemplateEditor

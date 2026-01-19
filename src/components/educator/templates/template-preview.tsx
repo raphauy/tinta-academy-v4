@@ -28,6 +28,12 @@ export function TemplatePreview({ subject, body }: TemplatePreviewProps) {
   const renderedSubject = renderTemplate(subject, SAMPLE_VARIABLES)
   const renderedBody = renderTemplate(body, SAMPLE_VARIABLES)
 
+  // Preserve empty paragraphs by adding a non-breaking space
+  const preservedBody = renderedBody
+    .replace(/<p><\/p>/g, '<p>&nbsp;</p>')
+    .replace(/<p><br><\/p>/g, '<p>&nbsp;</p>')
+    .replace(/<p><br\/><\/p>/g, '<p>&nbsp;</p>')
+
   return (
     <Card className="bg-muted/50">
       <CardHeader className="pb-3">
@@ -53,10 +59,10 @@ export function TemplatePreview({ subject, body }: TemplatePreviewProps) {
           <p className="text-xs font-medium text-muted-foreground mb-2">
             Contenido
           </p>
-          {renderedBody ? (
+          {preservedBody ? (
             <div
-              className="prose prose-sm max-w-none dark:prose-invert"
-              dangerouslySetInnerHTML={{ __html: renderedBody }}
+              className="prose prose-sm max-w-none dark:prose-invert [&>p]:mb-0 [&>p]:min-h-[1.5em]"
+              dangerouslySetInnerHTML={{ __html: preservedBody }}
             />
           ) : (
             <p className="text-sm text-muted-foreground italic">
