@@ -335,31 +335,20 @@ export function DeleteTemplateButton({ templateId, templateName }: Props) {
 
 ### 6. Tablas con Shadcn Table
 
+**IMPORTANTE**: El nombre/campo principal debe ser un link clickeable a editar (además del menú ⋯).
+
 ```typescript
+import Link from "next/link"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Pencil, Trash } from "lucide-react"
 
-interface Template {
-  id: string
-  name: string
-  subject: string
-  createdAt: Date
-}
+interface Template { id: string; name: string; subject: string; createdAt: Date }
 
 export function TemplatesTable({ templates }: { templates: Template[] }) {
   return (
@@ -375,9 +364,18 @@ export function TemplatesTable({ templates }: { templates: Template[] }) {
       <TableBody>
         {templates.map((template) => (
           <TableRow key={template.id}>
-            <TableCell className="font-medium">{template.name}</TableCell>
+            {/* Nombre como link a editar - acceso rápido */}
+            <TableCell>
+              <Link
+                href={`/educator/templates/${template.id}/edit`}
+                className="font-medium hover:underline"
+              >
+                {template.name}
+              </Link>
+            </TableCell>
             <TableCell>{template.subject}</TableCell>
             <TableCell>{template.createdAt.toLocaleDateString("es")}</TableCell>
+            {/* Menú ⋯ con todas las acciones */}
             <TableCell>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -386,9 +384,11 @@ export function TemplatesTable({ templates }: { templates: Template[] }) {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Editar
+                  <DropdownMenuItem asChild>
+                    <Link href={`/educator/templates/${template.id}/edit`}>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Editar
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="text-destructive">
                     <Trash className="mr-2 h-4 w-4" />
@@ -539,6 +539,7 @@ Antes de entregar código UI, verificar:
 
 - [ ] Componente marcado como `"use client"` si tiene interactividad
 - [ ] Usa componentes Shadcn UI, NO elementos HTML nativos
+- [ ] **Tablas**: campo principal es link a editar (+ menú ⋯)
 - [ ] Formularios con validación Zod
 - [ ] Estados de loading con `isSubmitting` y `Loader2`
 - [ ] Toast notifications para feedback (sonner)
