@@ -13,7 +13,7 @@
     {
       "id": 2,
       "name": "Gestion de Plantillas",
-      "status": "planned",
+      "status": "implementing",
       "descriptionFile": "fase-2.md",
       "tasksFile": "fase-2.tasks.json"
     },
