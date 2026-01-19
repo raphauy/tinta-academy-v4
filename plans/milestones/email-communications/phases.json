@@ -48,7 +48,7 @@
     {
       "id": 7,
       "name": "Workflows - Ejecucion",
-      "status": "pending",
+      "status": "planned",
       "descriptionFile": "fase-7.md",
       "tasksFile": "fase-7.tasks.json"
     },

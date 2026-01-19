@@ -1,0 +1,267 @@
+[
+  {
+    "id": "7.01",
+    "category": "services",
+    "description": "Create course workflow service for assignment and execution management",
+    "steps": [
+      "Create src/services/course-workflow-service.ts",
+      "Implement getActiveWorkflowForCourse(courseId) - returns CourseWorkflow with template and steps",
+      "Implement getCourseWorkflowsForWorkflow(workflowTemplateId) - list courses using this workflow",
+      "Implement assignWorkflowToCourse(courseId, workflowTemplateId) - creates CourseWorkflow",
+      "Implement unassignWorkflowFromCourse(courseWorkflowId) - deletes CourseWorkflow and related executions",
+      "Implement updateCourseWorkflowStatus(courseWorkflowId, status) - pause/resume/complete",
+      "Implement checkAndUpdateWorkflowCompletion(courseWorkflowId) - mark as completed if all executions done",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.02",
+    "category": "services",
+    "description": "Create workflow execution generation service",
+    "steps": [
+      "Create src/services/workflow-execution-service.ts",
+      "Import helper to calculate scheduledAt (will be created in next task)",
+      "Implement generateExecutionsForEnrollment(enrollmentId, courseWorkflowId) - creates WorkflowExecution for each step",
+      "Implement generateExecutionsForAllEnrollments(courseWorkflowId) - bulk create for existing enrollments",
+      "Implement markPastExecutionsAsSkipped(courseWorkflowId) - mark executions with scheduledAt < now as 'skipped'",
+      "Implement getPendingExecutions(limit) - get executions ready to send (status=pending, scheduledAt <= now)",
+      "Implement getUpcomingExecutionsForCourse(courseWorkflowId) - next N scheduled emails for preview",
+      "Implement getExecutionHistoryForCourse(courseWorkflowId) - sent/skipped executions",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.03",
+    "category": "services",
+    "description": "Create scheduler helper for calculating scheduledAt based on trigger types",
+    "steps": [
+      "Create src/services/workflow-scheduler.ts",
+      "Import date-fns for date calculations",
+      "Implement calculateScheduledAt(step, course) - main function that routes to specific calculators",
+      "Handle triggerType: course_start - course.startDate + offset days",
+      "Handle triggerType: course_end - course.endDate + offset days",
+      "Handle triggerType: exam_date - course.examDate + offset days (return null if no examDate)",
+      "Handle triggerType: class_date - course.classDates[triggerClassIndex-1] + offset days",
+      "Handle triggerType: registration_deadline - course.registrationDeadline + offset days",
+      "Return null if base date is missing or invalid",
+      "Add helper shouldSkipExecution(scheduledAt) - returns true if scheduledAt is in the past",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.04",
+    "category": "services",
+    "description": "Extend enrollment service to generate workflow executions on enrollment creation",
+    "steps": [
+      "Open src/services/enrollment-service.ts",
+      "Import generateExecutionsForEnrollment from workflow-execution-service",
+      "Import getActiveWorkflowForCourse from course-workflow-service",
+      "Modify createEnrollment function to check for active workflow after creating enrollment",
+      "If course has active workflow (status=active), call generateExecutionsForEnrollment",
+      "Ensure workflow generation happens inside the same transaction or right after",
+      "Handle errors gracefully - enrollment should succeed even if workflow generation fails (log error)",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.05",
+    "category": "services",
+    "description": "Create workflow email sending service",
+    "steps": [
+      "Create src/services/workflow-email-service.ts",
+      "Import renderTemplate and sendEmail helpers from existing email-service",
+      "Import Resend client configuration",
+      "Implement processWorkflowExecution(executionId) - renders template and sends email",
+      "Fetch execution with student, course, educator data for variable replacement",
+      "Mark execution as 'sending' before send attempt",
+      "On success: update status to 'sent', set sentAt, save resendId",
+      "On failure: update status to 'failed', save errorMessage",
+      "Implement processPendingWorkflowExecutions(limit) - batch process pending executions",
+      "Add delay between sends to respect Resend rate limits (100ms between each)",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.06",
+    "category": "server-actions",
+    "description": "Create server actions for workflow assignment to courses",
+    "steps": [
+      "Create src/app/educator/courses/[id]/workflows/actions.ts",
+      "Define Zod schema for assignWorkflow: { workflowTemplateId: string }",
+      "Implement assignWorkflowAction(courseId, formData) - validates ownership, assigns workflow",
+      "After assignment, call generateExecutionsForAllEnrollments for existing students",
+      "Call markPastExecutionsAsSkipped to handle already-past dates",
+      "Implement unassignWorkflowAction(courseWorkflowId) - validates ownership, removes assignment",
+      "Implement pauseWorkflowAction(courseWorkflowId) - sets status to paused",
+      "Implement resumeWorkflowAction(courseWorkflowId) - sets status to active",
+      "Add revalidatePath for course pages after mutations",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.07",
+    "category": "server-actions",
+    "description": "Create server actions for assigning courses from workflow page",
+    "steps": [
+      "Create src/app/educator/workflows/[id]/actions.ts",
+      "Define Zod schema for assignCourse: { courseId: string }",
+      "Implement assignCourseToWorkflowAction(workflowId, formData) - validates ownership",
+      "Call assignWorkflowToCourse from service",
+      "Generate executions for all existing enrollments in that course",
+      "Mark past executions as skipped",
+      "Implement unassignCourseAction(courseWorkflowId) - validates ownership and removes",
+      "Add revalidatePath for /educator/workflows and /educator/workflows/[id]",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.08",
+    "category": "config",
+    "description": "Configure Vercel cron for workflow email processing",
+    "steps": [
+      "Open vercel.json (create if doesn't exist)",
+      "Add cron configuration for /api/cron/process-workflow-emails with schedule '*/15 * * * *'",
+      "Verify JSON is valid",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.09",
+    "category": "api",
+    "description": "Create cron endpoint for processing workflow emails",
+    "steps": [
+      "Create src/app/api/cron/process-workflow-emails/route.ts",
+      "Export POST handler",
+      "Verify CRON_SECRET from Authorization header (Bearer token)",
+      "Call processPendingWorkflowExecutions with limit of 50",
+      "After processing batch, call checkAndUpdateWorkflowCompletion for affected CourseWorkflows",
+      "Return JSON response with processed count and any errors",
+      "Handle errors gracefully and return appropriate status codes",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.10",
+    "category": "ui",
+    "description": "Create course workflow status component",
+    "steps": [
+      "Create src/components/educator/workflows/course-workflow-status.tsx as client component",
+      "Accept props: courseWorkflow (with template, executions summary), courseId",
+      "Display Card with workflow name and status Badge (active/paused/completed)",
+      "Show summary stats: total executions, sent, pending, skipped",
+      "Add Pause/Resume button based on current status (use server actions)",
+      "Add 'Ver detalles' link to course workflow detail page",
+      "Add 'Desasignar' button with confirmation AlertDialog",
+      "Use pending state for buttons during mutations",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.11",
+    "category": "ui",
+    "description": "Create workflow assignment selector for courses",
+    "steps": [
+      "Create src/components/educator/workflows/workflow-assignment-selector.tsx as client component",
+      "Accept props: courseId, currentWorkflowId (optional), availableWorkflows",
+      "Show Select dropdown with available workflows (name + step count)",
+      "Include 'Sin workflow' option to clear assignment",
+      "On change, call appropriate action (assign or unassign)",
+      "Show loading state during mutation",
+      "Display success/error toast after mutation",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.12",
+    "category": "ui",
+    "description": "Create course workflow detail page with upcoming and history",
+    "steps": [
+      "Create src/app/educator/courses/[id]/workflows/page.tsx as async Server Component",
+      "Get courseId from params, educatorId from session",
+      "Fetch course with getActiveWorkflowForCourse",
+      "If no workflow assigned, show empty state with link to assign",
+      "Fetch upcoming executions with getUpcomingExecutionsForCourse (limit 10)",
+      "Fetch history with getExecutionHistoryForCourse (limit 20)",
+      "Render CourseWorkflowStatus component",
+      "Create Tabs: 'Próximos' and 'Historial'",
+      "Display upcoming emails as timeline/list with date, recipient, step info",
+      "Display history as Table with date, recipient, status, actions",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.13",
+    "category": "ui",
+    "description": "Add workflow section to course students page",
+    "steps": [
+      "Open src/app/educator/courses/[id]/students/page.tsx",
+      "Import WorkflowAssignmentSelector and CourseWorkflowStatus components",
+      "Fetch educator's workflows using getWorkflowTemplates service",
+      "Fetch current course workflow using getActiveWorkflowForCourse",
+      "Add section below page header for workflow management",
+      "If workflow assigned: show CourseWorkflowStatus with link to detail page",
+      "If no workflow: show WorkflowAssignmentSelector to assign one",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.14",
+    "category": "ui",
+    "description": "Add course assignment section to workflow detail page",
+    "steps": [
+      "Create src/app/educator/workflows/[id]/courses/page.tsx as async Server Component",
+      "Get workflowId from params, educatorId from session",
+      "Fetch workflow with getCourseWorkflowsForWorkflow",
+      "Fetch educator's courses for assignment selector",
+      "Display Table of assigned courses: name, enrollment count, workflow status, actions",
+      "Add Select to assign new course (exclude already-assigned courses)",
+      "Add unassign button per row with confirmation",
+      "Show execution stats per course (sent/pending/skipped)",
+      "Link course names to their workflow detail page",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "7.15",
+    "category": "ui",
+    "description": "Update workflow list page with assigned courses count",
+    "steps": [
+      "Open src/app/educator/workflows/page.tsx (created in fase 6)",
+      "Modify query to include _count of courseWorkflows",
+      "Add 'Cursos' column showing count of assigned courses",
+      "Add link to /educator/workflows/[id]/courses for each workflow",
+      "Update empty state message if needed",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  }
+]
