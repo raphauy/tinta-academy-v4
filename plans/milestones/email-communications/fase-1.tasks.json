@@ -1,0 +1,98 @@
+[
+  {
+    "id": "1.01",
+    "category": "schema",
+    "description": "Create all email communications models, enums and relations in Prisma schema",
+    "steps": [
+      "Add enums: EmailCampaignStatus (draft, scheduled, sending, sent, partially_sent, cancelled)",
+      "Add enum: EmailDeliveryStatus (pending, sending, sent, delivered, opened, clicked, bounced, failed)",
+      "Add enum: WorkflowTriggerType (course_start, course_end, exam_date, class_date, registration_deadline)",
+      "Add enum: CourseWorkflowStatus (active, paused, completed)",
+      "Add model EmailTemplate with fields: id, name, subject, body (@db.Text), educatorId, createdAt, updatedAt",
+      "Add model EmailCampaign with all fields from PRD including stats counters",
+      "Add model EmailRecipient with tracking fields and @@unique([campaignId, studentId])",
+      "Add model WorkflowTemplate with fields: id, name, description, educatorId, isActive, timestamps",
+      "Add model WorkflowStep with trigger config fields and @@index on workflowTemplateId, templateId",
+      "Add model CourseWorkflow with @@unique([courseId, workflowTemplateId])",
+      "Add model WorkflowExecution with all tracking fields and @@unique([courseWorkflowId, workflowStepId, studentId])",
+      "Add relations to Educator: emailTemplates, emailCampaigns, workflowTemplates",
+      "Add relations to Student: emailRecipients, workflowExecutions",
+      "Add relations to Course: emailCampaigns, courseWorkflows",
+      "Add relation to Enrollment: workflowExecutions",
+      "Run: pnpm prisma migrate dev --name add_email_communications",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "1.02",
+    "category": "services",
+    "description": "Create email template service with CRUD operations",
+    "steps": [
+      "Create src/services/email-template-service.ts",
+      "Implement getTemplatesByEducator(educatorId: string) - returns all templates for an educator",
+      "Implement getTemplateById(id: string, educatorId: string) - returns single template with ownership check",
+      "Implement createTemplate(data: { name, subject, body, educatorId }) - creates new template",
+      "Implement updateTemplate(id: string, educatorId: string, data: { name?, subject?, body? }) - updates with ownership check",
+      "Implement deleteTemplate(id: string, educatorId: string) - deletes with ownership check, throws if used in workflows",
+      "Implement isTemplateInUse(id: string) - checks if template is used in any WorkflowStep",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "1.03",
+    "category": "services",
+    "description": "Create email campaign service with create and read operations",
+    "steps": [
+      "Create src/services/email-campaign-service.ts",
+      "Implement getCampaignsByEducator(educatorId: string, filters?: { courseId?, status? }) - returns campaigns with template info",
+      "Implement getCampaignById(id: string, educatorId: string) - returns campaign with template and recipients",
+      "Implement createCampaign(data: { name, templateId, educatorId, courseId?, scheduledAt?, timezone }) - creates draft campaign",
+      "Implement addRecipientsToCampaign(campaignId: string, recipients: { studentId, email }[]) - bulk inserts EmailRecipient records",
+      "Implement updateCampaignStatus(id: string, status: EmailCampaignStatus) - updates campaign status",
+      "Implement updateCampaignStats(id: string) - recalculates aggregated stats from recipients",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "1.04",
+    "category": "services",
+    "description": "Create template variable renderer utility",
+    "steps": [
+      "Create src/lib/email/template-variables.ts",
+      "Define AVAILABLE_VARIABLES constant with metadata: { key, description, example }",
+      "Define TemplateVariables type with all supported variables (studentName, studentFirstName, studentEmail, courseName, courseStartDate, courseEndDate, examDate, educatorName, courseUrl)",
+      "Implement renderTemplate(template: string, variables: TemplateVariables) - replaces {{variable}} placeholders",
+      "Implement extractVariables(template: string) - returns array of variable names used in template",
+      "Implement validateVariables(template: string) - returns { valid: boolean, invalidVars: string[] }",
+      "Implement buildVariablesForStudent(student, course, educator, baseUrl) - builds TemplateVariables object from domain models",
+      "Add date formatting helper for Spanish locale (e.g., '15 de marzo de 2025')",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  },
+  {
+    "id": "1.05",
+    "category": "services",
+    "description": "Create dynamic email component with react-email",
+    "steps": [
+      "Create src/components/emails/dynamic-email.tsx",
+      "Import existing email layout/theme components if available, or create consistent header with Tinta Academy logo",
+      "Define DynamicEmailProps: { subject: string, body: string (HTML), previewText?: string }",
+      "Implement DynamicEmail component that renders HTML body inside the standard email layout",
+      "Add consistent footer with unsubscribe placeholder and company info",
+      "Create src/lib/email/render-dynamic-email.ts",
+      "Implement renderDynamicEmail(props: DynamicEmailProps) - uses react-email render() to produce HTML string",
+      "Implement sendDynamicEmail(to: string, subject: string, body: string) - sends via Resend using rendered HTML",
+      "Verify with pnpm lint",
+      "Verify with pnpm typecheck"
+    ],
+    "passes": false
+  }
+]

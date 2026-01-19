@@ -1,0 +1,63 @@
+{
+  "milestone": "email-communications",
+  "prdPath": "../email-communications.prd.md",
+  "createdAt": "2026-01-19",
+  "phases": [
+    {
+      "id": 1,
+      "name": "Schema y Servicios Base",
+      "status": "planned",
+      "descriptionFile": "fase-1.md",
+      "tasksFile": "fase-1.tasks.json"
+    },
+    {
+      "id": 2,
+      "name": "Gestion de Plantillas",
+      "status": "pending",
+      "descriptionFile": "fase-2.md",
+      "tasksFile": "fase-2.tasks.json"
+    },
+    {
+      "id": 3,
+      "name": "Emails Manuales - Envio",
+      "status": "pending",
+      "descriptionFile": "fase-3.md",
+      "tasksFile": "fase-3.tasks.json"
+    },
+    {
+      "id": 4,
+      "name": "Emails Programados y Cron",
+      "status": "pending",
+      "descriptionFile": "fase-4.md",
+      "tasksFile": "fase-4.tasks.json"
+    },
+    {
+      "id": 5,
+      "name": "Tracking y Historial",
+      "status": "pending",
+      "descriptionFile": "fase-5.md",
+      "tasksFile": "fase-5.tasks.json"
+    },
+    {
+      "id": 6,
+      "name": "Workflows - Templates",
+      "status": "pending",
+      "descriptionFile": "fase-6.md",
+      "tasksFile": "fase-6.tasks.json"
+    },
+    {
+      "id": 7,
+      "name": "Workflows - Ejecucion",
+      "status": "pending",
+      "descriptionFile": "fase-7.md",
+      "tasksFile": "fase-7.tasks.json"
+    },
+    {
+      "id": 8,
+      "name": "Polish y Admin",
+      "status": "pending",
+      "descriptionFile": "fase-8.md",
+      "tasksFile": "fase-8.tasks.json"
+    }
+  ]
+}
