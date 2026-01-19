@@ -58,7 +58,8 @@ export const educatorNavItems: NavItem[] = [
     href: '/educator/communications',
     icon: MessageSquare,
     children: [
-      { label: 'Nuevo Envío', href: '/educator/communications', icon: Send },
+      { label: 'Campañas', href: '/educator/communications', icon: MessageSquare },
+      { label: 'Nuevo Envío', href: '/educator/communications/new', icon: Send },
       { label: 'Historial', href: '/educator/communications/history', icon: History },
       { label: 'Plantillas', href: '/educator/templates', icon: FileText },
       { label: 'Workflows', href: '/educator/workflows', icon: GitBranch },

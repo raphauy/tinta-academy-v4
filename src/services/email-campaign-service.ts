@@ -8,6 +8,27 @@ import {
 } from './email-template-service'
 
 /**
+ * Get recent campaigns for an educator (limited)
+ */
+export async function getRecentCampaigns(educatorId: string, limit: number = 10) {
+  return prisma.emailCampaign.findMany({
+    where: { educatorId },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      totalRecipients: true,
+      sentCount: true,
+      scheduledAt: true,
+      sentAt: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+    take: limit,
+  })
+}
+
+/**
  * Get all campaigns for an educator with optional filters
  */
 export async function getCampaignsByEducator(
@@ -314,8 +335,9 @@ export async function processCampaignSend(
   await updateCampaignStats(campaignId)
 
   // Update campaign status based on results
+  // If all succeeded -> 'sent', if some failed -> 'partially_sent'
   const finalStatus: EmailCampaignStatus =
-    failed === 0 ? 'sent' : sent === 0 ? 'draft' : 'partially_sent'
+    failed === 0 ? 'sent' : 'partially_sent'
 
   await prisma.emailCampaign.update({
     where: { id: campaignId },

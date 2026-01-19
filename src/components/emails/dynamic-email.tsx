@@ -14,12 +14,14 @@ export interface DynamicEmailProps {
   subject: string
   body: string // HTML content
   previewText?: string
+  profileUrl?: string
 }
 
 export default function DynamicEmail({
   subject = 'Email de Tinta Academy',
   body = '<p>Contenido del email</p>',
   previewText,
+  profileUrl = 'https://academy.tinta.wine/student/profile',
 }: DynamicEmailProps) {
   return (
     <Html>
@@ -43,9 +45,9 @@ export default function DynamicEmail({
               sobre vinos
             </Text>
             <Text style={styles.unsubscribeText}>
-              Si no deseas recibir más correos de este tipo, puedes{' '}
-              <a href="{{unsubscribeUrl}}" style={styles.unsubscribeLink}>
-                darte de baja aquí
+              Puedes modificar tus preferencias de comunicación en{' '}
+              <a href={profileUrl} style={styles.unsubscribeLink}>
+                tu perfil
               </a>
               .
             </Text>

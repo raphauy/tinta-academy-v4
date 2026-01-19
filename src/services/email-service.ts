@@ -14,9 +14,6 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://academy.tinta.wine'
 
 // Helper to check if we should actually send emails
 function shouldSendEmail(): boolean {
-  if (process.env.NODE_ENV === 'development') {
-    return false
-  }
   if (!process.env.RESEND_API_KEY) {
     console.warn('RESEND_API_KEY not set, skipping email send')
     return false
@@ -499,6 +496,7 @@ export async function sendDynamicEmail(
 ): Promise<SendDynamicEmailResult> {
   const { to, subject, body } = input
 
+  // Log in development for debugging
   if (process.env.NODE_ENV === 'development') {
     console.log('\n========================================')
     console.log('  DYNAMIC EMAIL (Campaign/Workflow)')
@@ -506,8 +504,6 @@ export async function sendDynamicEmail(
     console.log(`  Subject: ${subject}`)
     console.log(`  Body preview: ${body.substring(0, 100)}...`)
     console.log('========================================\n')
-    // Return a fake resendId for development testing
-    return { success: true, resendId: `dev-${Date.now()}` }
   }
 
   if (!shouldSendEmail()) {
@@ -519,7 +515,7 @@ export async function sendDynamicEmail(
       from: fromEmail,
       to,
       subject,
-      react: DynamicEmail({ subject, body }),
+      react: DynamicEmail({ subject, body, profileUrl: `${baseUrl}/student/profile` }),
     })
 
     if (result.error) {
