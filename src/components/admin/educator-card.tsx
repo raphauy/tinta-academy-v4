@@ -58,6 +58,7 @@ export function EducatorCard({
           <div className="flex-shrink-0">
             {educator.imageUrl && !imgError ? (
               <div className="w-16 h-16 rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800">
+                {/* eslint-disable-next-line @next/next/no-img-element -- External avatar URL */}
                 <img
                   src={educator.imageUrl}
                   alt={educator.name}

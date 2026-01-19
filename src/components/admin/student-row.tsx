@@ -35,6 +35,7 @@ function Avatar({ src, name, initials }: AvatarProps) {
   }
 
   return (
+    // eslint-disable-next-line @next/next/no-img-element -- External OAuth avatar
     <img
       src={src}
       alt={name}

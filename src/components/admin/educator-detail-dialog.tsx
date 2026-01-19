@@ -120,6 +120,7 @@ export function EducatorDetailDialog({
         <DialogHeader>
           <div className="flex items-center gap-3">
             {educator.imageUrl && !imgError ? (
+              // eslint-disable-next-line @next/next/no-img-element -- External avatar URL
               <img
                 src={educator.imageUrl}
                 alt={educator.name}

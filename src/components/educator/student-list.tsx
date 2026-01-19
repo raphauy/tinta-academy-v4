@@ -69,13 +69,6 @@ function formatNumber(amount: number): string {
   }).format(amount)
 }
 
-function formatTotalSpent(usd: number, uyu: number): string {
-  const parts: string[] = []
-  if (usd > 0) parts.push(`USD ${formatNumber(usd)}`)
-  if (uyu > 0) parts.push(`UYU ${formatNumber(uyu)}`)
-  return parts.length > 0 ? parts.join(' / ') : 'USD 0'
-}
-
 export function StudentList({ course, enrollments }: StudentListProps) {
   const [searchQuery, setSearchQuery] = useState('')
 

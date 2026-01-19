@@ -114,6 +114,7 @@ export function StudentDetailDialog({
         <DialogHeader>
           <div className="flex items-center gap-3">
             {student.user.image ? (
+              // eslint-disable-next-line @next/next/no-img-element -- External OAuth avatar
               <img
                 src={student.user.image}
                 alt={displayName}

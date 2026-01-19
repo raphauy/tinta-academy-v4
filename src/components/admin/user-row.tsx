@@ -46,6 +46,7 @@ function Avatar({ src, initials, size = 'md' }: AvatarProps) {
     <div
       className={`flex-shrink-0 ${sizeClass} rounded-full overflow-hidden bg-stone-100 dark:bg-stone-800`}
     >
+      {/* eslint-disable-next-line @next/next/no-img-element -- External OAuth avatar */}
       <img
         src={src}
         alt=""

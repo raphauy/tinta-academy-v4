@@ -59,7 +59,6 @@ export function CourseCatalog({
     if (urlFilters.type || urlFilters.modality || urlFilters.tagIds?.length) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Valid sync with URL state
       setFilters(urlFilters)
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Valid sync with URL state
       setShowFilters(true)
     }
   }, [urlFilters])
