@@ -16,6 +16,7 @@ import {
   History,
   FileText,
   GitBranch,
+  Mail,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -56,9 +57,9 @@ export const educatorNavItems: NavItem[] = [
   {
     label: 'Comunicaciones',
     href: '/educator/communications',
-    icon: MessageSquare,
+    icon: Mail,
     children: [
-      { label: 'Campañas', href: '/educator/communications', icon: MessageSquare },
+      { label: 'Campañas', href: '/educator/communications', icon: Mail },
       { label: 'Nuevo Envío', href: '/educator/communications/new', icon: Send },
       { label: 'Historial', href: '/educator/communications/history', icon: History },
       { label: 'Plantillas', href: '/educator/templates', icon: FileText },

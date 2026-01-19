@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Plus, Send, Clock, CheckCircle2, XCircle, Mail } from 'lucide-react'
+import { Send, Clock, CheckCircle2, XCircle, Plus, History } from 'lucide-react'
 import type { EmailCampaignStatus } from '@prisma/client'
 
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { getCampaignsWithStats } from '@/services/email-campaign-service'
+import { getEducatorCourses } from '@/services/course-service'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -17,6 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CampaignHistoryFilters } from './campaign-history-filters'
 
 const statusConfig: Record<
   EmailCampaignStatus,
@@ -30,7 +32,14 @@ const statusConfig: Record<
   cancelled: { label: 'Cancelado', icon: XCircle, variant: 'secondary' },
 }
 
-export default async function CommunicationsPage() {
+interface PageProps {
+  searchParams: Promise<{
+    courseId?: string
+    status?: string
+  }>
+}
+
+export default async function CampaignHistoryPage({ searchParams }: PageProps) {
   const session = await auth()
 
   if (!session?.user?.id) {
@@ -43,17 +52,41 @@ export default async function CommunicationsPage() {
     redirect('/login')
   }
 
-  // Get all campaigns and take only the first 10
-  const allCampaigns = await getCampaignsWithStats(educator.id)
-  const campaigns = allCampaigns.slice(0, 10)
+  const params = await searchParams
+
+  // Parse filters from searchParams
+  const filters: {
+    courseId?: string
+    status?: EmailCampaignStatus
+  } = {}
+
+  if (params.courseId && params.courseId !== 'all') {
+    filters.courseId = params.courseId
+  }
+
+  if (params.status && params.status !== 'all') {
+    filters.status = params.status as EmailCampaignStatus
+  }
+
+  // Fetch data
+  const [campaigns, courses] = await Promise.all([
+    getCampaignsWithStats(educator.id, filters),
+    getEducatorCourses(educator.id),
+  ])
+
+  // Prepare courses for filter dropdown
+  const courseOptions = courses.map((c) => ({
+    id: c.id,
+    title: c.title,
+  }))
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Comunicaciones</h1>
+          <h1 className="text-2xl font-bold">Historial de Campañas</h1>
           <p className="text-muted-foreground">
-            Gestiona tus campañas de email
+            Todas tus campañas de email enviadas
           </p>
         </div>
         <Button asChild>
@@ -67,17 +100,27 @@ export default async function CommunicationsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Mail className="h-5 w-5" />
-            Últimas 10 campañas
+            <History className="h-5 w-5" />
+            Campañas
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {/* Filters */}
+          <CampaignHistoryFilters
+            courses={courseOptions}
+            currentCourseId={params.courseId}
+            currentStatus={params.status}
+          />
+
+          {/* Table */}
           {campaigns.length === 0 ? (
             <div className="py-12 text-center">
               <Send className="mx-auto h-12 w-12 text-muted-foreground/50" />
               <h3 className="mt-4 text-lg font-medium">No hay campañas</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Comienza creando tu primer envío de email
+                {filters.courseId || filters.status
+                  ? 'No se encontraron campañas con los filtros seleccionados'
+                  : 'Comienza creando tu primer envío de email'}
               </p>
               <Button asChild className="mt-4">
                 <Link href="/educator/communications/new">
@@ -169,14 +212,6 @@ export default async function CommunicationsPage() {
           )}
         </CardContent>
       </Card>
-
-      <div className="flex justify-center">
-        <Button variant="outline" asChild>
-          <Link href="/educator/communications/history">
-            Ver historial completo
-          </Link>
-        </Button>
-      </div>
     </div>
   )
 }
