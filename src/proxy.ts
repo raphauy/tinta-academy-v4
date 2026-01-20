@@ -10,7 +10,8 @@ export default async function proxy(request: NextRequest) {
   // Note: /checkout is public because MP redirects may not send session cookies properly
   // Each checkout page handles its own auth verification
   // Note: /api/webhooks must be public for external services (MercadoPago, etc)
-  const publicRoutes = ['/', '/api/auth', '/api/webhooks', '/cursos', '/wset', '/about', '/contact', '/checkout']
+  // Note: /api/cron must be public for Vercel Cron (uses CRON_SECRET for auth)
+  const publicRoutes = ['/', '/api/auth', '/api/webhooks', '/api/cron', '/cursos', '/wset', '/about', '/contact', '/checkout']
   const isPublicRoute = publicRoutes.some(
     (route) =>
       pathname === route || (route !== '/' && pathname.startsWith(`${route}/`))
