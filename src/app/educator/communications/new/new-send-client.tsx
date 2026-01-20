@@ -531,55 +531,55 @@ export function NewSendClient({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-start justify-between gap-3">
+                <div className="space-y-4 text-sm">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       {campaignName.trim() ? (
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                       ) : (
-                        <Circle className="h-4 w-4" />
+                        <Circle className="h-4 w-4 shrink-0" />
                       )}
-                      Nombre
+                      <span>Nombre</span>
                     </div>
-                    <div className="text-right font-medium">
-                      {campaignName || 'Sin nombre'}
-                    </div>
+                    <p className="pl-6 font-medium text-foreground">
+                      {campaignName || <span className="text-muted-foreground font-normal">Sin nombre</span>}
+                    </p>
                   </div>
 
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       {canProceedFromStep1 ? (
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                       ) : (
-                        <Circle className="h-4 w-4" />
+                        <Circle className="h-4 w-4 shrink-0" />
                       )}
-                      Destinatarios
+                      <span>Destinatarios</span>
                     </div>
-                    <div className="text-right font-medium">
-                      {recipientSummary}
-                    </div>
+                    <p className="pl-6 font-medium text-foreground">
+                      {canProceedFromStep1 ? recipientSummary : <span className="text-muted-foreground font-normal">Sin seleccionar</span>}
+                    </p>
                   </div>
 
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2 text-muted-foreground">
                       {canProceedFromStep2 ? (
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                       ) : (
-                        <Circle className="h-4 w-4" />
+                        <Circle className="h-4 w-4 shrink-0" />
                       )}
-                      Plantilla
+                      <span>Plantilla</span>
                     </div>
-                    <div className="text-right font-medium">
-                      {selectedTemplate?.name || 'Sin seleccionar'}
-                    </div>
+                    <p className="pl-6 font-medium text-foreground">
+                      {selectedTemplate?.name || <span className="text-muted-foreground font-normal">Sin seleccionar</span>}
+                    </p>
                   </div>
 
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                      Envío
+                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                      <span>Envío</span>
                     </div>
-                    <div className="text-right font-medium">{scheduleSummary}</div>
+                    <p className="pl-6 font-medium text-foreground">{scheduleSummary}</p>
                   </div>
                 </div>
 
