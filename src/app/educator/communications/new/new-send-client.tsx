@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
@@ -27,7 +27,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   RecipientSelector,
@@ -35,6 +34,7 @@ import {
   type StudentForSelection,
   type RecipientValue,
 } from '@/components/educator/communications/recipient-selector'
+import type { FilterForSelection } from '@/types/audience-filter'
 import {
   TemplateSelector,
   type TemplateForSelection,
@@ -51,11 +51,14 @@ import {
 import { formatInTimezone, getUserTimezone } from '@/lib/timezone-utils'
 import { usesCourseVariables } from '@/lib/email/template-variables'
 import { sendCampaignAction } from '../actions'
+import { getFilterCountAction } from '@/app/educator/filters/actions'
 
 interface NewSendClientProps {
   templates: TemplateForSelection[]
   courses: CourseForSelection[]
   students: StudentForSelection[]
+  filters: FilterForSelection[]
+  educatorId: string
 }
 
 type Step = 1 | 2 | 3
@@ -85,6 +88,8 @@ export function NewSendClient({
   templates,
   courses,
   students,
+  filters,
+  educatorId,
 }: NewSendClientProps) {
   const router = useRouter()
 
@@ -107,6 +112,46 @@ export function NewSendClient({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [isSending, setIsSending] = useState(false)
 
+  // Filter count state (real-time evaluation)
+  // State: { [filterId]: number | 'loading' }
+  const [filterCounts, setFilterCounts] = useState<Record<string, number | 'loading'>>({})
+  const fetchingRef = useRef<Set<string>>(new Set())
+
+  // Derived values for current filter
+  const currentFilterState = recipients.filterId ? filterCounts[recipients.filterId] : undefined
+  const filterCount = typeof currentFilterState === 'number' ? currentFilterState : null
+  const loadingFilterCount = currentFilterState === 'loading'
+
+  // Function to fetch filter count
+  const fetchFilterCount = useCallback(async (filterId: string) => {
+    if (fetchingRef.current.has(filterId)) return
+    fetchingRef.current.add(filterId)
+
+    setFilterCounts(prev => ({ ...prev, [filterId]: 'loading' }))
+
+    const result = await getFilterCountAction(filterId)
+    fetchingRef.current.delete(filterId)
+
+    if (result.success && result.data) {
+      setFilterCounts(prev => ({ ...prev, [filterId]: result.data!.count }))
+    } else {
+      // Remove loading state on error
+      setFilterCounts(prev => {
+        const next = { ...prev }
+        delete next[filterId]
+        return next
+      })
+    }
+  }, [])
+
+  // Trigger fetch when filter is selected and not in cache
+  useEffect(() => {
+    if (recipients.mode === 'filter' && recipients.filterId && filterCounts[recipients.filterId] === undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Valid async data fetching pattern (see React issue #34743)
+      fetchFilterCount(recipients.filterId)
+    }
+  }, [recipients.mode, recipients.filterId, filterCounts, fetchFilterCount])
+
   // Computed values
   const selectedTemplate = useMemo(() => {
     if (!selectedTemplateId) return null
@@ -118,8 +163,11 @@ export function NewSendClient({
       const course = courses.find((c) => c.id === recipients.courseId)
       return course?.studentCount || 0
     }
+    if (recipients.mode === 'filter' && recipients.filterId) {
+      return filterCount
+    }
     return recipients.studentIds.length
-  }, [recipients, courses])
+  }, [recipients, courses, filterCount]) as number | null
 
   const selectedCourseName = useMemo(() => {
     if (recipients.mode === 'course' && recipients.courseId) {
@@ -158,6 +206,9 @@ export function NewSendClient({
     if (recipients.mode === 'course') {
       return !!recipients.courseId
     }
+    if (recipients.mode === 'filter') {
+      return !!recipients.filterId
+    }
     return recipients.studentIds.length > 0
   }, [recipients])
 
@@ -178,8 +229,22 @@ export function NewSendClient({
         ? `${selectedCourseName} (${recipientCount})`
         : 'Selecciona un curso'
     }
+    if (recipients.mode === 'filter') {
+      if (recipients.filterId) {
+        const filter = filters.find((f) => f.id === recipients.filterId)
+        if (filter) {
+          if (loadingFilterCount) {
+            return `${filter.name} (...)`
+          }
+          const countText = recipientCount !== null ? recipientCount : '?'
+          return `${filter.name} (${countText})`
+        }
+        return 'Filtro seleccionado'
+      }
+      return 'Selecciona un filtro'
+    }
     return `${recipientCount} seleccionados`
-  }, [recipients.mode, selectedCourseName, recipientCount])
+  }, [recipients.mode, recipients.filterId, selectedCourseName, recipientCount, filters, loadingFilterCount])
 
   // Handlers
   const handleNext = () => {
@@ -210,6 +275,7 @@ export function NewSendClient({
       recipientMode: recipients.mode,
       courseId: recipients.courseId,
       studentIds: recipients.studentIds,
+      filterId: recipients.filterId,
       scheduledAt: schedule.mode === 'scheduled' ? schedule.scheduledAt : undefined,
       timezone: schedule.timezone,
     })
@@ -351,8 +417,12 @@ export function NewSendClient({
                     <RecipientSelector
                       courses={courses}
                       students={students}
+                      filters={filters}
+                      currentEducatorId={educatorId}
                       value={recipients}
                       onChange={setRecipients}
+                      filterCount={filterCount}
+                      loadingFilterCount={loadingFilterCount}
                     />
                   </div>
                 </div>

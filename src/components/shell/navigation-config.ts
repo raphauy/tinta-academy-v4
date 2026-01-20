@@ -17,6 +17,8 @@ import {
   FileText,
   GitBranch,
   Mail,
+  Filter,
+  HelpCircle,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -63,7 +65,9 @@ export const educatorNavItems: NavItem[] = [
       { label: 'Nueva Campaña', href: '/educator/communications/new', icon: Send },
       { label: 'Historial', href: '/educator/communications/history', icon: History },
       { label: 'Plantillas', href: '/educator/templates', icon: FileText },
+      { label: 'Filtros', href: '/educator/filters', icon: Filter },
       { label: 'Workflows', href: '/educator/workflows', icon: GitBranch },
+      { label: 'Ayuda', href: '/educator/communications/docs', icon: HelpCircle },
     ],
   },
   { label: 'Estadísticas', href: '/educator/statistics', icon: BarChart3 },

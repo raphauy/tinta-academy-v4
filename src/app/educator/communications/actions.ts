@@ -14,6 +14,7 @@ import {
   getCampaignsWithStats,
 } from '@/services/email-campaign-service'
 import { getStudentsByCourse } from '@/services/student-selection-service'
+import { getStudentIdsByFilter } from '@/services/audience-filter-service'
 import { prisma } from '@/lib/prisma'
 import type { EmailCampaignStatus } from '@prisma/client'
 
@@ -24,9 +25,10 @@ import type { EmailCampaignStatus } from '@prisma/client'
 const sendCampaignSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   templateId: z.string().min(1, 'La plantilla es requerida'),
-  recipientMode: z.enum(['course', 'custom']),
+  recipientMode: z.enum(['course', 'custom', 'filter']),
   courseId: z.string().optional(),
   studentIds: z.array(z.string()).optional(),
+  filterId: z.string().optional(),
   scheduledAt: z.string().optional(), // ISO date string for scheduled sends
   timezone: z.string().default('America/Montevideo'),
 })
@@ -110,7 +112,7 @@ export async function sendCampaignAction(
     }
   }
 
-  const { name, templateId, recipientMode, courseId, studentIds, scheduledAt, timezone } =
+  const { name, templateId, recipientMode, courseId, studentIds, filterId, scheduledAt, timezone } =
     validated.data
 
   // Get authenticated educator
@@ -135,6 +137,7 @@ export async function sendCampaignAction(
 
     // Get recipients based on mode
     let recipients: Array<{ studentId: string; email: string }> = []
+    let audienceFilterId: string | undefined
 
     if (recipientMode === 'course') {
       if (!courseId) {
@@ -156,6 +159,43 @@ export async function sendCampaignAction(
       recipients = students.map((s) => ({
         studentId: s.id,
         email: s.email,
+      }))
+    } else if (recipientMode === 'filter') {
+      // Filter mode
+      if (!filterId) {
+        return {
+          success: false,
+          error: 'Se requiere un filtro para el modo de filtro',
+        }
+      }
+
+      audienceFilterId = filterId
+
+      // Get student IDs from filter evaluation
+      const filterStudentIds = await getStudentIdsByFilter(filterId)
+
+      if (filterStudentIds.length === 0) {
+        return {
+          success: false,
+          error: 'No hay estudiantes que coincidan con el filtro seleccionado',
+        }
+      }
+
+      // Get students with their emails
+      const students = await prisma.student.findMany({
+        where: {
+          id: { in: filterStudentIds },
+        },
+        include: {
+          user: {
+            select: { email: true },
+          },
+        },
+      })
+
+      recipients = students.map((s) => ({
+        studentId: s.id,
+        email: s.user.email,
       }))
     } else {
       // Custom mode
@@ -195,6 +235,7 @@ export async function sendCampaignAction(
       templateId,
       educatorId: educator.id,
       courseId: recipientMode === 'course' ? courseId : undefined,
+      audienceFilterId,
       scheduledAt: scheduledAtDate,
       timezone,
     })

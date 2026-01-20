@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Plus, Send, Clock, CheckCircle2, XCircle, Mail } from 'lucide-react'
+import { Plus, Send, Clock, CheckCircle2, XCircle, Mail, HelpCircle } from 'lucide-react'
 import type { EmailCampaignStatus } from '@prisma/client'
 
 import { auth } from '@/lib/auth'
@@ -56,12 +56,20 @@ export default async function CommunicationsPage() {
             Gestiona tus campañas de email
           </p>
         </div>
-        <Button asChild>
-          <Link href="/educator/communications/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva campaña
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/educator/communications/docs">
+              <HelpCircle className="mr-2 h-4 w-4" />
+              Ayuda
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/educator/communications/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Nueva campaña
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

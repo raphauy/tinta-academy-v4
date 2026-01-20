@@ -109,6 +109,7 @@ export async function createCampaign(data: {
   templateId: string
   educatorId: string
   courseId?: string
+  audienceFilterId?: string
   scheduledAt?: Date
   timezone: string
 }) {
@@ -118,6 +119,7 @@ export async function createCampaign(data: {
       templateId: data.templateId,
       educatorId: data.educatorId,
       courseId: data.courseId,
+      audienceFilterId: data.audienceFilterId,
       scheduledAt: data.scheduledAt,
       timezone: data.timezone,
       status: 'draft'

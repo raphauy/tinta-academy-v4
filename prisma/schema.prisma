@@ -103,6 +103,7 @@ model Educator {
   emailTemplates    EmailTemplate[]
   emailCampaigns    EmailCampaign[]
   workflowTemplates WorkflowTemplate[]
+  audienceFilters   AudienceFilter[]
 
   @@index([userId])
 }
@@ -482,6 +483,9 @@ model EmailCampaign {
   courseId String?
   course   Course?  @relation(fields: [courseId], references: [id])
 
+  audienceFilterId String?
+  audienceFilter   AudienceFilter? @relation(fields: [audienceFilterId], references: [id])
+
   scheduledAt DateTime?
   timezone    String
 
@@ -502,6 +506,7 @@ model EmailCampaign {
 
   @@index([educatorId])
   @@index([courseId])
+  @@index([audienceFilterId])
   @@index([status])
   @@index([scheduledAt])
 }
@@ -647,4 +652,34 @@ model WorkflowExecution {
   @@index([scheduledAt])
   @@index([status])
   @@index([resendId])
+}
+
+// ============================================
+// AUDIENCE FILTERS
+// ============================================
+
+model AudienceFilter {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+
+  educatorId  String
+  educator    Educator @relation(fields: [educatorId], references: [id])
+
+  isPublic    Boolean  @default(false)
+
+  // Conditions serialized as JSON
+  conditions  String   @db.Text
+
+  // Cache for student count
+  cachedStudentCount Int?
+  cachedAt           DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campaigns   EmailCampaign[]
+
+  @@index([educatorId])
+  @@index([isPublic])
 }

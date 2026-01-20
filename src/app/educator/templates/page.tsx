@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { Plus, Mail, Search } from "lucide-react"
+import { Plus, Mail, Search, HelpCircle } from "lucide-react"
 
 import { auth } from "@/lib/auth"
 import { getEducatorByUserId } from "@/services/educator-service"
@@ -60,12 +60,20 @@ export default async function TemplatesPage({
             Gestiona tus plantillas para comunicaciones con estudiantes
           </p>
         </div>
-        <Button asChild>
-          <Link href="/educator/templates/create">
-            <Plus className="mr-2 h-4 w-4" />
-            Crear plantilla
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/educator/communications/docs#plantillas">
+              <HelpCircle className="h-4 w-4 mr-1" />
+              Ver variables
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/educator/templates/create">
+              <Plus className="mr-2 h-4 w-4" />
+              Crear plantilla
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Search */}

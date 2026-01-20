@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Users, UserCheck, Search } from 'lucide-react'
+import { Users, UserCheck, Search, Filter, Globe, Lock, Loader2, ChevronDown } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -24,6 +24,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import type { FilterForSelection } from '@/types/audience-filter'
+
+const STUDENTS_PAGE_SIZE = 50
 
 export interface CourseForSelection {
   id: string
@@ -40,25 +43,36 @@ export interface StudentForSelection {
 }
 
 export interface RecipientValue {
-  mode: 'course' | 'custom'
+  mode: 'course' | 'custom' | 'filter'
   courseId?: string
   studentIds: string[]
+  filterId?: string
 }
 
 interface RecipientSelectorProps {
   courses: CourseForSelection[]
   students: StudentForSelection[]
+  filters: FilterForSelection[]
+  currentEducatorId: string
   value: RecipientValue
   onChange: (value: RecipientValue) => void
+  // Filter count is managed by parent to avoid duplicate fetches
+  filterCount?: number | null
+  loadingFilterCount?: boolean
 }
 
 export function RecipientSelector({
   courses,
   students,
+  filters,
+  currentEducatorId,
   value,
   onChange,
+  filterCount = null,
+  loadingFilterCount = false,
 }: RecipientSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [displayLimit, setDisplayLimit] = useState(STUDENTS_PAGE_SIZE)
 
   // Filter students based on search query
   const filteredStudents = useMemo(() => {
@@ -74,11 +88,27 @@ export function RecipientSelector({
     })
   }, [students, searchQuery])
 
-  const handleModeChange = (mode: 'course' | 'custom') => {
+  // Handler for search that also resets display limit
+  const handleSearchChange = (newQuery: string) => {
+    setSearchQuery(newQuery)
+    setDisplayLimit(STUDENTS_PAGE_SIZE)
+  }
+
+  // Paginated students for display
+  const displayedStudents = useMemo(
+    () => filteredStudents.slice(0, displayLimit),
+    [filteredStudents, displayLimit]
+  )
+
+  const hasMoreStudents = filteredStudents.length > displayLimit
+  const remainingStudents = filteredStudents.length - displayLimit
+
+  const handleModeChange = (mode: 'course' | 'custom' | 'filter') => {
     onChange({
       mode,
       courseId: mode === 'course' ? value.courseId : undefined,
       studentIds: mode === 'custom' ? value.studentIds : [],
+      filterId: mode === 'filter' ? value.filterId : undefined,
     })
   }
 
@@ -86,6 +116,13 @@ export function RecipientSelector({
     onChange({
       ...value,
       courseId,
+    })
+  }
+
+  const handleFilterChange = (filterId: string) => {
+    onChange({
+      ...value,
+      filterId,
     })
   }
 
@@ -133,8 +170,11 @@ export function RecipientSelector({
       const course = courses.find((c) => c.id === value.courseId)
       return course?.studentCount || 0
     }
+    if (value.mode === 'filter' && value.filterId) {
+      return filterCount
+    }
     return value.studentIds.length
-  }, [value.mode, value.courseId, value.studentIds, courses])
+  }, [value.mode, value.courseId, value.studentIds, courses, value.filterId, filterCount])
 
   const getStudentDisplayName = (student: StudentForSelection) => {
     if (student.firstName || student.lastName) {
@@ -143,11 +183,17 @@ export function RecipientSelector({
     return student.email
   }
 
+  // Separate own filters from public filters
+  const ownFilters = filters.filter((f) => f.educatorId === currentEducatorId)
+  const publicFilters = filters.filter(
+    (f) => f.educatorId !== currentEducatorId && f.isPublic
+  )
+
   return (
     <div className="space-y-4">
       <RadioGroup
         value={value.mode}
-        onValueChange={(v) => handleModeChange(v as 'course' | 'custom')}
+        onValueChange={(v) => handleModeChange(v as 'course' | 'custom' | 'filter')}
         className="space-y-4"
       >
         <div className="rounded-lg border p-4 space-y-3">
@@ -188,6 +234,88 @@ export function RecipientSelector({
           )}
         </div>
 
+        {/* Filter mode - second option */}
+        {filters.length > 0 && (
+          <div className="rounded-lg border p-4 space-y-3">
+            <div className="flex items-center space-x-3">
+              <RadioGroupItem value="filter" id="mode-filter" />
+              <Label
+                htmlFor="mode-filter"
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                Filtro de audiencia
+              </Label>
+            </div>
+
+            {value.mode === 'filter' && (
+              <div className="ml-7 space-y-2">
+                <Select
+                  value={value.filterId || ''}
+                  onValueChange={handleFilterChange}
+                >
+                  <SelectTrigger className="w-full max-w-md">
+                    <SelectValue placeholder="Seleccionar filtro..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ownFilters.length > 0 && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                          Mis filtros
+                        </div>
+                        {ownFilters.map((filter) => (
+                          <SelectItem key={filter.id} value={filter.id}>
+                            <div className="flex items-center gap-2">
+                              {filter.isPublic ? (
+                                <Globe className="h-3 w-3 text-muted-foreground" />
+                              ) : (
+                                <Lock className="h-3 w-3 text-muted-foreground" />
+                              )}
+                              <span>{filter.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                    {publicFilters.length > 0 && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                          Filtros públicos
+                        </div>
+                        {publicFilters.map((filter) => (
+                          <SelectItem key={filter.id} value={filter.id}>
+                            <div className="flex items-center gap-2">
+                              <Globe className="h-3 w-3 text-muted-foreground" />
+                              <span>{filter.name}</span>
+                              <span className="text-xs text-muted-foreground">
+                                ({filter.educatorName})
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+                {value.filterId && (
+                  <p className="text-sm text-muted-foreground">
+                    {loadingFilterCount ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Calculando estudiantes...
+                      </span>
+                    ) : filterCount !== null ? (
+                      `${filterCount} estudiantes coinciden con este filtro`
+                    ) : (
+                      'Error al calcular estudiantes'
+                    )}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="rounded-lg border p-4 space-y-4">
           <div className="flex items-center space-x-3">
             <RadioGroupItem value="custom" id="mode-custom" />
@@ -207,7 +335,7 @@ export function RecipientSelector({
                 <Input
                   placeholder="Buscar por nombre o email..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="pl-9"
                 />
               </div>
@@ -251,7 +379,7 @@ export function RecipientSelector({
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredStudents.map((student) => (
+                      displayedStudents.map((student) => (
                         <TableRow key={student.id}>
                           <TableCell>
                             <Checkbox
@@ -282,6 +410,25 @@ export function RecipientSelector({
                   </TableBody>
                 </Table>
               </div>
+
+              {/* Show more button */}
+              {hasMoreStudents && (
+                <div className="flex flex-col items-center gap-2 pt-2">
+                  <p className="text-sm text-muted-foreground">
+                    Mostrando {displayedStudents.length} de {filteredStudents.length} estudiantes
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDisplayLimit((prev) => prev + STUDENTS_PAGE_SIZE)}
+                    className="gap-1"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                    Mostrar más ({remainingStudents > STUDENTS_PAGE_SIZE ? STUDENTS_PAGE_SIZE : remainingStudents} más)
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -289,9 +436,16 @@ export function RecipientSelector({
 
       {/* Selected count badge */}
       <div className="flex items-center gap-2 pt-2">
-        <Badge variant={selectedCount > 0 ? 'default' : 'secondary'}>
-          {selectedCount} {selectedCount === 1 ? 'destinatario' : 'destinatarios'} seleccionados
-        </Badge>
+        {value.mode === 'filter' && loadingFilterCount ? (
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Calculando...
+          </Badge>
+        ) : (
+          <Badge variant={selectedCount !== null && selectedCount > 0 ? 'default' : 'secondary'}>
+            {selectedCount ?? 0} {selectedCount === 1 ? 'destinatario' : 'destinatarios'} seleccionados
+          </Badge>
+        )}
       </div>
     </div>
   )

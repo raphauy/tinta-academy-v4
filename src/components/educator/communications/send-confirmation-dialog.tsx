@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge'
 interface SendConfirmationDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  recipientCount: number
+  recipientCount: number | null
   templateName: string
   onConfirm: () => void
   isLoading: boolean
@@ -56,7 +56,9 @@ export function SendConfirmationDialog({
               <div className="flex flex-col gap-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Destinatarios:</span>
-                  <Badge variant="secondary">{recipientCount}</Badge>
+                  <Badge variant="secondary">
+                    {recipientCount !== null ? recipientCount : 'Se calculará al enviar'}
+                  </Badge>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Plantilla:</span>
