@@ -358,11 +358,14 @@ export async function processCampaignSend(
  * Get all campaigns that are scheduled and due for sending (scheduledAt <= now)
  */
 export async function getScheduledCampaignsDue() {
-  return prisma.emailCampaign.findMany({
+  const now = new Date()
+  console.log('[getScheduledCampaignsDue] Checking for campaigns with scheduledAt <=', now.toISOString())
+
+  const campaigns = await prisma.emailCampaign.findMany({
     where: {
       status: 'scheduled',
       scheduledAt: {
-        lte: new Date()
+        lte: now
       }
     },
     include: {
@@ -378,6 +381,27 @@ export async function getScheduledCampaignsDue() {
           name: true
         }
       }
+    },
+    orderBy: { scheduledAt: 'asc' }
+  })
+
+  console.log(`[getScheduledCampaignsDue] Found ${campaigns.length} due campaigns`)
+  return campaigns
+}
+
+/**
+ * Get all campaigns with status 'scheduled' (for debugging)
+ */
+export async function getAllScheduledCampaigns() {
+  return prisma.emailCampaign.findMany({
+    where: {
+      status: 'scheduled'
+    },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      scheduledAt: true
     },
     orderBy: { scheduledAt: 'asc' }
   })

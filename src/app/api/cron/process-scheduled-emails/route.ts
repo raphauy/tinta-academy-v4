@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import {
   getScheduledCampaignsDue,
+  getAllScheduledCampaigns,
   processCampaignSend,
 } from '@/services/email-campaign-service'
 
@@ -31,9 +32,19 @@ export async function GET(request: Request) {
     )
   }
 
+  const now = new Date()
   console.log('[Cron] Processing scheduled emails...')
+  console.log('[Cron] Current server time (UTC):', now.toISOString())
+  console.log('[Cron] Current server time (local):', now.toString())
 
   try {
+    // Debug: Get ALL scheduled campaigns to see what's pending
+    const allScheduled = await getAllScheduledCampaigns()
+    console.log(`[Cron] Total scheduled campaigns: ${allScheduled.length}`)
+    for (const c of allScheduled) {
+      console.log(`[Cron] Campaign "${c.name}" - scheduledAt: ${c.scheduledAt?.toISOString()} - isDue: ${c.scheduledAt && c.scheduledAt <= now}`)
+    }
+
     // Get all campaigns that are due for sending
     const dueCampaigns = await getScheduledCampaignsDue()
 
@@ -43,6 +54,15 @@ export async function GET(request: Request) {
         success: true,
         processed: 0,
         message: 'No campaigns due for processing',
+        debug: {
+          serverTimeUTC: now.toISOString(),
+          totalScheduled: allScheduled.length,
+          scheduledCampaigns: allScheduled.map(c => ({
+            name: c.name,
+            scheduledAt: c.scheduledAt?.toISOString(),
+            isDue: c.scheduledAt && c.scheduledAt <= now
+          }))
+        }
       })
     }
 
