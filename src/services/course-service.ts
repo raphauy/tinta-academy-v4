@@ -193,9 +193,12 @@ export async function getEducatorCourses(
     include: {
       educator: true,
       tags: true,
+      enrollments: {
+        select: { studentId: true },
+      },
       orders: {
-        where: { status: 'paid' },
-        select: { finalAmount: true, currency: true },
+        where: { status: 'paid', studentId: { not: null } },
+        select: { finalAmount: true, currency: true, studentId: true },
       },
       _count: {
         select: { enrollments: true },
@@ -207,15 +210,21 @@ export async function getEducatorCourses(
   })
 
   // Calculate revenue by currency for each course
+  // Only count orders from students who are currently enrolled
   return courses.map((course) => {
+    const enrolledStudentIds = new Set(course.enrollments.map((e) => e.studentId))
+
     let totalRevenueUSD = 0
     let totalRevenueUYU = 0
 
     course.orders.forEach((order) => {
-      if (order.currency === 'USD') {
-        totalRevenueUSD += order.finalAmount
-      } else if (order.currency === 'UYU') {
-        totalRevenueUYU += order.finalAmount
+      // Only count revenue from students with active enrollments
+      if (order.studentId && enrolledStudentIds.has(order.studentId)) {
+        if (order.currency === 'USD') {
+          totalRevenueUSD += order.finalAmount
+        } else if (order.currency === 'UYU') {
+          totalRevenueUYU += order.finalAmount
+        }
       }
     })
 
