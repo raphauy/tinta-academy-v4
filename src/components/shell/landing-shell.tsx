@@ -2,6 +2,7 @@
 
 import { createContext, useContext } from 'react'
 import type { UserMenuUser } from './user-menu'
+import { WhatsAppButton } from '@/components/landing/whatsapp-button'
 
 interface LandingShellContextValue {
   user?: UserMenuUser
@@ -26,6 +27,7 @@ export function LandingShell({ children, user }: LandingShellProps) {
   return (
     <LandingShellContext.Provider value={{ user }}>
       <div className="min-h-screen">{children}</div>
+      <WhatsAppButton />
     </LandingShellContext.Provider>
   )
 }
