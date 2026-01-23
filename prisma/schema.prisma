@@ -556,6 +556,11 @@ model WorkflowTemplate {
 
   isActive Boolean @default(true)
 
+  // Hora preferida de envío (en timezone del educador)
+  sendAtHour     Int    @default(9)  // 0-23
+  sendAtMinute   Int    @default(0)  // 0-59
+  sendAtTimezone String @default("America/Montevideo")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
