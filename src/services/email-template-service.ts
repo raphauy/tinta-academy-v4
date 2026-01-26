@@ -1,6 +1,50 @@
 import { prisma } from '@/lib/prisma'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import DOMPurify from 'isomorphic-dompurify'
+
+// =============================================================================
+// HTML Sanitization Configuration
+// =============================================================================
+
+/**
+ * Allowed HTML tags for email templates
+ * Only safe, commonly used tags for email formatting are permitted
+ */
+const ALLOWED_TAGS = [
+  'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
+  'a', 'ul', 'ol', 'li',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'img', 'div', 'span',
+  'table', 'thead', 'tbody', 'tr', 'th', 'td',
+  'blockquote', 'pre', 'code',
+]
+
+/**
+ * Allowed HTML attributes
+ */
+const ALLOWED_ATTR = [
+  'href', 'src', 'alt', 'title',
+  'style', 'class',
+  'target', 'rel',
+  'width', 'height',
+  'colspan', 'rowspan',
+]
+
+/**
+ * Sanitize HTML content to prevent XSS attacks
+ * Allows only safe tags commonly used in email templates
+ */
+export function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+    ALLOW_DATA_ATTR: false,
+    ADD_ATTR: ['target'],
+    // Force all links to open in new tab for safety
+    FORBID_CONTENTS: ['script', 'style', 'iframe', 'form', 'input'],
+  })
+}
 
 // =============================================================================
 // Template Variable Types
@@ -99,6 +143,7 @@ export async function getTemplateById(id: string, educatorId: string) {
 
 /**
  * Create a new email template
+ * HTML body is sanitized before saving to prevent XSS
  */
 export async function createTemplate(data: {
   name: string
@@ -110,7 +155,7 @@ export async function createTemplate(data: {
     data: {
       name: data.name,
       subject: data.subject,
-      body: data.body,
+      body: sanitizeHtml(data.body),
       educatorId: data.educatorId
     }
   })
@@ -118,6 +163,7 @@ export async function createTemplate(data: {
 
 /**
  * Update an existing template with ownership check
+ * HTML body is sanitized before saving to prevent XSS
  */
 export async function updateTemplate(
   id: string,
@@ -137,9 +183,15 @@ export async function updateTemplate(
     throw new Error('Template not found or access denied')
   }
 
+  // Sanitize body if provided
+  const sanitizedData = {
+    ...data,
+    ...(data.body && { body: sanitizeHtml(data.body) })
+  }
+
   return prisma.emailTemplate.update({
     where: { id },
-    data
+    data: sanitizedData
   })
 }
 

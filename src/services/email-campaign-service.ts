@@ -551,3 +551,338 @@ export async function getCampaignRecipients(
     hasMore: skip + take < total
   }
 }
+
+// =============================================================================
+// Admin Functions
+// =============================================================================
+
+/**
+ * Get all campaigns for admin panel with optional filters
+ */
+export async function getAllCampaignsForAdmin(filters?: {
+  educatorId?: string
+  status?: EmailCampaignStatus
+  dateFrom?: Date
+  dateTo?: Date
+  search?: string
+}) {
+  return prisma.emailCampaign.findMany({
+    where: {
+      ...(filters?.educatorId && { educatorId: filters.educatorId }),
+      ...(filters?.status && { status: filters.status }),
+      ...(filters?.dateFrom || filters?.dateTo
+        ? {
+            createdAt: {
+              ...(filters?.dateFrom && { gte: filters.dateFrom }),
+              ...(filters?.dateTo && { lte: filters.dateTo })
+            }
+          }
+        : {}),
+      ...(filters?.search && {
+        OR: [
+          { name: { contains: filters.search, mode: 'insensitive' } },
+          { educator: { name: { contains: filters.search, mode: 'insensitive' } } }
+        ]
+      })
+    },
+    include: {
+      template: {
+        select: {
+          id: true,
+          name: true,
+          subject: true
+        }
+      },
+      course: {
+        select: {
+          id: true,
+          title: true
+        }
+      },
+      educator: {
+        select: {
+          id: true,
+          name: true
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  })
+}
+
+/**
+ * Get global campaign statistics for admin dashboard
+ */
+export async function getAdminCampaignStats() {
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+
+  const [
+    totalCampaigns,
+    campaignsThisMonth,
+    totalSent,
+    totalDelivered,
+    totalOpened
+  ] = await Promise.all([
+    prisma.emailCampaign.count(),
+    prisma.emailCampaign.count({
+      where: {
+        createdAt: { gte: startOfMonth }
+      }
+    }),
+    prisma.emailCampaign.aggregate({
+      _sum: { sentCount: true }
+    }),
+    prisma.emailCampaign.aggregate({
+      _sum: { deliveredCount: true }
+    }),
+    prisma.emailCampaign.aggregate({
+      _sum: { openedCount: true }
+    })
+  ])
+
+  const totalSentCount = totalSent._sum.sentCount || 0
+  const totalDeliveredCount = totalDelivered._sum.deliveredCount || 0
+  const totalOpenedCount = totalOpened._sum.openedCount || 0
+
+  return {
+    totalCampaigns,
+    campaignsThisMonth,
+    deliveryRate: totalSentCount > 0
+      ? Math.round((totalDeliveredCount / totalSentCount) * 100)
+      : 0,
+    openRate: totalDeliveredCount > 0
+      ? Math.round((totalOpenedCount / totalDeliveredCount) * 100)
+      : 0
+  }
+}
+
+/**
+ * Get campaign by ID for admin (no educator ownership check)
+ */
+export async function getCampaignByIdForAdmin(id: string) {
+  return prisma.emailCampaign.findUnique({
+    where: { id },
+    include: {
+      template: true,
+      course: {
+        select: {
+          id: true,
+          title: true
+        }
+      },
+      educator: {
+        select: {
+          id: true,
+          name: true
+        }
+      },
+      recipients: {
+        include: {
+          student: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              user: {
+                select: {
+                  email: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: { createdAt: 'asc' },
+        take: 100
+      }
+    }
+  })
+}
+
+/**
+ * Get all educators with campaigns (for filter dropdown)
+ */
+export async function getEducatorsWithCampaigns() {
+  return prisma.educator.findMany({
+    where: {
+      emailCampaigns: {
+        some: {}
+      }
+    },
+    select: {
+      id: true,
+      name: true,
+      _count: {
+        select: {
+          emailCampaigns: true
+        }
+      }
+    },
+    orderBy: { name: 'asc' }
+  })
+}
+
+// =============================================================================
+// Course Communications History
+// =============================================================================
+
+export type CommunicationHistoryItem = {
+  id: string
+  type: 'campaign' | 'workflow'
+  name: string
+  templateName: string
+  status: string
+  recipientCount: number
+  sentCount: number
+  deliveredCount: number
+  openedCount: number
+  date: Date
+  scheduledAt?: Date | null
+}
+
+/**
+ * Get combined communications history for a specific course
+ * Returns both campaigns and workflow executions, sorted by date
+ */
+export async function getCommunicationsHistoryByCourse(
+  courseId: string
+): Promise<CommunicationHistoryItem[]> {
+  // Get campaigns for this course
+  const campaigns = await prisma.emailCampaign.findMany({
+    where: { courseId },
+    select: {
+      id: true,
+      name: true,
+      status: true,
+      totalRecipients: true,
+      sentCount: true,
+      deliveredCount: true,
+      openedCount: true,
+      scheduledAt: true,
+      sentAt: true,
+      createdAt: true,
+      template: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  // Get workflow executions for this course (grouped by workflow step)
+  const workflowExecutions = await prisma.workflowExecution.groupBy({
+    by: ['courseWorkflowId', 'workflowStepId'],
+    where: {
+      courseWorkflow: {
+        courseId,
+      },
+    },
+    _count: {
+      id: true,
+    },
+    _max: {
+      scheduledAt: true,
+    },
+  })
+
+  // Get details for each workflow step
+  const workflowDetails = await Promise.all(
+    workflowExecutions.map(async (exec) => {
+      const [stepInfo, statusCounts] = await Promise.all([
+        prisma.workflowStep.findUnique({
+          where: { id: exec.workflowStepId },
+          include: {
+            template: {
+              select: { name: true },
+            },
+            workflowTemplate: {
+              select: { name: true },
+            },
+          },
+        }),
+        prisma.workflowExecution.groupBy({
+          by: ['status'],
+          where: {
+            courseWorkflowId: exec.courseWorkflowId,
+            workflowStepId: exec.workflowStepId,
+          },
+          _count: { status: true },
+        }),
+      ])
+
+      if (!stepInfo) return null
+
+      const counts = statusCounts.reduce(
+        (acc, s) => {
+          acc[s.status] = s._count.status
+          return acc
+        },
+        {} as Record<string, number>
+      )
+
+      const sentCount =
+        (counts['sent'] || 0) +
+        (counts['delivered'] || 0) +
+        (counts['opened'] || 0) +
+        (counts['clicked'] || 0)
+      const deliveredCount =
+        (counts['delivered'] || 0) +
+        (counts['opened'] || 0) +
+        (counts['clicked'] || 0)
+      const openedCount = (counts['opened'] || 0) + (counts['clicked'] || 0)
+      const pendingCount = counts['pending'] || 0
+
+      // Determine overall status
+      let status = 'pending'
+      if (sentCount > 0 && pendingCount === 0) {
+        status = 'sent'
+      } else if (sentCount > 0 && pendingCount > 0) {
+        status = 'sending'
+      }
+
+      // Create a step description using trigger type and order
+      const stepName = `Paso ${stepInfo.order + 1}`
+
+      return {
+        id: `${exec.courseWorkflowId}-${exec.workflowStepId}`,
+        type: 'workflow' as const,
+        name: `${stepInfo.workflowTemplate.name}: ${stepName}`,
+        templateName: stepInfo.template.name,
+        status,
+        recipientCount: exec._count.id,
+        sentCount,
+        deliveredCount,
+        openedCount,
+        date: exec._max.scheduledAt || new Date(),
+        scheduledAt: exec._max.scheduledAt,
+      }
+    })
+  )
+
+  // Convert campaigns to common format
+  const campaignItems: CommunicationHistoryItem[] = campaigns.map((c) => ({
+    id: c.id,
+    type: 'campaign' as const,
+    name: c.name,
+    templateName: c.template.name,
+    status: c.status,
+    recipientCount: c.totalRecipients,
+    sentCount: c.sentCount,
+    deliveredCount: c.deliveredCount,
+    openedCount: c.openedCount,
+    date: c.sentAt || c.createdAt,
+    scheduledAt: c.scheduledAt,
+  }))
+
+  // Combine and sort by date (most recent first)
+  const workflowItems = workflowDetails.filter(
+    (w): w is NonNullable<typeof w> => w !== null
+  )
+
+  const combined = [...campaignItems, ...workflowItems].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
+
+  return combined
+}

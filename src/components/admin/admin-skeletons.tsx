@@ -529,3 +529,94 @@ export function AdminBankDataSkeleton() {
     </div>
   )
 }
+
+export function AdminCommunicationRowSkeleton() {
+  return (
+    <div className="px-4 py-3">
+      <div className="hidden lg:grid lg:grid-cols-12 gap-4 items-center">
+        <div className="col-span-3 space-y-1">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+        <div className="col-span-2 space-y-1">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-28" />
+        </div>
+        <div className="col-span-1 text-center">
+          <Skeleton className="h-5 w-8 mx-auto" />
+          <Skeleton className="h-3 w-10 mx-auto mt-1" />
+        </div>
+        <div className="col-span-2 flex items-center justify-center gap-3">
+          <div className="text-center">
+            <Skeleton className="h-4 w-10 mx-auto" />
+            <Skeleton className="h-3 w-12 mx-auto mt-1" />
+          </div>
+          <div className="text-center">
+            <Skeleton className="h-4 w-10 mx-auto" />
+            <Skeleton className="h-3 w-14 mx-auto mt-1" />
+          </div>
+        </div>
+        <div className="col-span-2">
+          <Skeleton className="h-6 w-20 rounded-md" />
+          <Skeleton className="h-3 w-16 mt-1" />
+        </div>
+        <div className="col-span-2 flex justify-end">
+          <Skeleton className="h-8 w-24 rounded-md" />
+        </div>
+      </div>
+
+      <div className="lg:hidden space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-xl" />
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-16 rounded-md" />
+        </div>
+        <Skeleton className="h-3 w-48" />
+        <div className="flex items-center justify-between">
+          <div className="flex gap-4">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <Skeleton className="h-8 w-8 rounded-md" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export function AdminCommunicationsSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <Skeleton className="h-8 w-48 mb-2" />
+        <Skeleton className="h-4 w-80" />
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <AdminMetricCardSkeleton key={i} />
+        ))}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-10 w-40" />
+      </div>
+
+      <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden">
+        <div className="divide-y divide-stone-100 dark:divide-stone-700">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <AdminCommunicationRowSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}

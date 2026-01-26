@@ -12,6 +12,7 @@ export { StudentList } from './student-list'
 export { StudentTable, type StudentEnrollment } from './student-table'
 export { AllStudentsList } from './all-students-list'
 export { TagSelector } from './tag-selector'
+export { CourseCommunicationsHistory } from './course-communications-history'
 export {
   DashboardSkeleton,
   CourseListSkeleton,

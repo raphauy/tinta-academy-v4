@@ -4,7 +4,9 @@ import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { getCourseById } from '@/services/course-service'
 import { getEnrollmentsByCourse } from '@/services/enrollment-service'
-import { StudentList, StudentListSkeleton } from '@/components/educator'
+import { getCommunicationsHistoryByCourse } from '@/services/email-campaign-service'
+import { StudentListSkeleton } from '@/components/educator'
+import { CourseStudentsClient } from './course-students-client'
 
 interface CourseStudentsPageProps {
   params: Promise<{ id: string }>
@@ -52,10 +54,19 @@ async function CourseStudentsContent({ id }: { id: string }) {
     redirect('/educator/courses')
   }
 
-  // Fetch enrollments for this course
-  const enrollments = await getEnrollmentsByCourse(id)
+  // Fetch enrollments and communications history in parallel
+  const [enrollments, communicationsHistory] = await Promise.all([
+    getEnrollmentsByCourse(id),
+    getCommunicationsHistoryByCourse(id),
+  ])
 
-  return <StudentList course={course} enrollments={enrollments} />
+  return (
+    <CourseStudentsClient
+      course={course}
+      enrollments={enrollments}
+      communicationsHistory={communicationsHistory}
+    />
+  )
 }
 
 export default async function CourseStudentsPage({
