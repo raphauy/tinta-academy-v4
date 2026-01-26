@@ -16,6 +16,17 @@ import {
   updateWorkflowSchema,
 } from '@/lib/validations/workflow'
 import type { WorkflowTriggerType } from '@prisma/client'
+import {
+  getCoursesForWorkflowAssignment,
+  getWorkflowForAssignment,
+  validateCourseDatesForWorkflow,
+  calculateSchedulePreview,
+  assignWorkflowToCourse,
+  toggleCourseWorkflowStatus,
+  removeCourseWorkflow,
+  type DateValidationResult,
+  type SchedulePreviewItem,
+} from '@/services/workflow-execution-service'
 
 // ============================================
 // TYPES
@@ -245,6 +256,168 @@ export async function toggleWorkflowActiveAction(
       error instanceof Error
         ? error.message
         : 'Error al cambiar estado del workflow'
+    return { success: false, error: message }
+  }
+}
+
+// ============================================
+// WORKFLOW ASSIGNMENT ACTIONS
+// ============================================
+
+export async function getCoursesForAssignmentAction(): Promise<
+  ActionResult<
+    Array<{
+      id: string
+      title: string
+      startDate: Date | null
+      endDate: Date | null
+      examDate: Date | null
+      classDates: Date[]
+      registrationDeadline: Date | null
+      enrolledCount: number
+    }>
+  >
+> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    const courses = await getCoursesForWorkflowAssignment(educator.id)
+    return { success: true, data: courses }
+  } catch (error) {
+    console.error('Error fetching courses for assignment:', error)
+    return { success: false, error: 'Error al obtener cursos' }
+  }
+}
+
+export async function getSchedulePreviewAction(
+  workflowId: string,
+  courseId: string
+): Promise<
+  ActionResult<{
+    validation: DateValidationResult
+    preview: SchedulePreviewItem[]
+  }>
+> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    // Get workflow
+    const workflow = await getWorkflowForAssignment(workflowId, educator.id)
+    if (!workflow) {
+      return { success: false, error: 'Workflow no encontrado' }
+    }
+
+    // Get course
+    const courses = await getCoursesForWorkflowAssignment(educator.id)
+    const course = courses.find((c) => c.id === courseId)
+    if (!course) {
+      return { success: false, error: 'Curso no encontrado' }
+    }
+
+    // Validate dates
+    const validation = validateCourseDatesForWorkflow(course, workflow.steps)
+
+    // Calculate preview
+    const preview = calculateSchedulePreview(course, workflow)
+
+    return { success: true, data: { validation, preview } }
+  } catch (error) {
+    console.error('Error generating schedule preview:', error)
+    return { success: false, error: 'Error al generar vista previa' }
+  }
+}
+
+export async function assignWorkflowToCourseAction(
+  workflowId: string,
+  courseId: string
+): Promise<ActionResult<{ executionsCreated: number }>> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    const result = await assignWorkflowToCourse({
+      workflowId,
+      courseId,
+      educatorId: educator.id,
+    })
+
+    revalidatePath('/educator/workflows')
+    revalidatePath(`/educator/courses/${courseId}/edit`)
+
+    return { success: true, data: { executionsCreated: result.executionsCreated } }
+  } catch (error) {
+    console.error('Error assigning workflow to course:', error)
+    const message =
+      error instanceof Error ? error.message : 'Error al asignar el workflow'
+    return { success: false, error: message }
+  }
+}
+
+export async function toggleCourseWorkflowStatusAction(
+  id: string
+): Promise<ActionResult<{ newStatus: string }>> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    const newStatus = await toggleCourseWorkflowStatus(id, educator.id)
+
+    revalidatePath('/educator/workflows')
+    revalidatePath('/educator/courses')
+
+    return { success: true, data: { newStatus } }
+  } catch (error) {
+    console.error('Error toggling course workflow status:', error)
+    const message =
+      error instanceof Error ? error.message : 'Error al cambiar estado'
+    return { success: false, error: message }
+  }
+}
+
+export async function removeCourseWorkflowAction(
+  id: string
+): Promise<ActionResult> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    await removeCourseWorkflow(id, educator.id)
+
+    revalidatePath('/educator/workflows')
+    revalidatePath('/educator/courses')
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error removing course workflow:', error)
+    const message =
+      error instanceof Error ? error.message : 'Error al eliminar workflow'
     return { success: false, error: message }
   }
 }
