@@ -21,6 +21,7 @@ import {
   getSchedulePreviewAction,
   assignWorkflowToCourseAction,
 } from '@/app/educator/workflows/actions'
+import { startOfDay } from 'date-fns'
 import type {
   CourseForWorkflow,
   DateValidationResult,
@@ -147,9 +148,10 @@ export function AssignWorkflowDialog({
 
   const canAssign = selectedCourse && validation?.isValid && !isPending && !success
 
-  // Count future emails
+  // Count future emails (include today as future)
+  const today = startOfDay(new Date())
   const futureEmails = preview.filter(
-    (p) => p.scheduledAt && new Date(p.scheduledAt) > new Date()
+    (p) => p.scheduledAt && new Date(p.scheduledAt) >= today
   ).length
 
   return (
@@ -229,21 +231,28 @@ export function AssignWorkflowDialog({
             {/* Summary */}
             {selectedCourse && validation?.isValid && futureEmails > 0 && (
               <div className="rounded-lg bg-muted/50 p-4 text-sm">
-                <p>
-                  Al asignar este workflow, se programarán{' '}
-                  <strong>{futureEmails} email{futureEmails !== 1 ? 's' : ''}</strong>{' '}
-                  para cada uno de los{' '}
-                  <strong>
-                    {selectedCourse.enrolledCount} estudiante
-                    {selectedCourse.enrolledCount !== 1 ? 's' : ''}
-                  </strong>{' '}
-                  actualmente inscritos.
-                </p>
-                {selectedCourse.enrolledCount > 0 && (
-                  <p className="text-muted-foreground mt-1">
-                    Total: {futureEmails * selectedCourse.enrolledCount} emails a
-                    programar.
+                {selectedCourse.enrolledCount === 0 ? (
+                  <p className="text-muted-foreground">
+                    No hay estudiantes inscritos actualmente. Los emails se programarán
+                    automáticamente cuando se inscriban nuevos estudiantes.
                   </p>
+                ) : (
+                  <>
+                    <p>
+                      Al asignar este workflow, se programarán{' '}
+                      <strong>{futureEmails} email{futureEmails !== 1 ? 's' : ''}</strong>{' '}
+                      para cada uno de los{' '}
+                      <strong>
+                        {selectedCourse.enrolledCount} estudiante
+                        {selectedCourse.enrolledCount !== 1 ? 's' : ''}
+                      </strong>{' '}
+                      actualmente inscritos.
+                    </p>
+                    <p className="text-muted-foreground mt-1">
+                      Total: {futureEmails * selectedCourse.enrolledCount} emails a
+                      programar.
+                    </p>
+                  </>
                 )}
               </div>
             )}

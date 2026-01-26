@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { getEducatorByUserId } from '@/services/educator-service'
 import {
   createWorkflow,
@@ -24,8 +25,15 @@ import {
   assignWorkflowToCourse,
   toggleCourseWorkflowStatus,
   removeCourseWorkflow,
+  getPendingExecutionsForCourseWorkflow,
+  getExecutionHistoryForCourseWorkflow,
+  getCourseWorkflowStats,
+  countAffectedExecutions,
+  recalculateExecutionsForCourse,
   type DateValidationResult,
   type SchedulePreviewItem,
+  type ExecutionWithDetails,
+  type CourseWorkflowStats,
 } from '@/services/workflow-execution-service'
 
 // ============================================
@@ -418,6 +426,113 @@ export async function removeCourseWorkflowAction(
     console.error('Error removing course workflow:', error)
     const message =
       error instanceof Error ? error.message : 'Error al eliminar workflow'
+    return { success: false, error: message }
+  }
+}
+
+// ============================================
+// WORKFLOW EXECUTION DETAIL ACTIONS
+// ============================================
+
+export async function getWorkflowExecutionsAction(
+  courseWorkflowId: string
+): Promise<
+  ActionResult<{
+    pending: ExecutionWithDetails[]
+    history: ExecutionWithDetails[]
+    stats: CourseWorkflowStats
+  }>
+> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    // Verify ownership: courseWorkflow must belong to a course owned by educator
+    const courseWorkflow = await prisma.courseWorkflow.findFirst({
+      where: {
+        id: courseWorkflowId,
+        course: {
+          educatorId: educator.id,
+        },
+      },
+    })
+
+    if (!courseWorkflow) {
+      return { success: false, error: 'Workflow no encontrado' }
+    }
+
+    const [pending, history, stats] = await Promise.all([
+      getPendingExecutionsForCourseWorkflow(courseWorkflowId),
+      getExecutionHistoryForCourseWorkflow(courseWorkflowId),
+      getCourseWorkflowStats(courseWorkflowId),
+    ])
+
+    return { success: true, data: { pending, history, stats } }
+  } catch (error) {
+    console.error('Error fetching workflow executions:', error)
+    return { success: false, error: 'Error al obtener ejecuciones' }
+  }
+}
+
+export async function countAffectedExecutionsAction(
+  courseId: string
+): Promise<ActionResult<{ count: number }>> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    // Verify ownership: course must belong to educator
+    const course = await prisma.course.findFirst({
+      where: {
+        id: courseId,
+        educatorId: educator.id,
+      },
+    })
+
+    if (!course) {
+      return { success: false, error: 'Curso no encontrado' }
+    }
+
+    const count = await countAffectedExecutions(courseId)
+    return { success: true, data: { count } }
+  } catch (error) {
+    console.error('Error counting affected executions:', error)
+    return { success: false, error: 'Error al contar ejecuciones afectadas' }
+  }
+}
+
+export async function recalculateExecutionsAction(
+  courseId: string
+): Promise<ActionResult<{ updated: number; deleted: number }>> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    const result = await recalculateExecutionsForCourse(courseId, educator.id)
+
+    revalidatePath('/educator/workflows')
+    revalidatePath('/educator/courses')
+
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('Error recalculating executions:', error)
+    const message =
+      error instanceof Error ? error.message : 'Error al recalcular fechas'
     return { success: false, error: message }
   }
 }

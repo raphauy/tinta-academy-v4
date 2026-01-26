@@ -80,7 +80,12 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
         <CourseStatusActions courseId={course.id} status={course.status} />
       </div>
 
-      <PresencialCourseForm mode="edit" course={course} initialTags={tags} />
+      <PresencialCourseForm
+        mode="edit"
+        course={course}
+        initialTags={tags}
+        hasActiveWorkflows={courseWorkflows.some((cw) => cw.status === 'active')}
+      />
 
       {/* Materials section - only for existing courses */}
       <MaterialsSection courseId={course.id} materials={materials} />

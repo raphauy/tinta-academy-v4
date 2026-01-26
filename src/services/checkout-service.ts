@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { endOfDay } from 'date-fns'
 import { PaymentMethod, Currency, OrderStatus, EnrollmentStatus, Course, Coupon, BankAccount } from '@prisma/client'
 import { createOrder, getOrderById, updateOrderStatus, setMercadoPagoPreference } from './order-service'
 import { validateCoupon, ValidateCouponResult } from './coupon-service'
@@ -195,8 +196,8 @@ export async function getCheckoutContext(
     enrollmentBlockReason = 'course_closed'
   }
 
-  // Check registration deadline
-  if (canEnroll && course.registrationDeadline && new Date() > course.registrationDeadline) {
+  // Check registration deadline (include full deadline day)
+  if (canEnroll && course.registrationDeadline && new Date() > endOfDay(course.registrationDeadline)) {
     canEnroll = false
     enrollmentBlockReason = 'deadline_passed'
   }

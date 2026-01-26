@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSession } from 'next-auth/react'
@@ -96,10 +96,15 @@ export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
   const windowSize = useWindowSize()
   const [showConfetti, setShowConfetti] = useState(true)
   const { course } = order
+  const hasUpdatedSession = useRef(false)
 
   useEffect(() => {
     // Update session with student role (in case it was just assigned by webhook)
-    updateSession({ role: 'student' })
+    // Use ref to ensure this only runs once to prevent infinite loop
+    if (!hasUpdatedSession.current) {
+      hasUpdatedSession.current = true
+      updateSession({ role: 'student' })
+    }
 
     // Stop confetti after 5 seconds
     const timer = setTimeout(() => {

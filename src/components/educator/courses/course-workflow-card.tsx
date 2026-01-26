@@ -28,6 +28,7 @@ import {
   Trash,
   Mail,
   Loader2,
+  Eye,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatTriggerDescription } from '@/lib/constants/workflow'
@@ -36,6 +37,7 @@ import {
   toggleCourseWorkflowStatusAction,
   removeCourseWorkflowAction,
 } from '@/app/educator/workflows/actions'
+import { WorkflowDetailDialog } from '@/components/educator/courses/workflow-detail-dialog'
 
 interface Step {
   id: string
@@ -80,6 +82,7 @@ export function CourseWorkflowCard({ courseWorkflow }: CourseWorkflowCardProps) 
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showDetailDialog, setShowDetailDialog] = useState(false)
 
   const { workflowTemplate, status, _count } = courseWorkflow
   const statusInfo = STATUS_BADGE[status]
@@ -160,6 +163,10 @@ export function CourseWorkflowCard({ courseWorkflow }: CourseWorkflowCardProps) 
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setShowDetailDialog(true)}>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Ver detalle
+                </DropdownMenuItem>
                 {status !== 'completed' && (
                   <DropdownMenuItem onClick={handleToggleStatus}>
                     {status === 'active' ? (
@@ -235,6 +242,13 @@ export function CourseWorkflowCard({ courseWorkflow }: CourseWorkflowCardProps) 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <WorkflowDetailDialog
+        open={showDetailDialog}
+        onOpenChange={setShowDetailDialog}
+        courseWorkflowId={courseWorkflow.id}
+        workflowName={workflowTemplate.name}
+      />
     </>
   )
 }

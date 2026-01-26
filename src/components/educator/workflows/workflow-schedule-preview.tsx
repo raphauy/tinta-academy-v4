@@ -7,7 +7,7 @@ import {
   TRIGGER_TYPE_ICONS,
   TRIGGER_TYPE_LABELS,
 } from '@/lib/constants/workflow'
-import { format } from 'date-fns'
+import { format, startOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import type { WorkflowTriggerType } from '@prisma/client'
@@ -45,8 +45,9 @@ function getScheduleStatus(scheduledAt: Date | null): {
     }
   }
 
-  const now = new Date()
-  if (scheduledAt < now) {
+  // Include "today" as future (compare with start of day)
+  const today = startOfDay(new Date())
+  if (new Date(scheduledAt) < today) {
     return {
       icon: <CheckCircle className="h-4 w-4" />,
       label: 'Ya pasó',
@@ -88,9 +89,10 @@ export function WorkflowSchedulePreview({
     return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime()
   })
 
-  // Count future emails
-  const futureEmails = sortedPreview.filter(
-    (p) => p.scheduledAt && new Date(p.scheduledAt) > new Date()
+  // Count applicable steps (today or future)
+  const today = startOfDay(new Date())
+  const applicableSteps = sortedPreview.filter(
+    (p) => p.scheduledAt && new Date(p.scheduledAt) >= today
   ).length
 
   return (
@@ -99,8 +101,7 @@ export function WorkflowSchedulePreview({
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">Calendario de envíos</CardTitle>
           <Badge variant="secondary" className="text-xs">
-            {futureEmails} email{futureEmails !== 1 ? 's' : ''} pendiente
-            {futureEmails !== 1 ? 's' : ''}
+            {applicableSteps} de {sortedPreview.length} paso{sortedPreview.length !== 1 ? 's' : ''} aplicable{applicableSteps !== 1 ? 's' : ''}
           </Badge>
         </div>
       </CardHeader>

@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, CheckCircle, Plus, Mail } from 'lucide-react'
+import { Loader2, CheckCircle, Plus, ListChecks } from 'lucide-react'
 import { toast } from 'sonner'
 import { CourseDateWarnings } from '@/components/educator/workflows/course-date-warnings'
 import { WorkflowSchedulePreview } from '@/components/educator/workflows/workflow-schedule-preview'
@@ -28,6 +28,7 @@ import {
   getSchedulePreviewAction,
   assignWorkflowToCourseAction,
 } from '@/app/educator/workflows/actions'
+import { startOfDay } from 'date-fns'
 import type { DateValidationResult, SchedulePreviewItem } from '@/services/workflow-execution-service'
 
 interface AddWorkflowDialogProps {
@@ -173,9 +174,10 @@ export function AddWorkflowDialog({
   const canAssign =
     selectedWorkflowId && validation?.isValid && !isPending && !success
 
-  // Count future emails
+  // Count future emails (include today as future)
+  const today = startOfDay(new Date())
   const futureEmails = preview.filter(
-    (p) => p.scheduledAt && new Date(p.scheduledAt) > new Date()
+    (p) => p.scheduledAt && new Date(p.scheduledAt) >= today
   ).length
 
   const selectedWorkflow = workflows.find((w) => w.id === selectedWorkflowId)
@@ -247,7 +249,7 @@ export function AddWorkflowDialog({
                         <div className="flex items-center gap-2">
                           <span>{workflow.name}</span>
                           <Badge variant="secondary" className="text-xs">
-                            <Mail className="h-3 w-3 mr-1" />
+                            <ListChecks className="h-3 w-3 mr-1" />
                             {workflow._count.steps}
                           </Badge>
                         </div>
@@ -284,21 +286,28 @@ export function AddWorkflowDialog({
             {/* Summary */}
             {selectedWorkflowId && validation?.isValid && futureEmails > 0 && (
               <div className="rounded-lg bg-muted/50 p-4 text-sm">
-                <p>
-                  Al asignar este workflow, se programarán{' '}
-                  <strong>
-                    {futureEmails} email{futureEmails !== 1 ? 's' : ''}
-                  </strong>{' '}
-                  para cada uno de los{' '}
-                  <strong>
-                    {enrolledCount} estudiante{enrolledCount !== 1 ? 's' : ''}
-                  </strong>{' '}
-                  actualmente inscritos.
-                </p>
-                {enrolledCount > 0 && (
-                  <p className="text-muted-foreground mt-1">
-                    Total: {futureEmails * enrolledCount} emails a programar.
+                {enrolledCount === 0 ? (
+                  <p className="text-muted-foreground">
+                    No hay estudiantes inscritos actualmente. Los emails se programarán
+                    automáticamente cuando se inscriban nuevos estudiantes.
                   </p>
+                ) : (
+                  <>
+                    <p>
+                      Al asignar este workflow, se programarán{' '}
+                      <strong>
+                        {futureEmails} email{futureEmails !== 1 ? 's' : ''}
+                      </strong>{' '}
+                      para cada uno de los{' '}
+                      <strong>
+                        {enrolledCount} estudiante{enrolledCount !== 1 ? 's' : ''}
+                      </strong>{' '}
+                      actualmente inscritos.
+                    </p>
+                    <p className="text-muted-foreground mt-1">
+                      Total: {futureEmails * enrolledCount} emails a programar.
+                    </p>
+                  </>
                 )}
               </div>
             )}

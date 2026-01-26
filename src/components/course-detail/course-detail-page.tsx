@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
+import { format, endOfDay } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { Course, Educator, Tag } from '@prisma/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -156,7 +156,10 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
   const enrollableStatuses = ['announced', 'enrolling', 'available']
   const isEnrollable = enrollableStatuses.includes(course.status)
   const isFull = course.maxCapacity ? course.enrolledCount >= course.maxCapacity : false
-  const isDeadlinePassed = course.registrationDeadline ? new Date() > new Date(course.registrationDeadline) : false
+  // Compare with end of day so deadline day is fully included
+  const isDeadlinePassed = course.registrationDeadline
+    ? new Date() > endOfDay(new Date(course.registrationDeadline))
+    : false
   const canEnroll = isEnrollable && !isFull && !isDeadlinePassed && !isEnrolled
 
   const learningOutcomes = isWset && course.wsetLevel

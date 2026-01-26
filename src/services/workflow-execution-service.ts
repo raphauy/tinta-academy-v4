@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { addDays } from 'date-fns'
+import { addDays, startOfDay } from 'date-fns'
 import { toZonedTime, fromZonedTime } from 'date-fns-tz'
 import {
   CourseStatus,
@@ -34,11 +34,15 @@ export interface CourseForWorkflow {
   enrolledCount: number
 }
 
-interface WorkflowStepForExecution {
-  id: string
+// Base type for step trigger info (used for scheduled date calculation)
+interface StepTriggerInfo {
   triggerType: WorkflowTriggerType
   triggerOffset: number
   triggerClassIndex: number | null
+}
+
+interface WorkflowStepForExecution extends StepTriggerInfo {
+  id: string
   order: number
   template: {
     id: string
@@ -263,7 +267,7 @@ export function validateCourseDatesForWorkflow(
  */
 function calculateScheduledAt(
   course: CourseForWorkflow,
-  step: WorkflowStepForExecution,
+  step: StepTriggerInfo,
   sendAtHour: number,
   sendAtMinute: number,
   sendAtTimezone: string
@@ -457,8 +461,8 @@ async function generateExecutionsForCourseWorkflow(
         workflow.sendAtTimezone
       )
 
-      // Only create execution if scheduled date is in the future
-      if (scheduledAt && scheduledAt > now) {
+      // Only create execution if scheduled date is today or in the future
+      if (scheduledAt && scheduledAt >= startOfDay(now)) {
         // Check if execution already exists (avoid duplicates)
         const existing = await prisma.workflowExecution.findUnique({
           where: {
@@ -579,8 +583,8 @@ export async function generateExecutionsForNewStudent(
         workflow.sendAtTimezone
       )
 
-      // Only create execution if scheduled date is in the future
-      if (scheduledAt && scheduledAt > now) {
+      // Only create execution if scheduled date is today or in the future
+      if (scheduledAt && scheduledAt >= startOfDay(now)) {
         // Check if execution already exists (avoid duplicates)
         const existing = await prisma.workflowExecution.findUnique({
           where: {
@@ -778,6 +782,10 @@ export async function processWorkflowExecution(
         sentAt: new Date(),
       },
     })
+
+    // Check if workflow should be marked as completed
+    await checkAndCompleteWorkflow(execution.courseWorkflowId)
+
     return { success: true }
   } else {
     await prisma.workflowExecution.update({
@@ -851,4 +859,334 @@ export async function processAllPendingExecutions(): Promise<{
     sent,
     failed,
   }
+}
+
+// =============================================================================
+// Advanced Management Functions
+// =============================================================================
+
+export interface ExecutionWithDetails {
+  id: string
+  scheduledAt: Date
+  status: string
+  sentAt: Date | null
+  errorMessage: string | null
+  student: {
+    id: string
+    firstName: string | null
+    lastName: string | null
+  }
+  workflowStep: {
+    id: string
+    order: number
+    triggerType: WorkflowTriggerType
+    triggerOffset: number
+    triggerClassIndex: number | null
+    template: {
+      id: string
+      name: string
+      subject: string
+    }
+  }
+}
+
+export interface CourseWorkflowStats {
+  pending: number
+  sent: number
+  failed: number
+  total: number
+}
+
+/**
+ * Get pending executions for a course workflow
+ */
+export async function getPendingExecutionsForCourseWorkflow(
+  courseWorkflowId: string
+): Promise<ExecutionWithDetails[]> {
+  const executions = await prisma.workflowExecution.findMany({
+    where: {
+      courseWorkflowId,
+      status: 'pending',
+    },
+    include: {
+      student: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
+      workflowStep: {
+        include: {
+          template: {
+            select: {
+              id: true,
+              name: true,
+              subject: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { scheduledAt: 'asc' },
+  })
+
+  return executions.map((e) => ({
+    id: e.id,
+    scheduledAt: e.scheduledAt,
+    status: e.status,
+    sentAt: e.sentAt,
+    errorMessage: e.errorMessage,
+    student: e.student,
+    workflowStep: e.workflowStep,
+  }))
+}
+
+/**
+ * Get execution history (sent/failed) for a course workflow
+ */
+export async function getExecutionHistoryForCourseWorkflow(
+  courseWorkflowId: string
+): Promise<ExecutionWithDetails[]> {
+  const executions = await prisma.workflowExecution.findMany({
+    where: {
+      courseWorkflowId,
+      status: { in: ['sent', 'failed'] },
+    },
+    include: {
+      student: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      },
+      workflowStep: {
+        include: {
+          template: {
+            select: {
+              id: true,
+              name: true,
+              subject: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: { sentAt: 'desc' },
+  })
+
+  return executions.map((e) => ({
+    id: e.id,
+    scheduledAt: e.scheduledAt,
+    status: e.status,
+    sentAt: e.sentAt,
+    errorMessage: e.errorMessage,
+    student: e.student,
+    workflowStep: e.workflowStep,
+  }))
+}
+
+/**
+ * Get statistics for a course workflow
+ */
+export async function getCourseWorkflowStats(
+  courseWorkflowId: string
+): Promise<CourseWorkflowStats> {
+  const [pending, sent, failed] = await Promise.all([
+    prisma.workflowExecution.count({
+      where: { courseWorkflowId, status: 'pending' },
+    }),
+    prisma.workflowExecution.count({
+      where: { courseWorkflowId, status: 'sent' },
+    }),
+    prisma.workflowExecution.count({
+      where: { courseWorkflowId, status: 'failed' },
+    }),
+  ])
+
+  return {
+    pending,
+    sent,
+    failed,
+    total: pending + sent + failed,
+  }
+}
+
+/**
+ * Count executions that would be affected by a course date change
+ */
+export async function countAffectedExecutions(
+  courseId: string
+): Promise<number> {
+  // Get all active course workflows for this course
+  const courseWorkflows = await prisma.courseWorkflow.findMany({
+    where: {
+      courseId,
+      status: 'active',
+    },
+    select: { id: true },
+  })
+
+  if (courseWorkflows.length === 0) return 0
+
+  const courseWorkflowIds = courseWorkflows.map((cw) => cw.id)
+
+  // Count pending executions across all active workflows
+  return prisma.workflowExecution.count({
+    where: {
+      courseWorkflowId: { in: courseWorkflowIds },
+      status: 'pending',
+    },
+  })
+}
+
+/**
+ * Recalculate execution dates for all pending executions of a course
+ * This is called when course dates change
+ */
+export async function recalculateExecutionsForCourse(
+  courseId: string,
+  educatorId: string
+): Promise<{ updated: number; deleted: number }> {
+  // Verify ownership
+  const course = await prisma.course.findFirst({
+    where: {
+      id: courseId,
+      educatorId,
+    },
+    select: {
+      id: true,
+      title: true,
+      startDate: true,
+      endDate: true,
+      examDate: true,
+      classDates: true,
+      registrationDeadline: true,
+      enrolledCount: true,
+    },
+  })
+
+  if (!course) {
+    throw new Error('Curso no encontrado')
+  }
+
+  // Get all active course workflows
+  const courseWorkflows = await prisma.courseWorkflow.findMany({
+    where: {
+      courseId,
+      status: 'active',
+    },
+    include: {
+      workflowTemplate: {
+        include: {
+          steps: {
+            select: {
+              id: true,
+              triggerType: true,
+              triggerOffset: true,
+              triggerClassIndex: true,
+              order: true,
+              template: {
+                select: {
+                  id: true,
+                  name: true,
+                  subject: true,
+                  body: true,
+                },
+              },
+            },
+            orderBy: { order: 'asc' },
+          },
+        },
+      },
+    },
+  })
+
+  const now = new Date()
+  let updated = 0
+  let deleted = 0
+
+  for (const cw of courseWorkflows) {
+    const workflow = cw.workflowTemplate
+
+    // Get all pending executions for this course workflow
+    const pendingExecutions = await prisma.workflowExecution.findMany({
+      where: {
+        courseWorkflowId: cw.id,
+        status: 'pending',
+      },
+    })
+
+    for (const execution of pendingExecutions) {
+      // Find the step for this execution
+      const step = workflow.steps.find((s) => s.id === execution.workflowStepId)
+
+      if (!step) {
+        // Step no longer exists, delete execution
+        await prisma.workflowExecution.delete({
+          where: { id: execution.id },
+        })
+        deleted++
+        continue
+      }
+
+      // Calculate new scheduled date
+      const newScheduledAt = calculateScheduledAt(
+        course,
+        step,
+        workflow.sendAtHour,
+        workflow.sendAtMinute,
+        workflow.sendAtTimezone
+      )
+
+      if (!newScheduledAt || newScheduledAt < startOfDay(now)) {
+        // Date is before today or invalid, delete execution
+        await prisma.workflowExecution.delete({
+          where: { id: execution.id },
+        })
+        deleted++
+      } else {
+        // Update scheduled date
+        await prisma.workflowExecution.update({
+          where: { id: execution.id },
+          data: { scheduledAt: newScheduledAt },
+        })
+        updated++
+      }
+    }
+  }
+
+  return { updated, deleted }
+}
+
+/**
+ * Check if a workflow should be marked as completed and update if so
+ */
+export async function checkAndCompleteWorkflow(
+  courseWorkflowId: string
+): Promise<boolean> {
+  // Count pending executions
+  const pendingCount = await prisma.workflowExecution.count({
+    where: {
+      courseWorkflowId,
+      status: 'pending',
+    },
+  })
+
+  // If no pending executions, mark as completed
+  if (pendingCount === 0) {
+    // Only mark as completed if it's currently active
+    const updated = await prisma.courseWorkflow.updateMany({
+      where: {
+        id: courseWorkflowId,
+        status: 'active',
+      },
+      data: { status: 'completed' },
+    })
+
+    return updated.count > 0
+  }
+
+  return false
 }
