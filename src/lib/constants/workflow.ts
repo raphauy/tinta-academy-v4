@@ -124,3 +124,30 @@ export function getTimezoneLabel(timezone: string): string {
   const option = TIMEZONE_OPTIONS.find((opt) => opt.value === timezone)
   return option?.label || timezone
 }
+
+// =============================================================================
+// Trigger to Course Field Mapping
+// =============================================================================
+
+/**
+ * Maps workflow trigger types to the corresponding course fields
+ * Used for validation and date extraction
+ */
+export const TRIGGER_TO_COURSE_FIELD: Record<WorkflowTriggerType, string> = {
+  course_start: 'startDate',
+  course_end: 'endDate',
+  exam_date: 'examDate',
+  class_date: 'classDates',
+  registration_deadline: 'registrationDeadline',
+}
+
+/**
+ * Human-readable labels for course fields (for validation messages)
+ */
+export const COURSE_FIELD_LABELS: Record<string, string> = {
+  startDate: 'Fecha de inicio',
+  endDate: 'Fecha de fin',
+  examDate: 'Fecha de examen',
+  classDates: 'Fechas de clases',
+  registrationDeadline: 'Cierre de inscripción',
+}

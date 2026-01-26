@@ -10,10 +10,12 @@ import {
   Loader2,
   Power,
   PowerOff,
+  Link2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
+import { AssignWorkflowDialog } from '@/components/educator/workflows/assign-workflow-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +54,7 @@ export function WorkflowActions({
 }: WorkflowActionsProps) {
   const router = useRouter()
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showAssignDialog, setShowAssignDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isDuplicating, setIsDuplicating] = useState(false)
   const [isToggling, setIsToggling] = useState(false)
@@ -121,6 +124,13 @@ export function WorkflowActions({
             <Copy className="mr-2 h-4 w-4" />
             Duplicar
           </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setShowAssignDialog(true)}
+            disabled={!isActive}
+          >
+            <Link2 className="mr-2 h-4 w-4" />
+            Asignar a curso
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleToggleActive} disabled={isToggling}>
             {isActive ? (
               <>
@@ -175,6 +185,13 @@ export function WorkflowActions({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AssignWorkflowDialog
+        workflowId={workflowId}
+        workflowName={workflowName}
+        open={showAssignDialog}
+        onOpenChange={setShowAssignDialog}
+      />
     </>
   )
 }
