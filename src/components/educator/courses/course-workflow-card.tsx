@@ -123,7 +123,13 @@ export function CourseWorkflowCard({ courseWorkflow }: CourseWorkflowCardProps) 
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0 space-y-1">
               <div className="flex items-center gap-2">
-                <h4 className="font-medium truncate">{workflowTemplate.name}</h4>
+                <button
+                  type="button"
+                  onClick={() => setShowDetailDialog(true)}
+                  className="font-medium truncate text-left cursor-pointer hover:underline hover:text-primary transition-colors"
+                >
+                  {workflowTemplate.name}
+                </button>
                 <Badge variant={statusInfo.variant} className="shrink-0">
                   {statusInfo.label}
                 </Badge>
