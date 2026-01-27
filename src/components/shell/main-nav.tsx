@@ -35,11 +35,16 @@ interface NavItemComponentProps {
 
 function NavItemComponent({ item, depth = 0, viewAsStudentId }: NavItemComponentProps) {
   const pathname = usePathname()
-  const isActive = pathname === item.href
+
+  // Check if path matches exactly or starts with href (for subroutes)
+  const isPathActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + '/')
+
+  const isActive = isPathActive(item.href)
   const hasActiveChild = item.children?.some(
     (child) =>
-      pathname === child.href ||
-      child.children?.some((grandchild) => pathname === grandchild.href)
+      isPathActive(child.href) ||
+      child.children?.some((grandchild) => isPathActive(grandchild.href))
   )
 
   const [expanded, setExpanded] = useState(hasActiveChild ?? false)

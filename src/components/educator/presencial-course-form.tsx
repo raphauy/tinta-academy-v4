@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition, useEffect, useCallback } from 'react'
+import { useState, useTransition, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -23,6 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImageUpload } from '@/components/shared/image-upload'
 import { CourseDatesSection } from '@/components/educator/course-dates-section'
 import { TagSelector } from '@/components/educator/tag-selector'
+import { RecalculateDatesDialog } from '@/components/educator/courses/recalculate-dates-dialog'
 import { generateSlug } from '@/lib/utils'
 import {
   createCourseAction,
@@ -30,6 +31,7 @@ import {
   checkSlugAction,
   type TagData,
 } from '@/app/educator/actions'
+import { countAffectedExecutionsAction } from '@/app/educator/workflows/actions'
 import type { Course, Tag } from '@prisma/client'
 
 const courseTypes = ['wset', 'taller', 'cata', 'curso'] as const
@@ -100,12 +102,14 @@ interface PresencialCourseFormProps {
   course?: CourseWithTags
   mode: 'create' | 'edit'
   initialTags?: TagData[]
+  hasActiveWorkflows?: boolean
 }
 
 export function PresencialCourseForm({
   course,
   mode,
   initialTags = [],
+  hasActiveWorkflows = false,
 }: PresencialCourseFormProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -127,6 +131,20 @@ export function PresencialCourseForm({
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
     course?.tags?.map((t) => t.id) ?? []
   )
+
+  // State for recalculate dates dialog
+  const [showRecalculateDialog, setShowRecalculateDialog] = useState(false)
+  const [affectedExecutionsCount, setAffectedExecutionsCount] = useState(0)
+  const pendingFormDataRef = useRef<FormData | null>(null)
+
+  // Store original dates for comparison (only in edit mode)
+  const originalDatesRef = useRef({
+    classDates: course?.classDates?.map((d) => new Date(d).toISOString()) ?? [],
+    examDate: course?.examDate ? new Date(course.examDate).toISOString() : null,
+    registrationDeadline: course?.registrationDeadline
+      ? new Date(course.registrationDeadline).toISOString()
+      : null,
+  })
 
   const {
     register,
@@ -220,6 +238,34 @@ export function PresencialCourseForm({
     setValue('slug', newSlug, { shouldValidate: true })
   }
 
+  // Check if relevant dates have changed for workflow recalculation
+  // Note: startDate and endDate are derived from classDates (first and last dates),
+  // so they're implicitly covered when comparing classDates
+  const haveDatesChanged = useCallback(() => {
+    const original = originalDatesRef.current
+
+    // Compare classDates (startDate/endDate are derived from these)
+    const newClassDates = courseDates.classDates.map((d) => d.toISOString()).sort()
+    const oldClassDates = [...original.classDates].sort()
+    if (JSON.stringify(newClassDates) !== JSON.stringify(oldClassDates)) {
+      return true
+    }
+
+    // Compare examDate
+    const newExamDate = courseDates.examDate?.toISOString() ?? null
+    if (newExamDate !== original.examDate) {
+      return true
+    }
+
+    // Compare registrationDeadline
+    const newRegistrationDeadline = courseDates.registrationDeadline?.toISOString() ?? null
+    if (newRegistrationDeadline !== original.registrationDeadline) {
+      return true
+    }
+
+    return false
+  }, [courseDates])
+
   const handleImageChange = (url: string | null) => {
     setImageUrl(url ?? undefined)
     setValue('imageUrl', url ?? '', { shouldValidate: true })
@@ -229,90 +275,138 @@ export function PresencialCourseForm({
     toast.error(error)
   }
 
+  // Build FormData from current form state
+  const buildFormData = (data: CourseFormOutput): FormData => {
+    const formData = new FormData()
+
+    formData.append('title', data.title)
+    formData.append('slug', data.slug)
+    formData.append('type', data.type)
+    formData.append('priceUSD', data.priceUSD.toString())
+    if (data.priceUYU !== undefined && data.priceUYU !== null) {
+      formData.append('priceUYU', data.priceUYU.toString())
+    }
+
+    if (data.wsetLevel && data.type === 'wset') {
+      formData.append('wsetLevel', data.wsetLevel.toString())
+    }
+    if (data.description) formData.append('description', data.description)
+    if (data.duration) formData.append('duration', data.duration)
+    if (data.location) formData.append('location', data.location)
+    if (data.address) formData.append('address', data.address)
+    if (data.maxCapacity)
+      formData.append('maxCapacity', data.maxCapacity.toString())
+    if (imageUrl) formData.append('imageUrl', imageUrl)
+
+    // Class dates data
+    if (courseDates.classDates.length > 0) {
+      formData.append(
+        'classDates',
+        JSON.stringify(courseDates.classDates.map((d) => d.toISOString()))
+      )
+      // Set startDate and endDate based on classDates
+      const sortedDates = [...courseDates.classDates].sort(
+        (a, b) => a.getTime() - b.getTime()
+      )
+      formData.append('startDate', sortedDates[0].toISOString())
+      formData.append(
+        'endDate',
+        sortedDates[sortedDates.length - 1].toISOString()
+      )
+    }
+    if (courseDates.startTime) {
+      formData.append('startTime', courseDates.startTime)
+    }
+    if (courseDates.classDuration) {
+      formData.append('classDuration', courseDates.classDuration.toString())
+    }
+    if (courseDates.examDate) {
+      formData.append('examDate', courseDates.examDate.toISOString())
+    }
+    if (courseDates.registrationDeadline) {
+      formData.append(
+        'registrationDeadline',
+        courseDates.registrationDeadline.toISOString()
+      )
+    }
+
+    // Tags
+    if (selectedTagIds.length > 0) {
+      formData.append('tagIds', JSON.stringify(selectedTagIds))
+    }
+
+    return formData
+  }
+
+  // Execute the actual form submission
+  const executeSubmit = async (formData: FormData) => {
+    let result
+
+    if (mode === 'create') {
+      result = await createCourseAction(formData)
+    } else {
+      result = await updateCourseAction(course!.id, formData)
+    }
+
+    if (result.success) {
+      toast.success(
+        mode === 'create'
+          ? 'Curso creado exitosamente'
+          : 'Curso actualizado exitosamente'
+      )
+      router.push('/educator/courses')
+    } else {
+      toast.error(result.error)
+    }
+  }
+
   const onSubmit = (data: CourseFormOutput) => {
     if (slugStatus === 'taken') {
       toast.error('El slug ya esta en uso. Por favor elige otro.')
       return
     }
 
-    startTransition(async () => {
-      const formData = new FormData()
+    const formData = buildFormData(data)
 
-      formData.append('title', data.title)
-      formData.append('slug', data.slug)
-      formData.append('type', data.type)
-      formData.append('priceUSD', data.priceUSD.toString())
-      if (data.priceUYU !== undefined && data.priceUYU !== null) {
-        formData.append('priceUYU', data.priceUYU.toString())
-      }
+    // Check if we need to show recalculate dialog
+    if (mode === 'edit' && hasActiveWorkflows && haveDatesChanged()) {
+      // Store the form data and check affected executions
+      pendingFormDataRef.current = formData
+      startTransition(async () => {
+        const countResult = await countAffectedExecutionsAction(course!.id)
+        if (countResult.success && countResult.data && countResult.data.count > 0) {
+          setAffectedExecutionsCount(countResult.data.count)
+          setShowRecalculateDialog(true)
+        } else {
+          // No affected executions, proceed with save
+          await executeSubmit(formData)
+        }
+      })
+    } else {
+      // No workflows or no date changes, proceed normally
+      startTransition(async () => {
+        await executeSubmit(formData)
+      })
+    }
+  }
 
-      if (data.wsetLevel && data.type === 'wset') {
-        formData.append('wsetLevel', data.wsetLevel.toString())
-      }
-      if (data.description) formData.append('description', data.description)
-      if (data.duration) formData.append('duration', data.duration)
-      if (data.location) formData.append('location', data.location)
-      if (data.address) formData.append('address', data.address)
-      if (data.maxCapacity)
-        formData.append('maxCapacity', data.maxCapacity.toString())
-      if (imageUrl) formData.append('imageUrl', imageUrl)
+  // Handle recalculate dialog callbacks
+  const handleRecalculated = () => {
+    if (pendingFormDataRef.current) {
+      startTransition(async () => {
+        await executeSubmit(pendingFormDataRef.current!)
+        pendingFormDataRef.current = null
+      })
+    }
+  }
 
-      // Class dates data
-      if (courseDates.classDates.length > 0) {
-        formData.append(
-          'classDates',
-          JSON.stringify(courseDates.classDates.map((d) => d.toISOString()))
-        )
-        // Set startDate and endDate based on classDates
-        const sortedDates = [...courseDates.classDates].sort(
-          (a, b) => a.getTime() - b.getTime()
-        )
-        formData.append('startDate', sortedDates[0].toISOString())
-        formData.append(
-          'endDate',
-          sortedDates[sortedDates.length - 1].toISOString()
-        )
-      }
-      if (courseDates.startTime) {
-        formData.append('startTime', courseDates.startTime)
-      }
-      if (courseDates.classDuration) {
-        formData.append('classDuration', courseDates.classDuration.toString())
-      }
-      if (courseDates.examDate) {
-        formData.append('examDate', courseDates.examDate.toISOString())
-      }
-      if (courseDates.registrationDeadline) {
-        formData.append(
-          'registrationDeadline',
-          courseDates.registrationDeadline.toISOString()
-        )
-      }
-
-      // Tags
-      if (selectedTagIds.length > 0) {
-        formData.append('tagIds', JSON.stringify(selectedTagIds))
-      }
-
-      let result
-
-      if (mode === 'create') {
-        result = await createCourseAction(formData)
-      } else {
-        result = await updateCourseAction(course!.id, formData)
-      }
-
-      if (result.success) {
-        toast.success(
-          mode === 'create'
-            ? 'Curso creado exitosamente'
-            : 'Curso actualizado exitosamente'
-        )
-        router.push('/educator/courses')
-      } else {
-        toast.error(result.error)
-      }
-    })
+  const handleKeepOriginal = () => {
+    if (pendingFormDataRef.current) {
+      startTransition(async () => {
+        await executeSubmit(pendingFormDataRef.current!)
+        pendingFormDataRef.current = null
+      })
+    }
   }
 
   const typeOptions = [
@@ -628,6 +722,18 @@ export function PresencialCourseForm({
           {mode === 'create' ? 'Crear Curso' : 'Guardar Cambios'}
         </Button>
       </div>
+
+      {/* Recalculate Dates Dialog */}
+      {course && (
+        <RecalculateDatesDialog
+          open={showRecalculateDialog}
+          onOpenChange={setShowRecalculateDialog}
+          courseId={course.id}
+          affectedCount={affectedExecutionsCount}
+          onRecalculated={handleRecalculated}
+          onKeepOriginal={handleKeepOriginal}
+        />
+      )}
     </form>
   )
 }

@@ -4,11 +4,13 @@ import { getEducatorByUserId } from '@/services/educator-service'
 import { getCourseById } from '@/services/course-service'
 import { getMaterialsByCourse } from '@/services/material-service'
 import { getTags } from '@/services/tag-service'
+import { getCourseWorkflows } from '@/services/workflow-execution-service'
 import {
   PresencialCourseForm,
   MaterialsSection,
   CourseStatusActions,
 } from '@/components/educator'
+import { CourseWorkflowsSection } from '@/components/educator/courses/course-workflows-section'
 
 interface EditCoursePageProps {
   params: Promise<{ id: string }>
@@ -57,10 +59,11 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
     redirect('/educator/courses')
   }
 
-  // Fetch materials and tags for this course
-  const [materials, tags] = await Promise.all([
+  // Fetch materials, tags, and workflows for this course
+  const [materials, tags, courseWorkflows] = await Promise.all([
     getMaterialsByCourse(id),
     getTags(),
+    getCourseWorkflows(id),
   ])
 
   return (
@@ -77,10 +80,23 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
         <CourseStatusActions courseId={course.id} status={course.status} />
       </div>
 
-      <PresencialCourseForm mode="edit" course={course} initialTags={tags} />
+      <PresencialCourseForm
+        mode="edit"
+        course={course}
+        initialTags={tags}
+        hasActiveWorkflows={courseWorkflows.some((cw) => cw.status === 'active')}
+      />
 
       {/* Materials section - only for existing courses */}
       <MaterialsSection courseId={course.id} materials={materials} />
+
+      {/* Workflows section */}
+      <CourseWorkflowsSection
+        courseId={course.id}
+        courseName={course.title}
+        enrolledCount={course.enrolledCount}
+        courseWorkflows={courseWorkflows}
+      />
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { endOfDay } from 'date-fns'
 import { PaymentMethod, Currency, OrderStatus, EnrollmentStatus, Course, Coupon, BankAccount } from '@prisma/client'
 import { createOrder, getOrderById, updateOrderStatus, setMercadoPagoPreference } from './order-service'
 import { validateCoupon, ValidateCouponResult } from './coupon-service'
@@ -11,6 +12,7 @@ import {
   sendWsetDataReminderEmail,
   sendAdminPaymentNotificationEmail,
 } from './email-service'
+import { generateExecutionsForNewStudent } from './workflow-execution-service'
 
 // ============================================
 // TYPES
@@ -194,8 +196,8 @@ export async function getCheckoutContext(
     enrollmentBlockReason = 'course_closed'
   }
 
-  // Check registration deadline
-  if (canEnroll && course.registrationDeadline && new Date() > course.registrationDeadline) {
+  // Check registration deadline (include full deadline day)
+  if (canEnroll && course.registrationDeadline && new Date() > endOfDay(course.registrationDeadline)) {
     canEnroll = false
     enrollmentBlockReason = 'deadline_passed'
   }
@@ -520,8 +522,17 @@ export async function completeCheckout(orderId: string): Promise<{
     return { enrollment, isNewStudent }
   })
 
-  // Increment coupon usage outside transaction (we already did it inside)
-  // This is handled above
+  // Generar ejecuciones de workflows para el nuevo estudiante
+  try {
+    await generateExecutionsForNewStudent(
+      order.courseId,
+      result.enrollment.studentId,
+      result.enrollment.id
+    )
+  } catch (error) {
+    console.error('[Checkout] Error generating workflow executions:', error)
+    // No fallar el checkout si esto falla
+  }
 
   const updatedOrder = await getOrderById(orderId)
 

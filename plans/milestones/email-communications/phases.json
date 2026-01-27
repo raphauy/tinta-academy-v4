@@ -46,11 +46,18 @@
       "tasksFile": "fase-6.tasks.json"
     },
     {
-      "id": 7,
-      "name": "Workflows - Ejecucion",
+      "id": "7a",
+      "name": "Workflows - Asignacion y Ejecucion Basica",
       "status": "planned",
-      "descriptionFile": "fase-7.md",
-      "tasksFile": "fase-7.tasks.json"
+      "descriptionFile": "fase-7a.md",
+      "tasksFile": "fase-7a.tasks.json"
+    },
+    {
+      "id": "7b",
+      "name": "Workflows - Gestion Avanzada",
+      "status": "planned",
+      "descriptionFile": "fase-7b.md",
+      "tasksFile": "fase-7b.tasks.json"
     },
     {
       "id": 8,
