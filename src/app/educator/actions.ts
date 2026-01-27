@@ -9,11 +9,12 @@ import {
   updateCourse,
   publishCourse,
   unpublishCourse,
+  updateCourseStatus,
   deleteCourse,
   getCourseById,
   checkSlug,
 } from '@/services/course-service'
-import { CourseType } from '@prisma/client'
+import { CourseType, CourseStatus } from '@prisma/client'
 import type { MaterialType } from '@prisma/client'
 import {
   createMaterial,
@@ -370,6 +371,42 @@ export async function unpublishCourseAction(
     return {
       success: false,
       error: 'Error al despublicar el curso',
+    }
+  }
+}
+
+export async function updateCourseStatusAction(
+  courseId: string,
+  status: CourseStatus
+): Promise<ActionResult> {
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  const ownershipResult = await verifyCourseOwnership(courseId, educator.id)
+
+  if ('error' in ownershipResult) {
+    return { success: false, error: ownershipResult.error }
+  }
+
+  try {
+    await updateCourseStatus(courseId, status)
+
+    revalidatePath('/educator/courses')
+    revalidatePath(`/educator/courses/${courseId}`)
+    revalidatePath('/educator')
+    revalidatePath('/') // Landing page
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating course status:', error)
+    return {
+      success: false,
+      error: 'Error al actualizar el estado del curso',
     }
   }
 }

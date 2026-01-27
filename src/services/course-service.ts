@@ -335,6 +335,13 @@ export async function unpublishCourse(id: string) {
   })
 }
 
+export async function updateCourseStatus(id: string, status: CourseStatus) {
+  return prisma.course.update({
+    where: { id },
+    data: { status },
+  })
+}
+
 export async function deleteCourse(id: string) {
   // Check if course has enrollments
   const enrollmentCount = await prisma.enrollment.count({
