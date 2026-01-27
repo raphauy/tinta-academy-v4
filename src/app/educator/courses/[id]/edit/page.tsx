@@ -5,6 +5,7 @@ import { getCourseById } from '@/services/course-service'
 import { getMaterialsByCourse } from '@/services/material-service'
 import { getTags } from '@/services/tag-service'
 import { getCourseWorkflows } from '@/services/workflow-execution-service'
+import { getConfirmedEnrollmentCount } from '@/services/enrollment-service'
 import {
   PresencialCourseForm,
   MaterialsSection,
@@ -59,11 +60,12 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
     redirect('/educator/courses')
   }
 
-  // Fetch materials, tags, and workflows for this course
-  const [materials, tags, courseWorkflows] = await Promise.all([
+  // Fetch materials, tags, workflows, and enrollment count for this course
+  const [materials, tags, courseWorkflows, confirmedEnrollments] = await Promise.all([
     getMaterialsByCourse(id),
     getTags(),
     getCourseWorkflows(id),
+    getConfirmedEnrollmentCount(id),
   ])
 
   return (
@@ -94,7 +96,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
       <CourseWorkflowsSection
         courseId={course.id}
         courseName={course.title}
-        enrolledCount={course.enrolledCount}
+        enrolledCount={confirmedEnrollments}
         courseWorkflows={courseWorkflows}
       />
     </div>

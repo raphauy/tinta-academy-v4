@@ -244,6 +244,20 @@ export async function getStudentEnrollmentByCourse(
   })
 }
 
+/**
+ * Get the count of confirmed enrollments for a course
+ */
+export async function getConfirmedEnrollmentCount(
+  courseId: string
+): Promise<number> {
+  return prisma.enrollment.count({
+    where: {
+      courseId,
+      status: EnrollmentStatus.confirmed,
+    },
+  })
+}
+
 // ============================================
 // ENROLLMENT MUTATIONS
 // ============================================

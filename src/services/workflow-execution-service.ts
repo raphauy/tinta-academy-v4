@@ -90,8 +90,9 @@ export interface SchedulePreviewItem {
  * Get courses available for workflow assignment
  * Only returns published courses with at least one date field set
  */
-// Status values that are considered "published" (visible for workflow assignment)
-const publishedStatuses: CourseStatus[] = [
+// Status values that allow workflow assignment
+const workflowAssignableStatuses: CourseStatus[] = [
+  CourseStatus.draft,
   CourseStatus.announced,
   CourseStatus.enrolling,
   CourseStatus.full,
@@ -105,7 +106,7 @@ export async function getCoursesForWorkflowAssignment(
   const courses = await prisma.course.findMany({
     where: {
       educatorId,
-      status: { in: publishedStatuses },
+      status: { in: workflowAssignableStatuses },
     },
     select: {
       id: true,
