@@ -7,6 +7,7 @@ import WsetDataReminderEmail from '@/components/emails/wset-data-reminder'
 import AdminTransferNotificationEmail from '@/components/emails/admin-transfer-notification'
 import AdminPaymentNotificationEmail from '@/components/emails/admin-payment-notification'
 import DynamicEmail from '@/components/emails/dynamic-email'
+import EducatorStatusReminderEmail from '@/components/emails/educator-status-reminder'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const fromEmail = process.env.EMAIL_FROM || 'academy@tinta.wine'
@@ -469,6 +470,68 @@ export function getMercadoPagoRejectionReason(statusDetail: string): string {
   }
 
   return reasons[statusDetail] || 'Error en el procesamiento del pago'
+}
+
+// =============================================================================
+// Educator Status Reminder Email
+// =============================================================================
+
+interface CourseStatusForEmail {
+  id: string
+  title: string
+  currentStatusLabel: string
+  suggestedStatusLabel: string
+  reason: string
+}
+
+interface SendEducatorStatusReminderEmailInput {
+  to: string
+  educatorName: string
+  courses: CourseStatusForEmail[]
+}
+
+// Admin email for BCC
+const ADMIN_BCC_EMAIL = 'rapha.uy@rapha.uy'
+
+export async function sendEducatorStatusReminderEmail(
+  input: SendEducatorStatusReminderEmailInput
+): Promise<void> {
+  const { to, educatorName, courses } = input
+
+  if (courses.length === 0) {
+    return
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\n========================================')
+    console.log('  EDUCATOR STATUS REMINDER EMAIL')
+    console.log(`  To: ${to}`)
+    console.log(`  Educator: ${educatorName}`)
+    console.log(`  Courses needing attention: ${courses.length}`)
+    for (const course of courses) {
+      console.log(`    - ${course.title}: ${course.currentStatusLabel} -> ${course.suggestedStatusLabel}`)
+      console.log(`      Reason: ${course.reason}`)
+    }
+    console.log('========================================\n')
+    return
+  }
+
+  if (!shouldSendEmail()) return
+
+  const courseCount = courses.length
+  const subject = `Tinta Academy - ${courseCount} curso${courseCount !== 1 ? 's' : ''} ${courseCount !== 1 ? 'requieren' : 'requiere'} tu atención`
+
+  await resend.emails.send({
+    from: fromEmail,
+    to,
+    bcc: ADMIN_BCC_EMAIL,
+    subject,
+    react: EducatorStatusReminderEmail({
+      educatorName,
+      courses,
+      baseUrl,
+    }),
+  })
 }
 
 // =============================================================================
