@@ -27,11 +27,13 @@ export interface NavItem {
   href: string
   icon?: LucideIcon
   children?: NavItem[]
+  /** If true, only match when pathname === href exactly (no subroutes) */
+  exactMatch?: boolean
 }
 
 // Admin navigation
 export const adminNavItems: NavItem[] = [
-  { label: 'Panel de Control', href: '/admin', icon: LayoutDashboard },
+  { label: 'Panel de Control', href: '/admin', icon: LayoutDashboard, exactMatch: true },
   { label: 'Cursos', href: '/admin/courses', icon: BookOpen },
   {
     label: 'Usuarios',
@@ -52,7 +54,7 @@ export const adminNavItems: NavItem[] = [
 
 // Educator navigation
 export const educatorNavItems: NavItem[] = [
-  { label: 'Panel de Control', href: '/educator', icon: LayoutDashboard },
+  { label: 'Panel de Control', href: '/educator', icon: LayoutDashboard, exactMatch: true },
   { label: 'Mis Cursos', href: '/educator/courses', icon: BookOpen },
   { label: 'Crear Curso', href: '/educator/courses/create', icon: PlusCircle },
   { label: 'Estudiantes', href: '/educator/students', icon: Users },
@@ -75,7 +77,7 @@ export const educatorNavItems: NavItem[] = [
 
 // Student navigation
 export const studentNavItems: NavItem[] = [
-  { label: 'Panel de Control', href: '/student', icon: LayoutDashboard },
+  { label: 'Panel de Control', href: '/student', icon: LayoutDashboard, exactMatch: true },
   { label: 'Mis Cursos', href: '/student/courses', icon: BookOpen },
   { label: 'Mis Ordenes', href: '/student/orders', icon: Receipt },
   { label: 'Mi Perfil', href: '/student/profile', icon: User },

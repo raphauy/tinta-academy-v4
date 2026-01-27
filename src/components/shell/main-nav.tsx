@@ -20,6 +20,7 @@ export function MainNav({ items, viewAsStudentId }: MainNavProps) {
         <NavItemComponent
           key={item.href}
           item={item}
+          siblings={items}
           viewAsStudentId={viewAsStudentId}
         />
       ))}
@@ -29,22 +30,52 @@ export function MainNav({ items, viewAsStudentId }: MainNavProps) {
 
 interface NavItemComponentProps {
   item: NavItem
+  siblings?: NavItem[]
   depth?: number
   viewAsStudentId?: string
 }
 
-function NavItemComponent({ item, depth = 0, viewAsStudentId }: NavItemComponentProps) {
+function NavItemComponent({ item, siblings = [], depth = 0, viewAsStudentId }: NavItemComponentProps) {
   const pathname = usePathname()
 
-  // Check if path matches exactly or starts with href (for subroutes)
-  const isPathActive = (href: string) =>
-    pathname === href || pathname.startsWith(href + '/')
+  /**
+   * Check if path matches a nav item, considering:
+   * 1. exactMatch flag - only match if pathname === href
+   * 2. Sibling exclusion - don't match if a sibling with more specific href matches
+   */
+  const isPathActive = (href: string, exactMatch?: boolean, itemSiblings: NavItem[] = []) => {
+    // Exact match mode: only match if pathname equals href
+    if (exactMatch) {
+      return pathname === href
+    }
 
-  const isActive = isPathActive(item.href)
+    // Check basic match (exact or starts with)
+    const basicMatch = pathname === href || pathname.startsWith(href + '/')
+    if (!basicMatch) return false
+
+    // Check if a sibling with a more specific href matches
+    // A sibling is "more specific" if its href starts with this href and also matches the pathname
+    const hasBetterSiblingMatch = itemSiblings.some((sibling) => {
+      if (sibling.href === href) return false // Same item
+      // Sibling is more specific if it starts with our href and matches pathname
+      if (sibling.href.startsWith(href + '/') || href.startsWith(sibling.href + '/')) {
+        const siblingMatches = pathname === sibling.href || pathname.startsWith(sibling.href + '/')
+        // If sibling matches and has a longer (more specific) href, prefer it
+        if (siblingMatches && sibling.href.length > href.length) {
+          return true
+        }
+      }
+      return false
+    })
+
+    return !hasBetterSiblingMatch
+  }
+
+  const isActive = isPathActive(item.href, item.exactMatch, siblings)
   const hasActiveChild = item.children?.some(
     (child) =>
-      isPathActive(child.href) ||
-      child.children?.some((grandchild) => isPathActive(grandchild.href))
+      isPathActive(child.href, child.exactMatch, item.children) ||
+      child.children?.some((grandchild) => isPathActive(grandchild.href, grandchild.exactMatch, child.children))
   )
 
   const [expanded, setExpanded] = useState(hasActiveChild ?? false)
@@ -87,6 +118,7 @@ function NavItemComponent({ item, depth = 0, viewAsStudentId }: NavItemComponent
               <NavItemComponent
                 key={child.href}
                 item={child}
+                siblings={item.children}
                 depth={depth + 1}
                 viewAsStudentId={viewAsStudentId}
               />
