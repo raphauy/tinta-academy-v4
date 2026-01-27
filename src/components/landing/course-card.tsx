@@ -1,5 +1,5 @@
 import type { Course, Educator } from '@/types/landing'
-import { Calendar, Clock, Users, MapPin, Monitor } from 'lucide-react'
+import { Calendar, Clock, Users, MapPin, Monitor, Video } from 'lucide-react'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -88,6 +88,11 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
               <>
                 <Monitor size={12} />
                 Online
+              </>
+            ) : course.modality === 'webinar' ? (
+              <>
+                <Video size={12} />
+                Webinar
               </>
             ) : (
               <>

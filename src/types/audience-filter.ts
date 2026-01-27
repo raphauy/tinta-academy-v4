@@ -205,6 +205,7 @@ export const COURSE_MODALITY_OPTIONS: Record<
 > = {
   presencial: { label: 'Presencial' },
   online: { label: 'Online' },
+  webinar: { label: 'Webinar' },
 }
 
 export const WSET_LEVEL_OPTIONS = [

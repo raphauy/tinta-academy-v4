@@ -73,6 +73,9 @@ interface SendOrderConfirmationEmailInput {
   amount: string
   currency: string
   courseId: string
+  // Webinar streaming fields
+  streamingUrl?: string
+  streamingPassword?: string
 }
 
 export async function sendOrderConfirmationEmail(
@@ -91,6 +94,8 @@ export async function sendOrderConfirmationEmail(
     amount,
     currency,
     courseId,
+    streamingUrl,
+    streamingPassword,
   } = input
 
   const courseUrl = `${baseUrl}/student/courses/${courseId}`
@@ -103,6 +108,10 @@ export async function sendOrderConfirmationEmail(
     console.log(`  Course: ${courseName}`)
     console.log(`  Amount: ${currency} ${amount}`)
     console.log(`  Course URL: ${courseUrl}`)
+    if (streamingUrl) {
+      console.log(`  Streaming URL: ${streamingUrl}`)
+      console.log(`  Streaming Password: ${streamingPassword || 'N/A'}`)
+    }
     console.log('========================================\n')
     return
   }
@@ -125,6 +134,8 @@ export async function sendOrderConfirmationEmail(
       amount,
       currency,
       courseUrl,
+      streamingUrl,
+      streamingPassword,
     }),
   })
 }

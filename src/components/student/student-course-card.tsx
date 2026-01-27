@@ -164,6 +164,11 @@ export function StudentCourseCard({ enrollment, viewAs }: StudentCourseCardProps
                     <Monitor size={12} className="text-primary" />
                     Online
                   </>
+                ) : course.modality === 'webinar' ? (
+                  <>
+                    <Video size={12} className="text-primary" />
+                    Webinar
+                  </>
                 ) : (
                   <>
                     <MapPin size={12} className="text-primary" />

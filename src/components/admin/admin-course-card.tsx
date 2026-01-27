@@ -7,6 +7,7 @@ import { es } from 'date-fns/locale'
 import {
   MapPin,
   Monitor,
+  Video,
   Users,
   Wallet,
   Calendar,
@@ -207,6 +208,11 @@ export function AdminCourseCard({ course, onEducatorClick }: AdminCourseCardProp
                       <>
                         <Monitor size={12} className="text-primary" />
                         Online
+                      </>
+                    ) : course.modality === 'webinar' ? (
+                      <>
+                        <Video size={12} className="text-primary" />
+                        Webinar
                       </>
                     ) : (
                       <>

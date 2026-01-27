@@ -17,6 +17,25 @@ type PrismaCourseWithRelations = PrismaCourse & {
 
 // Transform Prisma data to landing page types
 function transformCourse(prismaCourse: PrismaCourseWithRelations): Course {
+  // Calculate duration: for webinars use classDuration (minutes -> hours), otherwise parse duration string
+  let duration: number
+  if (prismaCourse.modality === 'webinar' && prismaCourse.classDuration) {
+    // Convert minutes to hours, rounding to 1 decimal
+    duration = Math.round(prismaCourse.classDuration / 60 * 10) / 10
+  } else {
+    duration = parseInt(prismaCourse.duration || '0')
+  }
+
+  // Calculate location label
+  let location: string
+  if (prismaCourse.modality === 'online') {
+    location = 'Online'
+  } else if (prismaCourse.modality === 'webinar') {
+    location = 'Webinar'
+  } else {
+    location = prismaCourse.location || ''
+  }
+
   return {
     id: prismaCourse.id,
     slug: prismaCourse.slug,
@@ -27,12 +46,12 @@ function transformCourse(prismaCourse: PrismaCourseWithRelations): Course {
     description: prismaCourse.description || '',
     startDate: prismaCourse.startDate,
     endDate: prismaCourse.endDate,
-    duration: parseInt(prismaCourse.duration || '0'),
+    duration,
     maxCapacity: prismaCourse.maxCapacity,
     enrolledCount: prismaCourse.enrolledCount,
     priceUSD: prismaCourse.priceUSD,
     priceUYU: prismaCourse.priceUYU,
-    location: prismaCourse.location || (prismaCourse.modality === 'online' ? 'Online' : ''),
+    location,
     address: prismaCourse.address,
     imageUrl: prismaCourse.imageUrl || '/placeholder-course.jpg',
     status: prismaCourse.status,

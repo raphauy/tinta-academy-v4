@@ -29,6 +29,9 @@ interface OrderConfirmationEmailProps {
   amount?: string
   currency?: string
   courseUrl?: string
+  // Webinar streaming fields
+  streamingUrl?: string
+  streamingPassword?: string
 }
 
 export default function OrderConfirmationEmail({
@@ -44,8 +47,11 @@ export default function OrderConfirmationEmail({
   amount = '350.00',
   currency = 'USD',
   courseUrl = 'https://academy.tinta.wine/student/courses/wset-level-2',
+  streamingUrl,
+  streamingPassword,
 }: OrderConfirmationEmailProps) {
   void _paymentMethod // Suppress unused variable warning
+  const isWebinar = !!streamingUrl
   return (
     <Html>
       <Head />
@@ -165,6 +171,31 @@ export default function OrderConfirmationEmail({
                 Pagado: {currency} {amount}
               </Text>
             </Section>
+
+            {/* Webinar Access Section */}
+            {isWebinar && (
+              <Section style={styles.webinarBox}>
+                <Text style={styles.webinarTitle}>
+                  🎥 Acceso al Webinar
+                </Text>
+                <Text style={styles.webinarText}>
+                  Utiliza el siguiente link para acceder al webinar en vivo:
+                </Text>
+                <Section style={styles.buttonContainer}>
+                  <Button style={styles.webinarButton} href={streamingUrl}>
+                    Acceder al Webinar
+                  </Button>
+                </Section>
+                {streamingPassword && (
+                  <Text style={styles.webinarPassword}>
+                    Contraseña de acceso: <strong>{streamingPassword}</strong>
+                  </Text>
+                )}
+                <Text style={styles.webinarNote}>
+                  Guarda este email para tener el link de acceso disponible el día del evento.
+                </Text>
+              </Section>
+            )}
 
             <Text style={styles.text}>
               Ya puedes acceder a tu curso desde tu panel de estudiante.
@@ -346,5 +377,50 @@ const styles = {
     color: emailTheme.colors.mutedForeground,
     fontSize: '12px',
     margin: 0,
+  },
+  webinarBox: {
+    backgroundColor: '#f0fdf4',
+    border: '1px solid #bbf7d0',
+    borderRadius: emailTheme.borderRadius,
+    margin: '24px 0',
+    padding: '20px',
+  },
+  webinarTitle: {
+    color: '#166534',
+    fontSize: '16px',
+    fontWeight: '600',
+    margin: '0 0 12px 0',
+  },
+  webinarText: {
+    color: emailTheme.colors.foreground,
+    fontSize: '14px',
+    lineHeight: '22px',
+    margin: '0 0 16px 0',
+  },
+  webinarButton: {
+    backgroundColor: '#16a34a',
+    borderRadius: emailTheme.borderRadius,
+    color: '#ffffff',
+    display: 'inline-block',
+    fontSize: '14px',
+    fontWeight: '600',
+    padding: '12px 24px',
+    textDecoration: 'none',
+  },
+  webinarPassword: {
+    backgroundColor: '#ffffff',
+    borderRadius: '4px',
+    color: emailTheme.colors.foreground,
+    fontSize: '14px',
+    margin: '16px 0 0 0',
+    padding: '12px',
+    textAlign: 'center' as const,
+  },
+  webinarNote: {
+    color: emailTheme.colors.mutedForeground,
+    fontSize: '12px',
+    fontStyle: 'italic' as const,
+    margin: '12px 0 0 0',
+    textAlign: 'center' as const,
   },
 }

@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, Monitor } from 'lucide-react'
+import { Calendar, Clock, MapPin, Monitor, Video } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -134,6 +134,11 @@ export function CourseCard({
                 <>
                   <Monitor size={12} className="mr-1" />
                   Online
+                </>
+              ) : course.modality === 'webinar' ? (
+                <>
+                  <Video size={12} className="mr-1" />
+                  Webinar
                 </>
               ) : (
                 <>

@@ -22,7 +22,7 @@ export interface Course {
   title: string
   type: 'wset' | 'taller' | 'cata' | 'curso'
   wsetLevel?: number | null
-  modality: 'presencial' | 'online'
+  modality: 'presencial' | 'online' | 'webinar'
   description: string
   /** Start date - only for presencial courses */
   startDate?: Date | null
@@ -77,7 +77,7 @@ export interface ContactInfo {
 // =============================================================================
 
 export interface CourseFilters {
-  modality?: 'presencial' | 'online' | null
+  modality?: 'presencial' | 'online' | 'webinar' | null
   type?: 'wset' | 'taller' | 'cata' | 'curso' | null
   tagIds?: string[]
 }

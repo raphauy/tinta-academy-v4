@@ -17,6 +17,7 @@ export interface CreateCourseInput {
   title: string
   slug: string
   type: CourseType
+  modality?: CourseModality
   description?: string
   startDate?: Date
   endDate?: Date
@@ -33,6 +34,9 @@ export interface CreateCourseInput {
   priceUYU?: number
   location?: string
   address?: string
+  // Streaming fields for webinars
+  streamingUrl?: string
+  streamingPassword?: string
   imageUrl?: string
   wsetLevel?: number
   educatorId: string
@@ -44,6 +48,7 @@ export interface UpdateCourseInput {
   title?: string
   slug?: string
   type?: CourseType
+  modality?: CourseModality
   description?: string
   startDate?: Date
   endDate?: Date
@@ -60,6 +65,9 @@ export interface UpdateCourseInput {
   priceUYU?: number | null
   location?: string
   address?: string
+  // Streaming fields for webinars
+  streamingUrl?: string | null
+  streamingPassword?: string | null
   imageUrl?: string
   wsetLevel?: number
   // Tags
@@ -242,7 +250,7 @@ export async function createCourse(data: CreateCourseInput) {
       title: data.title,
       slug: data.slug,
       type: data.type,
-      modality: 'presencial', // Only presencial for now
+      modality: data.modality ?? 'presencial',
       description: data.description,
       startDate: data.startDate,
       endDate: data.endDate,
@@ -259,6 +267,9 @@ export async function createCourse(data: CreateCourseInput) {
       priceUYU: data.priceUYU,
       location: data.location,
       address: data.address,
+      // Streaming fields
+      streamingUrl: data.streamingUrl,
+      streamingPassword: data.streamingPassword,
       imageUrl: data.imageUrl,
       wsetLevel: data.wsetLevel,
       status: 'draft', // New courses start as draft
@@ -285,6 +296,7 @@ export async function updateCourse(id: string, data: UpdateCourseInput) {
       ...(data.title !== undefined && { title: data.title }),
       ...(data.slug !== undefined && { slug: data.slug }),
       ...(data.type !== undefined && { type: data.type }),
+      ...(data.modality !== undefined && { modality: data.modality }),
       ...(data.description !== undefined && { description: data.description }),
       ...(data.startDate !== undefined && { startDate: data.startDate }),
       ...(data.endDate !== undefined && { endDate: data.endDate }),
@@ -301,6 +313,9 @@ export async function updateCourse(id: string, data: UpdateCourseInput) {
       ...(data.priceUYU !== undefined && { priceUYU: data.priceUYU }),
       ...(data.location !== undefined && { location: data.location }),
       ...(data.address !== undefined && { address: data.address }),
+      // Streaming fields
+      ...(data.streamingUrl !== undefined && { streamingUrl: data.streamingUrl }),
+      ...(data.streamingPassword !== undefined && { streamingPassword: data.streamingPassword }),
       ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
       ...(data.wsetLevel !== undefined && { wsetLevel: data.wsetLevel }),
       // Replace tags if provided (disconnect all, then connect new ones)

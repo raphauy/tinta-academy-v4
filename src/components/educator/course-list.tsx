@@ -3,7 +3,7 @@
 import { useState, useTransition, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Plus, X } from 'lucide-react'
+import { X, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { SearchFilterBar } from '@/components/shared/search-filter-bar'
@@ -19,6 +19,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { EducatorCourseRow } from './educator-course-row'
+import { CreateCourseDropdown } from './create-course-dropdown'
 import {
   publishCourseAction,
   unpublishCourseAction,
@@ -206,16 +207,11 @@ export function CourseList({ courses, tags }: CourseListProps) {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Mis Cursos</h1>
           <p className="text-muted-foreground mt-1">
-            Gestiona tus cursos presenciales
+            Gestiona tus cursos y webinars
           </p>
         </div>
 
-        <Button asChild>
-          <Link href="/educator/courses/create">
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Curso Presencial
-          </Link>
-        </Button>
+        <CreateCourseDropdown />
       </div>
 
       {/* Search and Filters */}

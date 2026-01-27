@@ -89,6 +89,7 @@ function formatDate(date: Date | null): string {
 
 function getCourseLocation(course: Course): string {
   if (course.modality === 'online') return 'Online'
+  if (course.modality === 'webinar') return 'Webinar en vivo'
   return course.address || 'Por confirmar'
 }
 
@@ -555,6 +556,9 @@ export async function completeCheckout(orderId: string): Promise<{
       amount: updatedOrder.finalAmount.toFixed(2),
       currency: updatedOrder.currency,
       courseId: course.id,
+      // Include streaming info for webinars
+      streamingUrl: course.modality === 'webinar' ? course.streamingUrl ?? undefined : undefined,
+      streamingPassword: course.modality === 'webinar' ? course.streamingPassword ?? undefined : undefined,
     }).catch((error) => {
       console.error('Error sending order confirmation email:', error)
     })

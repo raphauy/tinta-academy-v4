@@ -1,6 +1,6 @@
 'use client'
 
-import { X, Monitor, MapPin } from 'lucide-react'
+import { X, Monitor, MapPin, Video } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FilterButton } from './filter-button'
 
@@ -92,6 +92,13 @@ export function FiltersPanel({
                 icon={<MapPin size={14} />}
               >
                 Presencial
+              </FilterButton>
+              <FilterButton
+                active={currentModality === 'webinar'}
+                onClick={() => onModalityChange('webinar')}
+                icon={<Video size={14} />}
+              >
+                Webinar
               </FilterButton>
               <FilterButton
                 active={currentModality === 'online'}

@@ -188,6 +188,11 @@ export function StudentCourseDetail({ enrollment, viewAs }: StudentCourseDetailP
                   <Monitor size={12} />
                   Online
                 </>
+              ) : course.modality === 'webinar' ? (
+                <>
+                  <Video size={12} />
+                  Webinar
+                </>
               ) : (
                 <>
                   <MapPin size={12} />
@@ -368,6 +373,64 @@ export function StudentCourseDetail({ enrollment, viewAs }: StudentCourseDetailP
                   Máximo {course.maxCapacity} {course.maxCapacity === 1 ? 'persona' : 'personas'}
                 </p>
               </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Webinar access card */}
+      {course.modality === 'webinar' && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Video className="size-4 text-primary" />
+              Acceso al Webinar
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Event date and time */}
+            {course.classDates && course.classDates.length > 0 && (
+              <div className="flex items-start gap-3">
+                <Calendar className="size-5 text-muted-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-foreground capitalize">
+                    {formatClassDate(new Date(course.classDates[0]))}
+                  </p>
+                  {course.startTime && (
+                    <p className="text-sm text-muted-foreground">
+                      {course.startTime} h
+                      {course.classDuration && ` (${course.classDuration} min)`}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Streaming link and password */}
+            {course.streamingUrl ? (
+              <div className="space-y-3 pt-2 border-t">
+                <Button asChild className="w-full sm:w-auto">
+                  <a href={course.streamingUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="size-4 mr-2" />
+                    Acceder al Webinar
+                  </a>
+                </Button>
+                {course.streamingPassword && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">Contrasena:</span>
+                    <code className="bg-muted px-2 py-1 rounded font-mono">
+                      {course.streamingPassword}
+                    </code>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  El link de acceso estara disponible hasta que el webinar finalice.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                El link de acceso se habilitara cerca de la fecha del evento.
+              </p>
             )}
           </CardContent>
         </Card>

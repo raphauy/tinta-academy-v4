@@ -10,6 +10,7 @@ import {
   Users,
   MapPin,
   Monitor,
+  Video,
   MoreVertical,
   Pencil,
   Eye,
@@ -155,6 +156,11 @@ export function EducatorCourseRow({
                   <>
                     <Monitor size={12} className="text-primary" />
                     Online
+                  </>
+                ) : course.modality === 'webinar' ? (
+                  <>
+                    <Video size={12} className="text-primary" />
+                    Webinar
                   </>
                 ) : (
                   <>

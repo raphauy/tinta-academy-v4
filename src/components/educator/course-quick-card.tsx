@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Users, Clock, MapPin, Monitor, Calendar, ChevronRight, FileEdit, GraduationCap } from 'lucide-react'
+import { Users, Clock, MapPin, Monitor, Video, Calendar, ChevronRight, FileEdit, GraduationCap } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { EducatorCourseQuickAccess } from '@/services/educator-service'
@@ -14,6 +14,7 @@ type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline' | 'verde
 
 export function CourseQuickCard({ course }: CourseQuickCardProps) {
   const isOnline = course.modality === 'online'
+  const isWebinar = course.modality === 'webinar'
 
   const getTypeLabel = () => {
     switch (course.type) {
@@ -121,6 +122,11 @@ export function CourseQuickCard({ course }: CourseQuickCardProps) {
               <>
                 <Monitor className="w-3 h-3" />
                 Online
+              </>
+            ) : isWebinar ? (
+              <>
+                <Video className="w-3 h-3" />
+                Webinar
               </>
             ) : (
               <>

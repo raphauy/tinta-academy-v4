@@ -8,6 +8,7 @@ import { getCourseWorkflows } from '@/services/workflow-execution-service'
 import { getConfirmedEnrollmentCount } from '@/services/enrollment-service'
 import {
   PresencialCourseForm,
+  WebinarCourseForm,
   MaterialsSection,
   CourseStatusActions,
 } from '@/components/educator'
@@ -21,10 +22,19 @@ export async function generateMetadata({ params }: EditCoursePageProps) {
   const { id } = await params
   const course = await getCourseById(id)
 
+  if (!course) {
+    return { title: 'Editar Curso | Tinta Academy' }
+  }
+
+  const modalityLabels: Record<string, string> = {
+    presencial: 'Curso Presencial',
+    webinar: 'Webinar',
+    online: 'Curso Online',
+  }
+
   return {
-    title: course
-      ? `Editar: ${course.title} | Tinta Academy`
-      : 'Editar Curso Presencial',
+    title: `Editar: ${course.title} | Tinta Academy`,
+    description: `Editar ${modalityLabels[course.modality] ?? 'curso'}`,
   }
 }
 
@@ -68,26 +78,53 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
     getConfirmedEnrollmentCount(id),
   ])
 
+  const hasActiveWorkflows = courseWorkflows.some((cw) => cw.status === 'active')
+
+  // Modality labels for display
+  const modalityLabels: Record<string, string> = {
+    presencial: 'Curso Presencial',
+    webinar: 'Webinar',
+    online: 'Curso Online',
+  }
+
+  // Render the appropriate form based on modality
+  const renderForm = () => {
+    if (course.modality === 'webinar') {
+      return (
+        <WebinarCourseForm
+          mode="edit"
+          course={course}
+          initialTags={tags}
+        />
+      )
+    }
+
+    // Default to presencial form (also handles online for now)
+    return (
+      <PresencialCourseForm
+        mode="edit"
+        course={course}
+        initialTags={tags}
+        hasActiveWorkflows={hasActiveWorkflows}
+      />
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Editar Curso Presencial
+            Editar {modalityLabels[course.modality] ?? 'Curso'}
           </h1>
           <p className="text-muted-foreground">
-            Modifica la informacion del curso &ldquo;{course.title}&rdquo;.
+            Modifica la informacion de &ldquo;{course.title}&rdquo;.
           </p>
         </div>
         <CourseStatusActions courseId={course.id} status={course.status} />
       </div>
 
-      <PresencialCourseForm
-        mode="edit"
-        course={course}
-        initialTags={tags}
-        hasActiveWorkflows={courseWorkflows.some((cw) => cw.status === 'active')}
-      />
+      {renderForm()}
 
       {/* Materials section - only for existing courses */}
       <MaterialsSection courseId={course.id} materials={materials} />

@@ -14,7 +14,7 @@ import {
   getCourseById,
   checkSlug,
 } from '@/services/course-service'
-import { CourseType, CourseStatus } from '@prisma/client'
+import { CourseType, CourseStatus, CourseModality } from '@prisma/client'
 import type { MaterialType } from '@prisma/client'
 import {
   createMaterial,
@@ -38,6 +38,7 @@ const createCourseSchema = z.object({
       'El slug solo puede contener letras minúsculas, números y guiones'
     ),
   type: z.nativeEnum(CourseType),
+  modality: z.nativeEnum(CourseModality).optional(),
   description: z.string().optional(),
   startDate: z.coerce.date().optional(),
   endDate: z.coerce.date().optional(),
@@ -54,6 +55,9 @@ const createCourseSchema = z.object({
   priceUYU: z.coerce.number().nonnegative('El precio no puede ser negativo').optional(),
   location: z.string().optional(),
   address: z.string().optional(),
+  // Streaming fields for webinars
+  streamingUrl: z.string().url('URL de streaming inválida').optional().or(z.literal('')),
+  streamingPassword: z.string().optional(),
   imageUrl: z.string().url().optional().or(z.literal('')),
   wsetLevel: z.coerce.number().int().min(1).max(4).optional(),
 })
@@ -143,6 +147,7 @@ export async function createCourseAction(
     title: formData.get('title') as string,
     slug: formData.get('slug') as string,
     type: formData.get('type') as string,
+    modality: (formData.get('modality') as string) || undefined,
     description: (formData.get('description') as string) || undefined,
     startDate: formData.get('startDate') || undefined,
     endDate: formData.get('endDate') || undefined,
@@ -159,6 +164,9 @@ export async function createCourseAction(
     priceUYU: formData.get('priceUYU') || undefined,
     location: (formData.get('location') as string) || undefined,
     address: (formData.get('address') as string) || undefined,
+    // Streaming fields
+    streamingUrl: (formData.get('streamingUrl') as string) || undefined,
+    streamingPassword: (formData.get('streamingPassword') as string) || undefined,
     imageUrl: (formData.get('imageUrl') as string) || undefined,
     wsetLevel: formData.get('wsetLevel') || undefined,
   }
@@ -176,6 +184,7 @@ export async function createCourseAction(
     const course = await createCourse({
       ...validated.data,
       imageUrl: validated.data.imageUrl || undefined,
+      streamingUrl: validated.data.streamingUrl || undefined,
       educatorId: educator.id,
       tagIds: tagIds as string[] | undefined,
     })
@@ -226,6 +235,7 @@ export async function updateCourseAction(
     title: formData.get('title') || undefined,
     slug: formData.get('slug') || undefined,
     type: formData.get('type') || undefined,
+    modality: formData.get('modality') || undefined,
     description: formData.get('description') || undefined,
     startDate: formData.get('startDate') || undefined,
     endDate: formData.get('endDate') || undefined,
@@ -242,6 +252,9 @@ export async function updateCourseAction(
     priceUYU: formData.get('priceUYU') || undefined,
     location: formData.get('location') || undefined,
     address: formData.get('address') || undefined,
+    // Streaming fields
+    streamingUrl: formData.get('streamingUrl') || undefined,
+    streamingPassword: formData.get('streamingPassword') || undefined,
     imageUrl: formData.get('imageUrl') || undefined,
     wsetLevel: formData.get('wsetLevel') || undefined,
   }
@@ -264,6 +277,7 @@ export async function updateCourseAction(
     await updateCourse(courseId, {
       ...validated.data,
       imageUrl: validated.data.imageUrl || undefined,
+      streamingUrl: validated.data.streamingUrl || undefined,
       tagIds: tagIds as string[] | undefined,
     })
 

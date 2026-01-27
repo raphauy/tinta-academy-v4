@@ -144,6 +144,9 @@ model Course {
   priceUYU             Float? // price in Uruguayan pesos for MercadoPago
   location             String?
   address              String?
+  // Streaming fields for webinars
+  streamingUrl         String?         // URL de Zoom/Meet/etc para webinars
+  streamingPassword    String?         // Contraseña de acceso (opcional)
   imageUrl             String?
   status               CourseStatus
   educatorId           String
@@ -359,6 +362,7 @@ enum CourseType {
 enum CourseModality {
   presencial
   online
+  webinar
 }
 
 enum CourseStatus {

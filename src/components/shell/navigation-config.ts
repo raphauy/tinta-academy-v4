@@ -19,6 +19,9 @@ import {
   Mail,
   Filter,
   HelpCircle,
+  MapPin,
+  Video,
+  Monitor,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -56,7 +59,16 @@ export const adminNavItems: NavItem[] = [
 export const educatorNavItems: NavItem[] = [
   { label: 'Panel de Control', href: '/educator', icon: LayoutDashboard, exactMatch: true },
   { label: 'Mis Cursos', href: '/educator/courses', icon: BookOpen },
-  { label: 'Crear Curso', href: '/educator/courses/create', icon: PlusCircle },
+  {
+    label: 'Crear Curso',
+    href: '/educator/courses/create',
+    icon: PlusCircle,
+    children: [
+      { label: 'Presencial', href: '/educator/courses/create?modality=presencial', icon: MapPin },
+      { label: 'Webinar', href: '/educator/courses/create?modality=webinar', icon: Video },
+      { label: 'Online', href: '/educator/courses/create?modality=online', icon: Monitor },
+    ],
+  },
   { label: 'Estudiantes', href: '/educator/students', icon: Users },
   {
     label: 'Comunicaciones',
