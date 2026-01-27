@@ -366,3 +366,73 @@ export async function duplicateWorkflow(id: string, educatorId: string) {
     return duplicate
   })
 }
+
+// =============================================================================
+// Admin Functions
+// =============================================================================
+
+/**
+ * Get all workflow templates for admin view
+ * Supports filtering by educator, active status, and search
+ */
+export async function getAllWorkflowsForAdmin(filters?: {
+  educatorId?: string
+  isActive?: boolean
+  search?: string
+}) {
+  return prisma.workflowTemplate.findMany({
+    where: {
+      ...(filters?.educatorId && { educatorId: filters.educatorId }),
+      ...(filters?.isActive !== undefined && { isActive: filters.isActive }),
+      ...(filters?.search && {
+        OR: [
+          { name: { contains: filters.search, mode: 'insensitive' } },
+          { description: { contains: filters.search, mode: 'insensitive' } },
+        ],
+      }),
+    },
+    include: {
+      educator: { select: { id: true, name: true } },
+      steps: { orderBy: { order: 'asc' } },
+      courseWorkflows: {
+        where: { status: { in: ['active', 'paused'] } },
+        include: { course: { select: { id: true, title: true } } },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+}
+
+/**
+ * Get aggregated statistics for admin workflows dashboard
+ */
+export async function getAdminWorkflowStats() {
+  const [totalWorkflows, activeWorkflows, totalPending, totalSent, totalFailed] =
+    await Promise.all([
+      prisma.workflowTemplate.count(),
+      prisma.workflowTemplate.count({ where: { isActive: true } }),
+      prisma.workflowExecution.count({ where: { status: 'pending' } }),
+      prisma.workflowExecution.count({
+        where: { status: { in: ['sent', 'delivered', 'opened', 'clicked'] } },
+      }),
+      prisma.workflowExecution.count({
+        where: { status: { in: ['failed', 'bounced'] } },
+      }),
+    ])
+  return { totalWorkflows, activeWorkflows, totalPending, totalSent, totalFailed }
+}
+
+/**
+ * Get list of educators that have at least one workflow
+ */
+export async function getEducatorsWithWorkflows() {
+  return prisma.educator.findMany({
+    where: { workflowTemplates: { some: {} } },
+    select: {
+      id: true,
+      name: true,
+      _count: { select: { workflowTemplates: true } },
+    },
+    orderBy: { name: 'asc' },
+  })
+}

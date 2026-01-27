@@ -51,7 +51,15 @@ export const adminNavItems: NavItem[] = [
   { label: 'Ordenes', href: '/admin/orders', icon: Receipt },
   { label: 'Cupones', href: '/admin/coupons', icon: Tag },
   { label: 'Datos Bancarios', href: '/admin/bank-data', icon: Building },
-  { label: 'Comunicaciones', href: '/admin/communications', icon: MessageSquare },
+  {
+    label: 'Comunicaciones',
+    href: '/admin/communications',
+    icon: MessageSquare,
+    children: [
+      { label: 'Campañas', href: '/admin/communications', icon: Mail },
+      { label: 'Workflows', href: '/admin/workflows', icon: GitBranch },
+    ],
+  },
   { label: 'Configuración', href: '/admin/settings', icon: Settings },
 ]
 

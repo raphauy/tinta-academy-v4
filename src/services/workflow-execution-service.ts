@@ -4,6 +4,7 @@ import { toZonedTime, fromZonedTime } from 'date-fns-tz'
 import {
   CourseStatus,
   EnrollmentStatus,
+  EmailDeliveryStatus,
   type CourseWorkflowStatus,
   type WorkflowTriggerType,
 } from '@prisma/client'
@@ -1193,4 +1194,181 @@ export async function checkAndCompleteWorkflow(
   }
 
   return false
+}
+
+// =============================================================================
+// Admin Functions
+// =============================================================================
+
+export interface AdminExecutionWithDetails {
+  id: string
+  scheduledAt: Date
+  status: string
+  sentAt: Date | null
+  errorMessage: string | null
+  student: {
+    id: string
+    firstName: string | null
+    lastName: string | null
+    user?: { email: string }
+  }
+  workflowStep: {
+    id: string
+    order: number
+    triggerType: WorkflowTriggerType
+    triggerOffset: number
+    triggerClassIndex: number | null
+    template: {
+      id: string
+      name: string
+      subject: string
+    }
+    workflowTemplate: {
+      id: string
+      name: string
+      educator: { id: string; name: string }
+    }
+  }
+  courseWorkflow: {
+    id: string
+    course: { id: string; title: string }
+  }
+}
+
+/**
+ * Get all pending executions for admin view
+ * Supports filtering by educator, workflow, and course
+ */
+export async function getAllPendingExecutionsForAdmin(filters?: {
+  educatorId?: string
+  workflowId?: string
+  courseId?: string
+}): Promise<AdminExecutionWithDetails[]> {
+  const executions = await prisma.workflowExecution.findMany({
+    where: {
+      status: 'pending',
+      ...(filters?.educatorId && {
+        courseWorkflow: { workflowTemplate: { educatorId: filters.educatorId } },
+      }),
+      ...(filters?.workflowId && {
+        courseWorkflow: { workflowTemplateId: filters.workflowId },
+      }),
+      ...(filters?.courseId && {
+        courseWorkflow: { courseId: filters.courseId },
+      }),
+    },
+    include: {
+      student: { select: { id: true, firstName: true, lastName: true } },
+      workflowStep: {
+        include: {
+          template: { select: { id: true, name: true, subject: true } },
+          workflowTemplate: {
+            select: {
+              id: true,
+              name: true,
+              educator: { select: { id: true, name: true } },
+            },
+          },
+        },
+      },
+      courseWorkflow: {
+        include: { course: { select: { id: true, title: true } } },
+      },
+    },
+    orderBy: { scheduledAt: 'asc' },
+    take: 200,
+  })
+
+  return executions.map((e) => ({
+    id: e.id,
+    scheduledAt: e.scheduledAt,
+    status: e.status,
+    sentAt: e.sentAt,
+    errorMessage: e.errorMessage,
+    student: e.student,
+    workflowStep: e.workflowStep,
+    courseWorkflow: e.courseWorkflow,
+  }))
+}
+
+/**
+ * Get execution history for admin view
+ * Supports filtering by educator, workflow, course, and status (sent/failed)
+ */
+export async function getExecutionHistoryForAdmin(filters?: {
+  educatorId?: string
+  workflowId?: string
+  courseId?: string
+  status?: 'sent' | 'failed'
+}): Promise<AdminExecutionWithDetails[]> {
+  const sentStatuses: EmailDeliveryStatus[] = [
+    EmailDeliveryStatus.sent,
+    EmailDeliveryStatus.delivered,
+    EmailDeliveryStatus.opened,
+    EmailDeliveryStatus.clicked,
+  ]
+  const failedStatuses: EmailDeliveryStatus[] = [
+    EmailDeliveryStatus.failed,
+    EmailDeliveryStatus.bounced,
+  ]
+
+  const statusFilter =
+    filters?.status === 'sent'
+      ? { in: sentStatuses }
+      : filters?.status === 'failed'
+        ? { in: failedStatuses }
+        : { in: [...sentStatuses, ...failedStatuses] }
+
+  const executions = await prisma.workflowExecution.findMany({
+    where: {
+      status: statusFilter,
+      ...(filters?.educatorId && {
+        courseWorkflow: { workflowTemplate: { educatorId: filters.educatorId } },
+      }),
+      ...(filters?.workflowId && {
+        courseWorkflow: { workflowTemplateId: filters.workflowId },
+      }),
+      ...(filters?.courseId && {
+        courseWorkflow: { courseId: filters.courseId },
+      }),
+    },
+    include: {
+      student: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          user: { select: { email: true } },
+        },
+      },
+      workflowStep: {
+        include: {
+          template: { select: { id: true, name: true, subject: true } },
+          workflowTemplate: {
+            select: {
+              id: true,
+              name: true,
+              educator: { select: { id: true, name: true } },
+            },
+          },
+        },
+      },
+      courseWorkflow: {
+        include: { course: { select: { id: true, title: true } } },
+      },
+    },
+    orderBy: { sentAt: 'desc' },
+    take: 200,
+  })
+
+  return executions.map((e) => ({
+    id: e.id,
+    scheduledAt: e.scheduledAt,
+    status: e.status,
+    sentAt: e.sentAt,
+    errorMessage: e.errorMessage,
+    student: e.student,
+    workflowStep: e.workflowStep,
+    courseWorkflow: e.courseWorkflow,
+  }))
 }
