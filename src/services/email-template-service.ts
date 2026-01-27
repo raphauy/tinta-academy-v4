@@ -1,48 +1,44 @@
 import { prisma } from '@/lib/prisma'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import DOMPurify from 'isomorphic-dompurify'
+import sanitize from 'sanitize-html'
 
 // =============================================================================
 // HTML Sanitization Configuration
 // =============================================================================
 
 /**
- * Allowed HTML tags for email templates
- * Only safe, commonly used tags for email formatting are permitted
- */
-const ALLOWED_TAGS = [
-  'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
-  'a', 'ul', 'ol', 'li',
-  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'img', 'div', 'span',
-  'table', 'thead', 'tbody', 'tr', 'th', 'td',
-  'blockquote', 'pre', 'code',
-]
-
-/**
- * Allowed HTML attributes
- */
-const ALLOWED_ATTR = [
-  'href', 'src', 'alt', 'title',
-  'style', 'class',
-  'target', 'rel',
-  'width', 'height',
-  'colspan', 'rowspan',
-]
-
-/**
  * Sanitize HTML content to prevent XSS attacks
  * Allows only safe tags commonly used in email templates
  */
 export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
-    ALLOW_DATA_ATTR: false,
-    ADD_ATTR: ['target'],
-    // Force all links to open in new tab for safety
-    FORBID_CONTENTS: ['script', 'style', 'iframe', 'form', 'input'],
+  return sanitize(html, {
+    allowedTags: [
+      'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
+      'a', 'ul', 'ol', 'li',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'img', 'div', 'span',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'blockquote', 'pre', 'code',
+    ],
+    allowedAttributes: {
+      a: ['href', 'target', 'rel', 'title'],
+      img: ['src', 'alt', 'title', 'width', 'height'],
+      '*': ['style', 'class'],
+      td: ['colspan', 'rowspan'],
+      th: ['colspan', 'rowspan'],
+    },
+    allowedSchemes: ['http', 'https', 'mailto'],
+    transformTags: {
+      a: (tagName, attribs) => ({
+        tagName,
+        attribs: {
+          ...attribs,
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        },
+      }),
+    },
   })
 }
 
