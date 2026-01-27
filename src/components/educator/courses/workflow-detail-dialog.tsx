@@ -250,10 +250,10 @@ function ExecutionCard({
         </div>
         {type === 'history' && (
           <Badge
-            variant={execution.status === 'sent' ? 'default' : 'destructive'}
+            variant={['sent', 'delivered', 'opened', 'clicked'].includes(execution.status) ? 'default' : 'destructive'}
             className="shrink-0"
           >
-            {execution.status === 'sent' ? 'Enviado' : 'Fallido'}
+            {['sent', 'delivered', 'opened', 'clicked'].includes(execution.status) ? 'Enviado' : 'Fallido'}
           </Badge>
         )}
       </div>

@@ -952,7 +952,8 @@ export async function getExecutionHistoryForCourseWorkflow(
   const executions = await prisma.workflowExecution.findMany({
     where: {
       courseWorkflowId,
-      status: { in: ['sent', 'failed'] },
+      // Include all states that represent processed emails (sent successfully or failed)
+      status: { in: ['sent', 'delivered', 'opened', 'clicked', 'bounced', 'failed'] },
     },
     include: {
       student: {
@@ -998,11 +999,13 @@ export async function getCourseWorkflowStats(
     prisma.workflowExecution.count({
       where: { courseWorkflowId, status: 'pending' },
     }),
+    // Count all successfully sent states
     prisma.workflowExecution.count({
-      where: { courseWorkflowId, status: 'sent' },
+      where: { courseWorkflowId, status: { in: ['sent', 'delivered', 'opened', 'clicked'] } },
     }),
+    // Count all failed states
     prisma.workflowExecution.count({
-      where: { courseWorkflowId, status: 'failed' },
+      where: { courseWorkflowId, status: { in: ['failed', 'bounced'] } },
     }),
   ])
 
