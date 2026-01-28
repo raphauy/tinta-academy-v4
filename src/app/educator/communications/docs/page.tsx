@@ -58,11 +58,11 @@ export default function CommunicationsDocsPage() {
           <p className="text-muted-foreground">
             El sistema de comunicaciones te permite enviar emails personalizados a tus estudiantes
             de forma eficiente. Puedes crear campañas únicas o programarlas para el futuro,
-            usar plantillas reutilizables con variables dinámicas, y segmentar tu audiencia
-            con filtros avanzados.
+            usar plantillas reutilizables con variables dinámicas, segmentar tu audiencia
+            con filtros avanzados, y automatizar envíos con workflows.
           </p>
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div className="flex items-start gap-3 p-3 rounded-lg border">
               <Mail className="h-5 w-5 text-primary mt-0.5" />
               <div>
@@ -82,6 +82,13 @@ export default function CommunicationsDocsPage() {
               <div>
                 <p className="font-medium">Filtros de Audiencia</p>
                 <p className="text-sm text-muted-foreground">Segmenta estudiantes por criterios</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 rounded-lg border">
+              <GitBranch className="h-5 w-5 text-primary mt-0.5" />
+              <div>
+                <p className="font-medium">Workflows</p>
+                <p className="text-sm text-muted-foreground">Automatiza emails por fechas de curso</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 rounded-lg border">
@@ -558,47 +565,214 @@ export default function CommunicationsDocsPage() {
           <CardTitle className="flex items-center gap-2">
             <GitBranch className="h-5 w-5" />
             Workflows Automatizados
-            <Badge variant="secondary" className="ml-2">En desarrollo</Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert>
-            <GitBranch className="h-4 w-4" />
-            <AlertDescription>
-              Esta funcionalidad está actualmente en desarrollo y estará disponible próximamente.
-            </AlertDescription>
-          </Alert>
+        <CardContent>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="que-son-workflows">
+              <AccordionTrigger>Qué son los workflows</AccordionTrigger>
+              <AccordionContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Los workflows te permiten automatizar el envío de emails a tus estudiantes
+                  basándote en las fechas de tus cursos. Creas un workflow una vez y lo
+                  asignas a cualquier curso para que los emails se envíen automáticamente.
+                </p>
+                <Button size="sm" asChild>
+                  <Link href="/educator/workflows">
+                    <ArrowRight className="mr-2 h-4 w-4" />
+                    Ir a workflows
+                  </Link>
+                </Button>
+              </AccordionContent>
+            </AccordionItem>
 
-          <p className="text-muted-foreground">
-            Los workflows te permitirán automatizar el envío de emails basándote en
-            eventos específicos:
-          </p>
+            <AccordionItem value="crear-workflow">
+              <AccordionTrigger>Cómo crear un workflow</AccordionTrigger>
+              <AccordionContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Un workflow se compone de:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+                  <li><strong>Nombre y descripción</strong> - Para identificarlo fácilmente</li>
+                  <li><strong>Hora de envío</strong> - A qué hora del día se enviarán los emails</li>
+                  <li><strong>Pasos</strong> - Cada paso define qué email enviar y cuándo</li>
+                </ul>
+                <Button size="sm" variant="outline" asChild>
+                  <Link href="/educator/workflows/create">
+                    <ArrowRight className="mr-2 h-4 w-4" />
+                    Crear nuevo workflow
+                  </Link>
+                </Button>
+              </AccordionContent>
+            </AccordionItem>
 
-          <div className="space-y-2">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Users className="h-4 w-4" />
-              <span>Cuando un estudiante se inscribe a un curso</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>X días antes del inicio de un curso</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <CheckCircle2 className="h-4 w-4" />
-              <span>Cuando un estudiante completa un curso</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <BarChart3 className="h-4 w-4" />
-              <span>Recordatorios post-curso para feedback</span>
-            </div>
-          </div>
+            <AccordionItem value="triggers">
+              <AccordionTrigger>Tipos de triggers disponibles</AccordionTrigger>
+              <AccordionContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Cada paso del workflow se dispara basándose en una fecha del curso:
+                </p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline">Inicio del curso</Badge>
+                    <span className="text-muted-foreground">Relativo a la fecha de inicio</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline">Fin del curso</Badge>
+                    <span className="text-muted-foreground">Relativo a la fecha de finalización</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline">Examen</Badge>
+                    <span className="text-muted-foreground">Relativo a la fecha del examen</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline">Clase</Badge>
+                    <span className="text-muted-foreground">Relativo a una clase específica (ej: Clase 1, Clase 2)</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline">Cierre de inscripción</Badge>
+                    <span className="text-muted-foreground">Relativo al deadline de inscripción</span>
+                  </div>
+                </div>
+                <Alert>
+                  <Lightbulb className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Offset:</strong> Puedes configurar cada paso para ejecutarse X días antes
+                    o después de la fecha. Por ejemplo: &quot;7 días antes del inicio&quot; o
+                    &quot;1 día después del examen&quot;.
+                  </AlertDescription>
+                </Alert>
+              </AccordionContent>
+            </AccordionItem>
 
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/educator/workflows">
-              <ArrowRight className="mr-2 h-4 w-4" />
-              Ver estado del desarrollo
-            </Link>
-          </Button>
+            <AccordionItem value="asignar-workflow">
+              <AccordionTrigger>Asignar workflows a cursos</AccordionTrigger>
+              <AccordionContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Una vez creado un workflow, debes asignarlo a los cursos donde quieres
+                  que funcione. Puedes hacerlo desde:
+                </p>
+                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                  <li>La página de edición de cada curso (sección &quot;Workflows automáticos&quot;)</li>
+                </ul>
+                <div className="p-4 rounded-lg border bg-muted/50">
+                  <p className="font-medium text-sm mb-2">Qué sucede al asignar:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground">
+                    <li>Se valida que el curso tenga las fechas necesarias para los triggers</li>
+                    <li>Se calculan las fechas de envío para cada paso</li>
+                    <li>Se crean ejecuciones programadas para cada estudiante inscrito</li>
+                  </ol>
+                </div>
+                <Alert>
+                  <Lightbulb className="h-4 w-4" />
+                  <AlertDescription>
+                    Los nuevos estudiantes que se inscriban después de asignar el workflow
+                    también recibirán los emails programados automáticamente.
+                  </AlertDescription>
+                </Alert>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="estados-workflow">
+              <AccordionTrigger>Estados de un workflow asignado</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Badge className="gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Activo
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      Los emails se enviarán según lo programado
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary" className="gap-1">
+                      <Clock className="h-3 w-3" />
+                      Pausado
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      Los envíos están en pausa, se pueden reanudar
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Completado
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      Todos los emails fueron enviados
+                    </span>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="recalcular-fechas">
+              <AccordionTrigger>Cambios de fechas del curso</AccordionTrigger>
+              <AccordionContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Si modificas las fechas de un curso que tiene workflows asignados,
+                  puedes recalcular las fechas de envío de los emails pendientes.
+                </p>
+                <div className="p-4 rounded-lg border bg-muted/50">
+                  <p className="font-medium text-sm mb-2">Al recalcular:</p>
+                  <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                    <li>Las ejecuciones pendientes se ajustan a las nuevas fechas</li>
+                    <li>Si la nueva fecha ya pasó, la ejecución se elimina</li>
+                    <li>Los emails ya enviados no se ven afectados</li>
+                  </ul>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="ejemplo-workflow">
+              <AccordionTrigger>Ejemplo de workflow</AccordionTrigger>
+              <AccordionContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Un workflow típico para un curso WSET podría incluir:
+                </p>
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Paso</TableHead>
+                        <TableHead>Plantilla</TableHead>
+                        <TableHead>Cuándo</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>1</TableCell>
+                        <TableCell>Bienvenida al curso</TableCell>
+                        <TableCell className="text-muted-foreground">7 días antes del inicio</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>2</TableCell>
+                        <TableCell>Recordatorio de inicio</TableCell>
+                        <TableCell className="text-muted-foreground">1 día antes del inicio</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>3</TableCell>
+                        <TableCell>Material de estudio</TableCell>
+                        <TableCell className="text-muted-foreground">El día de la Clase 1</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>4</TableCell>
+                        <TableCell>Preparación para examen</TableCell>
+                        <TableCell className="text-muted-foreground">3 días antes del examen</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>5</TableCell>
+                        <TableCell>Feedback post-curso</TableCell>
+                        <TableCell className="text-muted-foreground">2 días después del fin</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
 
@@ -608,7 +782,7 @@ export default function CommunicationsDocsPage() {
           <CardTitle>Accesos rápidos</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
             <Button variant="outline" asChild className="justify-start">
               <Link href="/educator/communications/new">
                 <Send className="mr-2 h-4 w-4" />
@@ -625,6 +799,12 @@ export default function CommunicationsDocsPage() {
               <Link href="/educator/filters">
                 <Filter className="mr-2 h-4 w-4" />
                 Filtros
+              </Link>
+            </Button>
+            <Button variant="outline" asChild className="justify-start">
+              <Link href="/educator/workflows">
+                <GitBranch className="mr-2 h-4 w-4" />
+                Workflows
               </Link>
             </Button>
             <Button variant="outline" asChild className="justify-start">

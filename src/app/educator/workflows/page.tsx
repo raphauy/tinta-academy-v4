@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, GitBranch, Search } from 'lucide-react'
+import { Plus, GitBranch, Search, HelpCircle } from 'lucide-react'
 
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
@@ -61,12 +61,20 @@ export default async function WorkflowsPage({
             Automatiza el envío de emails basados en fechas del curso
           </p>
         </div>
-        <Button asChild>
-          <Link href="/educator/workflows/create">
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo workflow
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/educator/communications/docs#workflows">
+              <HelpCircle className="mr-2 h-4 w-4" />
+              Ayuda
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/educator/workflows/create">
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo workflow
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Search */}
