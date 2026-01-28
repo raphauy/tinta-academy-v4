@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { OrderStatus, PaymentMethod, Currency } from '@prisma/client'
+import { OrderStatus, PaymentMethod, Currency, Role } from '@prisma/client'
 
 // ============================================
 // TYPES
@@ -316,7 +316,9 @@ export async function assignStudentRoleIfNeeded(userId: string): Promise<{
     throw new Error('Usuario no encontrado')
   }
 
-  const needsRoleAssignment = !user.role || user.role !== 'student'
+  // Preserve privileged roles (superadmin, educator) when enrolling in courses
+  const privilegedRoles: Role[] = ['superadmin', 'educator']
+  const needsRoleAssignment = !user.role || (!privilegedRoles.includes(user.role) && user.role !== 'student')
 
   // Check if user already has student record
   const existingStudent = await prisma.student.findUnique({

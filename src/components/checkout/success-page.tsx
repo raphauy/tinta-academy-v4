@@ -92,7 +92,7 @@ function useWindowSize() {
 }
 
 export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
-  const { update: updateSession } = useSession()
+  const { data: session, update: updateSession } = useSession()
   const windowSize = useWindowSize()
   const [showConfetti, setShowConfetti] = useState(true)
   const { course } = order
@@ -101,9 +101,14 @@ export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
   useEffect(() => {
     // Update session with student role (in case it was just assigned by webhook)
     // Use ref to ensure this only runs once to prevent infinite loop
+    // Preserve privileged roles (superadmin, educator) - don't downgrade them
     if (!hasUpdatedSession.current) {
       hasUpdatedSession.current = true
-      updateSession({ role: 'student' })
+      const currentRole = session?.user?.role
+      const privilegedRoles = ['superadmin', 'educator']
+      if (!currentRole || !privilegedRoles.includes(currentRole)) {
+        updateSession({ role: 'student' })
+      }
     }
 
     // Stop confetti after 5 seconds
@@ -112,7 +117,7 @@ export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
     }, 5000)
 
     return () => clearTimeout(timer)
-  }, [updateSession])
+  }, [updateSession, session?.user?.role])
 
   return (
     <div className="relative min-h-[calc(100vh-80px)]">
