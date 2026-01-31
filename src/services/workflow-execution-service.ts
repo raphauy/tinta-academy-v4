@@ -1372,3 +1372,150 @@ export async function getExecutionHistoryForAdmin(filters?: {
     courseWorkflow: e.courseWorkflow,
   }))
 }
+
+// =============================================================================
+// Active Workflows Admin Functions
+// =============================================================================
+
+export interface CourseWorkflowForAdmin {
+  id: string
+  status: string
+  createdAt: Date
+  course: {
+    id: string
+    title: string
+  }
+  workflowTemplate: {
+    id: string
+    name: string
+    educator: {
+      id: string
+      name: string
+    }
+  }
+  stats: {
+    pending: number
+    sent: number
+    failed: number
+    total: number
+  }
+}
+
+export interface ActiveWorkflowsAdminStats {
+  active: number
+  paused: number
+  completed: number
+  totalPending: number
+  totalSent: number
+}
+
+/**
+ * Get all CourseWorkflows for admin view with execution stats
+ * Supports filtering by educator, status, and search
+ */
+export async function getAllCourseWorkflowsForAdmin(filters?: {
+  educatorId?: string
+  status?: 'active' | 'paused' | 'completed'
+  search?: string
+}): Promise<CourseWorkflowForAdmin[]> {
+  const courseWorkflows = await prisma.courseWorkflow.findMany({
+    where: {
+      ...(filters?.educatorId && {
+        workflowTemplate: { educatorId: filters.educatorId },
+      }),
+      ...(filters?.status && { status: filters.status }),
+      ...(filters?.search && {
+        OR: [
+          { course: { title: { contains: filters.search, mode: 'insensitive' } } },
+          { workflowTemplate: { name: { contains: filters.search, mode: 'insensitive' } } },
+        ],
+      }),
+    },
+    include: {
+      course: { select: { id: true, title: true } },
+      workflowTemplate: {
+        select: {
+          id: true,
+          name: true,
+          educator: { select: { id: true, name: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
+  // Get execution stats for each CourseWorkflow
+  const result: CourseWorkflowForAdmin[] = []
+
+  for (const cw of courseWorkflows) {
+    const [pending, sent, failed] = await Promise.all([
+      prisma.workflowExecution.count({
+        where: { courseWorkflowId: cw.id, status: 'pending' },
+      }),
+      prisma.workflowExecution.count({
+        where: {
+          courseWorkflowId: cw.id,
+          status: { in: ['sent', 'delivered', 'opened', 'clicked'] },
+        },
+      }),
+      prisma.workflowExecution.count({
+        where: {
+          courseWorkflowId: cw.id,
+          status: { in: ['failed', 'bounced'] },
+        },
+      }),
+    ])
+
+    result.push({
+      id: cw.id,
+      status: cw.status,
+      createdAt: cw.createdAt,
+      course: cw.course,
+      workflowTemplate: cw.workflowTemplate,
+      stats: {
+        pending,
+        sent,
+        failed,
+        total: pending + sent + failed,
+      },
+    })
+  }
+
+  return result
+}
+
+/**
+ * Get global stats for active workflows admin dashboard
+ */
+export async function getActiveWorkflowsAdminStats(): Promise<ActiveWorkflowsAdminStats> {
+  const [active, paused, completed, totalPending, totalSent] = await Promise.all([
+    prisma.courseWorkflow.count({ where: { status: 'active' } }),
+    prisma.courseWorkflow.count({ where: { status: 'paused' } }),
+    prisma.courseWorkflow.count({ where: { status: 'completed' } }),
+    prisma.workflowExecution.count({ where: { status: 'pending' } }),
+    prisma.workflowExecution.count({
+      where: { status: { in: ['sent', 'delivered', 'opened', 'clicked'] } },
+    }),
+  ])
+
+  return { active, paused, completed, totalPending, totalSent }
+}
+
+/**
+ * Get executions for a specific CourseWorkflow (for dialog)
+ */
+export async function getCourseWorkflowExecutionsForAdmin(
+  courseWorkflowId: string
+): Promise<{
+  pending: ExecutionWithDetails[]
+  history: ExecutionWithDetails[]
+  stats: CourseWorkflowStats
+}> {
+  const [pending, history, stats] = await Promise.all([
+    getPendingExecutionsForCourseWorkflow(courseWorkflowId),
+    getExecutionHistoryForCourseWorkflow(courseWorkflowId),
+    getCourseWorkflowStats(courseWorkflowId),
+  ])
+
+  return { pending, history, stats }
+}

@@ -22,6 +22,7 @@ import {
   MapPin,
   Video,
   Monitor,
+  Blocks,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -57,7 +58,8 @@ export const adminNavItems: NavItem[] = [
     icon: MessageSquare,
     children: [
       { label: 'Campañas', href: '/admin/communications', icon: Mail },
-      { label: 'Workflows', href: '/admin/workflows', icon: GitBranch },
+      { label: 'Workflows', href: '/admin/workflows/active', icon: GitBranch },
+      { label: 'WF Templates', href: '/admin/workflows', icon: Blocks },
     ],
   },
   { label: 'Configuración', href: '/admin/settings', icon: Settings },

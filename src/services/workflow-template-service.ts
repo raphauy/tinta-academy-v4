@@ -407,19 +407,16 @@ export async function getAllWorkflowsForAdmin(filters?: {
  * Get aggregated statistics for admin workflows dashboard
  */
 export async function getAdminWorkflowStats() {
-  const [totalWorkflows, activeWorkflows, totalPending, totalSent, totalFailed] =
+  const [totalWorkflows, activeWorkflows, totalSteps, withCourses] =
     await Promise.all([
       prisma.workflowTemplate.count(),
       prisma.workflowTemplate.count({ where: { isActive: true } }),
-      prisma.workflowExecution.count({ where: { status: 'pending' } }),
-      prisma.workflowExecution.count({
-        where: { status: { in: ['sent', 'delivered', 'opened', 'clicked'] } },
-      }),
-      prisma.workflowExecution.count({
-        where: { status: { in: ['failed', 'bounced'] } },
+      prisma.workflowStep.count(),
+      prisma.workflowTemplate.count({
+        where: { courseWorkflows: { some: {} } },
       }),
     ])
-  return { totalWorkflows, activeWorkflows, totalPending, totalSent, totalFailed }
+  return { totalWorkflows, activeWorkflows, totalSteps, withCourses }
 }
 
 /**

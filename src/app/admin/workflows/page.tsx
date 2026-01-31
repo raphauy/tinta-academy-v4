@@ -9,7 +9,7 @@ import { AdminWorkflowsClient } from './admin-workflows-client'
 import { AdminWorkflowsSkeleton } from '@/components/admin/admin-skeletons'
 
 export const metadata: Metadata = {
-  title: 'Workflows - Admin',
+  title: 'WF Templates - Admin',
 }
 
 async function WorkflowsContent() {

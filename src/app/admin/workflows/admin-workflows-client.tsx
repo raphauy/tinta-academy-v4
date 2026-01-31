@@ -8,18 +8,13 @@ import {
   Search,
   X,
   ChevronDown,
-  Clock,
-  CheckCircle2,
-  XCircle,
   Play,
-  Pause,
   Eye,
   BookOpen,
   ListOrdered,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -30,16 +25,14 @@ import {
 import { AdminMetricCard } from '@/components/admin/admin-metric-card'
 import { AdminWorkflowExecutionsDialog } from '@/components/admin/admin-workflow-executions-dialog'
 
-type SortField = 'name' | 'educator' | 'steps' | 'courses' | 'createdAt' | 'status'
+type SortField = 'name' | 'educator' | 'steps' | 'courses' | 'createdAt'
 type SortDirection = 'asc' | 'desc'
-type StatusFilter = 'all' | 'active' | 'inactive'
 
 interface WorkflowStats {
   totalWorkflows: number
   activeWorkflows: number
-  totalPending: number
-  totalSent: number
-  totalFailed: number
+  totalSteps: number
+  withCourses: number
 }
 
 interface EducatorOption {
@@ -76,7 +69,6 @@ export function AdminWorkflowsClient({
   educators,
 }: AdminWorkflowsClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [educatorFilter, setEducatorFilter] = useState<string>('all')
   const [sortField, setSortField] = useState<SortField>('createdAt')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
@@ -89,11 +81,6 @@ export function AdminWorkflowsClient({
 
   const filteredWorkflows = useMemo(() => {
     let result = [...workflows]
-
-    if (statusFilter !== 'all') {
-      const isActive = statusFilter === 'active'
-      result = result.filter((workflow) => workflow.isActive === isActive)
-    }
 
     if (educatorFilter !== 'all') {
       result = result.filter((workflow) => workflow.educator.id === educatorFilter)
@@ -124,9 +111,6 @@ export function AdminWorkflowsClient({
         case 'courses':
           comparison = a.courseWorkflows.length - b.courseWorkflows.length
           break
-        case 'status':
-          comparison = (a.isActive ? 1 : 0) - (b.isActive ? 1 : 0)
-          break
         case 'createdAt':
           comparison =
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -136,7 +120,7 @@ export function AdminWorkflowsClient({
     })
 
     return result
-  }, [workflows, searchQuery, statusFilter, educatorFilter, sortField, sortDirection])
+  }, [workflows, searchQuery, educatorFilter, sortField, sortDirection])
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -178,39 +162,34 @@ export function AdminWorkflowsClient({
     <div className="space-y-6">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 mb-1">
-          Workflows
+          WF Templates
         </h1>
         <p className="text-sm text-stone-500 dark:text-stone-400">
-          Gestiona todos los workflows de automatizacion de todos los educadores
+          Templates de workflows de automatizacion creados por educadores
         </p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <AdminMetricCard
-          label="Total Workflows"
+          label="Total Templates"
           value={stats.totalWorkflows}
           icon={<GitBranch className="w-4 h-4" />}
           variant="primary"
         />
         <AdminMetricCard
-          label="Activos"
+          label="Disponibles"
           value={stats.activeWorkflows}
           icon={<Play className="w-4 h-4" />}
         />
         <AdminMetricCard
-          label="Pendientes"
-          value={stats.totalPending}
-          icon={<Clock className="w-4 h-4" />}
+          label="Con cursos"
+          value={stats.withCourses}
+          icon={<BookOpen className="w-4 h-4" />}
         />
         <AdminMetricCard
-          label="Enviados"
-          value={stats.totalSent}
-          icon={<CheckCircle2 className="w-4 h-4" />}
-        />
-        <AdminMetricCard
-          label="Fallidos"
-          value={stats.totalFailed}
-          icon={<XCircle className="w-4 h-4" />}
+          label="Total pasos"
+          value={stats.totalSteps}
+          icon={<ListOrdered className="w-4 h-4" />}
         />
       </div>
 
@@ -249,30 +228,16 @@ export function AdminWorkflowsClient({
             ))}
           </SelectContent>
         </Select>
-
-        <Select
-          value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as StatusFilter)}
-        >
-          <SelectTrigger className="w-full sm:w-40 bg-background">
-            <SelectValue placeholder="Estado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Activo</SelectItem>
-            <SelectItem value="inactive">Inactivo</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <p className="text-sm text-stone-500 dark:text-stone-400">
           {filteredWorkflows.length === 0
-            ? 'No se encontraron workflows'
+            ? 'No se encontraron templates'
             : filteredWorkflows.length === 1
-              ? '1 workflow'
-              : `${filteredWorkflows.length} workflows`}
-          {(searchQuery || statusFilter !== 'all' || educatorFilter !== 'all') &&
+              ? '1 template'
+              : `${filteredWorkflows.length} templates`}
+          {(searchQuery || educatorFilter !== 'all') &&
             workflows.length !== filteredWorkflows.length && (
               <span className="text-stone-400 dark:text-stone-500">
                 {' '}de {workflows.length} totales
@@ -289,7 +254,6 @@ export function AdminWorkflowsClient({
             {renderSortButton('educator', 'Educador')}
             {renderSortButton('steps', 'Pasos')}
             {renderSortButton('courses', 'Cursos')}
-            {renderSortButton('status', 'Estado')}
             {renderSortButton('createdAt', 'Fecha')}
           </div>
         </div>
@@ -298,8 +262,8 @@ export function AdminWorkflowsClient({
       {filteredWorkflows.length > 0 ? (
         <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden">
           <div className="hidden lg:grid lg:grid-cols-12 gap-4 px-4 py-3 bg-stone-50 dark:bg-stone-800/50 border-b border-stone-200 dark:border-stone-700">
-            <div className="col-span-3 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-              Workflow
+            <div className="col-span-4 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+              Template
             </div>
             <div className="col-span-2 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
               Educador
@@ -310,8 +274,8 @@ export function AdminWorkflowsClient({
             <div className="col-span-2 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-center">
               Cursos
             </div>
-            <div className="col-span-2 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
-              Estado
+            <div className="col-span-1 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider">
+              Creado
             </div>
             <div className="col-span-2 text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wider text-right">
               Acciones
@@ -340,17 +304,16 @@ export function AdminWorkflowsClient({
             Sin resultados
           </h3>
           <p className="text-sm text-stone-500 dark:text-stone-400 text-center max-w-sm">
-            {searchQuery || statusFilter !== 'all' || educatorFilter !== 'all'
-              ? 'No se encontraron workflows con los filtros aplicados'
-              : 'No hay workflows registrados en la plataforma'}
+            {searchQuery || educatorFilter !== 'all'
+              ? 'No se encontraron templates con los filtros aplicados'
+              : 'No hay templates de workflow registrados en la plataforma'}
           </p>
-          {(searchQuery || statusFilter !== 'all' || educatorFilter !== 'all') && (
+          {(searchQuery || educatorFilter !== 'all') && (
             <Button
               variant="ghost"
               className="mt-4"
               onClick={() => {
                 setSearchQuery('')
-                setStatusFilter('all')
                 setEducatorFilter('all')
               }}
             >
@@ -382,16 +345,12 @@ function WorkflowRow({ workflow, formatDate, onViewExecutions }: WorkflowRowProp
     <div className="px-4 py-3 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors">
       {/* Desktop view */}
       <div className="hidden lg:grid lg:grid-cols-12 gap-4 items-center">
-        <div className="col-span-3 space-y-1">
+        <div className="col-span-4 space-y-1">
           <div className="flex items-center gap-2">
             <GitBranch className="w-4 h-4 text-[#143F3B] dark:text-[#6B9B7A]" />
-            <Button
-              variant="link"
-              onClick={onViewExecutions}
-              className="h-auto p-0 font-medium text-stone-900 dark:text-stone-100 truncate"
-            >
+            <span className="font-medium text-stone-900 dark:text-stone-100 truncate">
               {workflow.name}
-            </Button>
+            </span>
           </div>
           {workflow.description && (
             <p className="text-xs text-stone-500 dark:text-stone-400 truncate">
@@ -420,21 +379,8 @@ function WorkflowRow({ workflow, formatDate, onViewExecutions }: WorkflowRowProp
           </div>
         </div>
 
-        <div className="col-span-2">
-          <Badge variant={workflow.isActive ? 'default' : 'secondary'}>
-            {workflow.isActive ? (
-              <>
-                <Play className="w-3 h-3 mr-1" />
-                Activo
-              </>
-            ) : (
-              <>
-                <Pause className="w-3 h-3 mr-1" />
-                Inactivo
-              </>
-            )}
-          </Badge>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+        <div className="col-span-1">
+          <p className="text-xs text-stone-500 dark:text-stone-400">
             {formatDate(workflow.createdAt)}
           </p>
         </div>
@@ -442,7 +388,7 @@ function WorkflowRow({ workflow, formatDate, onViewExecutions }: WorkflowRowProp
         <div className="col-span-2 flex justify-end">
           <Button variant="outline" size="sm" onClick={onViewExecutions}>
             <Eye className="w-4 h-4 mr-1" />
-            Ver ejecuciones
+            Ver detalle
           </Button>
         </div>
       </div>
@@ -451,30 +397,18 @@ function WorkflowRow({ workflow, formatDate, onViewExecutions }: WorkflowRowProp
       <div className="lg:hidden space-y-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onViewExecutions}
-              className="w-10 h-10 rounded-xl bg-[#143F3B]/10 dark:bg-[#6B9B7A]/10 hover:bg-[#143F3B]/20 dark:hover:bg-[#6B9B7A]/20"
-            >
+            <div className="w-10 h-10 rounded-xl bg-[#143F3B]/10 dark:bg-[#6B9B7A]/10 flex items-center justify-center">
               <GitBranch className="w-5 h-5 text-[#143F3B] dark:text-[#6B9B7A]" />
-            </Button>
+            </div>
             <div className="space-y-0.5">
-              <Button
-                variant="link"
-                onClick={onViewExecutions}
-                className="h-auto p-0 font-medium text-stone-900 dark:text-stone-100"
-              >
+              <p className="font-medium text-stone-900 dark:text-stone-100">
                 {workflow.name}
-              </Button>
+              </p>
               <p className="text-xs text-stone-500 dark:text-stone-400">
                 {workflow.educator.name}
               </p>
             </div>
           </div>
-          <Badge variant={workflow.isActive ? 'default' : 'secondary'} className="shrink-0">
-            {workflow.isActive ? 'Activo' : 'Inactivo'}
-          </Badge>
         </div>
 
         <div className="flex items-center justify-between text-sm text-stone-500 dark:text-stone-400">
