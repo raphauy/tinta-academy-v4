@@ -582,7 +582,7 @@ function CourseWorkflowExecutionsContent({
   }
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 pb-6 flex-1 flex flex-col min-h-0 overflow-hidden">
       {/* Stats Summary */}
       {isPending ? (
         <div className="grid grid-cols-3 gap-4 mb-6">
@@ -617,7 +617,7 @@ function CourseWorkflowExecutionsContent({
       )}
 
       {/* Tabs */}
-      <Tabs defaultValue="pending" className="flex-1">
+      <Tabs defaultValue="pending" className="flex-1 min-h-0">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="pending" className="gap-2">
             <Clock className="h-4 w-4" />
@@ -639,8 +639,8 @@ function CourseWorkflowExecutionsContent({
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pending" className="mt-4">
-          <ScrollArea className="h-[400px] pr-4">
+        <TabsContent value="pending" className="mt-4 min-h-0">
+          <ScrollArea className="h-full pr-4">
             {isPending ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
@@ -665,8 +665,8 @@ function CourseWorkflowExecutionsContent({
           </ScrollArea>
         </TabsContent>
 
-        <TabsContent value="history" className="mt-4">
-          <ScrollArea className="h-[400px] pr-4">
+        <TabsContent value="history" className="mt-4 min-h-0">
+          <ScrollArea className="h-full pr-4">
             {isPending ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
