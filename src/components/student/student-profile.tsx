@@ -31,13 +31,13 @@ import {
 const profileSchema = z.object({
   firstName: z.string().min(1, 'El nombre es requerido'),
   lastName: z.string().min(1, 'El apellido es requerido'),
-  identityDocument: z.string().optional(),
-  phone: z.string().optional(),
-  dateOfBirth: z.string().optional(),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  zip: z.string().optional(),
-  country: z.string().optional(),
+  identityDocument: z.string().min(1, 'La cédula es requerida'),
+  phone: z.string().min(1, 'El teléfono es requerido'),
+  dateOfBirth: z.string().min(1, 'La fecha de nacimiento es requerida'),
+  address: z.string().min(1, 'La dirección es requerida'),
+  city: z.string().min(1, 'La ciudad es requerida'),
+  zip: z.string().min(1, 'El código postal es requerido'),
+  country: z.string().min(1, 'El país es requerido'),
   billingName: z.string().optional(),
   billingTaxId: z.string().optional(),
   billingAddress: z.string().optional(),
@@ -272,7 +272,7 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
       </div>
 
       {/* Personal Info Section */}
-      <ProfileSection icon={User} title="Informacion Personal">
+      <ProfileSection icon={User} title="Información Personal">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">Nombre *</Label>
@@ -301,13 +301,16 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="identityDocument">Cedula de Identidad (CI)</Label>
+            <Label htmlFor="identityDocument">Cédula de Identidad (CI) *</Label>
             <Input
               id="identityDocument"
               placeholder="1.234.567-8"
               {...register('identityDocument')}
               disabled={isPending || readOnly}
             />
+            {errors.identityDocument && (
+              <p className="text-sm text-destructive">{errors.identityDocument.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -325,7 +328,7 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Telefono</Label>
+            <Label htmlFor="phone">Teléfono *</Label>
             <Input
               id="phone"
               type="tel"
@@ -333,16 +336,22 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
               {...register('phone')}
               disabled={isPending || readOnly}
             />
+            {errors.phone && (
+              <p className="text-sm text-destructive">{errors.phone.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="dateOfBirth">Fecha de Nacimiento</Label>
+            <Label htmlFor="dateOfBirth">Fecha de Nacimiento *</Label>
             <Input
               id="dateOfBirth"
               type="date"
               {...register('dateOfBirth')}
               disabled={isPending || readOnly}
             />
+            {errors.dateOfBirth && (
+              <p className="text-sm text-destructive">{errors.dateOfBirth.message}</p>
+            )}
           </div>
         </div>
       </ProfileSection>
@@ -351,43 +360,55 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
       <ProfileSection icon={MapPin} title="Dirección">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="address">Dirección</Label>
+            <Label htmlFor="address">Dirección *</Label>
             <Input
               id="address"
               placeholder="Calle y número"
               {...register('address')}
               disabled={isPending || readOnly}
             />
+            {errors.address && (
+              <p className="text-sm text-destructive">{errors.address.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="city">Ciudad</Label>
+            <Label htmlFor="city">Ciudad *</Label>
             <Input
               id="city"
               placeholder="Montevideo"
               {...register('city')}
               disabled={isPending || readOnly}
             />
+            {errors.city && (
+              <p className="text-sm text-destructive">{errors.city.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="zip">Código Postal</Label>
+            <Label htmlFor="zip">Código Postal *</Label>
             <Input
               id="zip"
               placeholder="11000"
               {...register('zip')}
               disabled={isPending || readOnly}
             />
+            {errors.zip && (
+              <p className="text-sm text-destructive">{errors.zip.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="country">País</Label>
+            <Label htmlFor="country">País *</Label>
             <Input
               id="country"
               placeholder="Uruguay"
               {...register('country')}
               disabled={isPending || readOnly}
             />
+            {errors.country && (
+              <p className="text-sm text-destructive">{errors.country.message}</p>
+            )}
           </div>
         </div>
       </ProfileSection>
