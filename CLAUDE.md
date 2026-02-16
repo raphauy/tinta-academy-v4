@@ -42,3 +42,11 @@ User (role) → Student/Educator | Course → Enrollment | Order | EmailTemplate
 - Forms: react-hook-form + zod + @hookform/resolvers
 - Dates: America/Montevideo, date-fns + date-fns-tz
 - Uploads: Vercel Blob via upload-service
+
+## Linear
+
+- Si el issue no está 100% claro: pregunta antes de codificar.
+- Si el issue tiene imagen adjunta y la necesitas: pídela al usuario.
+- El issue generalmente está escrito por el dueño de OnMind que no es técnico, por lo que los comentarios que se agreguen no deben ser técnicos, deben ser concretos y para el usuario de OnMind, no para el desarrollador.
+- Escribir comentarios en primera persona
+- Marcar Done solo después de que el usuario pruebe y confirme.
