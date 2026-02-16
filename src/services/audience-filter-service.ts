@@ -351,6 +351,7 @@ function buildGroupCondition(
   const andClauses: Prisma.StudentWhereInput[] = []
 
   // Process attended conditions: student must have enrollment matching ALL course conditions
+  // Only consider courses that have already started (in_progress or finished)
   if (attendedConditions.length > 0) {
     const courseConditions = attendedConditions.map(buildCourseCondition)
     andClauses.push({
@@ -358,7 +359,10 @@ function buildGroupCondition(
         some: {
           status: 'confirmed',
           course: {
-            AND: courseConditions,
+            AND: [
+              ...courseConditions,
+              { status: { in: ['in_progress', 'finished'] } },
+            ],
           },
         },
       },
@@ -366,6 +370,7 @@ function buildGroupCondition(
   }
 
   // Process not_attended conditions: student must NOT have enrollment matching each course condition
+  // Only consider courses that have already started (in_progress or finished)
   for (const condition of notAttendedConditions) {
     const courseCondition = buildCourseCondition(condition)
     andClauses.push({
@@ -373,7 +378,12 @@ function buildGroupCondition(
         enrollments: {
           some: {
             status: 'confirmed',
-            course: courseCondition,
+            course: {
+              AND: [
+                courseCondition,
+                { status: { in: ['in_progress', 'finished'] } },
+              ],
+            },
           },
         },
       },
