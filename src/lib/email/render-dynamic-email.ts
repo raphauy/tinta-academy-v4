@@ -5,7 +5,7 @@ import DynamicEmail, {
 } from '@/components/emails/dynamic-email'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const fromEmail = process.env.EMAIL_FROM || 'academy@tinta.wine'
+const fromEmail = process.env.EMAIL_FROM || 'Tinta Academy <academy@tinta.wine>'
 
 /**
  * Renders a dynamic email template to HTML string

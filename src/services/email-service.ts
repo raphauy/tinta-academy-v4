@@ -10,7 +10,7 @@ import DynamicEmail from '@/components/emails/dynamic-email'
 import EducatorStatusReminderEmail from '@/components/emails/educator-status-reminder'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const fromEmail = process.env.EMAIL_FROM || 'academy@tinta.wine'
+const fromEmail = process.env.EMAIL_FROM || 'Tinta Academy <academy@tinta.wine>'
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://academy.tinta.wine'
 
 // Helper to check if we should actually send emails
