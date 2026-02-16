@@ -14,6 +14,7 @@ import { X } from 'lucide-react'
 interface Course {
   id: string
   title: string
+  slug: string
 }
 
 interface Props {
@@ -71,7 +72,7 @@ export function CampaignHistoryFilters({
           <SelectItem value="all">Todos los cursos</SelectItem>
           {courses.map((course) => (
             <SelectItem key={course.id} value={course.id}>
-              {course.title}
+              {course.slug}
             </SelectItem>
           ))}
         </SelectContent>

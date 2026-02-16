@@ -111,7 +111,10 @@ export function CourseSelector({
                           : 'opacity-0'
                       )}
                     />
-                    <span className="font-medium flex-1">{course.title}</span>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="font-medium truncate">{course.title}</span>
+                      <span className="text-xs text-muted-foreground truncate">{course.slug}</span>
+                    </div>
                     <Badge variant="secondary" className="text-xs">
                       <Users className="h-3 w-3 mr-1" />
                       {course.enrolledCount}

@@ -31,6 +31,7 @@ const STUDENTS_PAGE_SIZE = 50
 export interface CourseForSelection {
   id: string
   title: string
+  slug: string
   studentCount: number
 }
 
@@ -221,7 +222,7 @@ export function RecipientSelector({
                   {courses.map((course) => (
                     <SelectItem key={course.id} value={course.id}>
                       <span className="flex items-center justify-between gap-4 w-full">
-                        <span>{course.title}</span>
+                        <span>{course.slug}</span>
                         <Badge variant="secondary" className="ml-2">
                           {course.studentCount} estudiantes
                         </Badge>

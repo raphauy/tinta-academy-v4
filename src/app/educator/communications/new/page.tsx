@@ -41,6 +41,7 @@ export default async function NewCommunicationPage() {
   const coursesForSelection = courses.map((c) => ({
     id: c.id,
     title: c.title,
+    slug: c.slug,
     studentCount: c._count.enrollments,
   }))
 

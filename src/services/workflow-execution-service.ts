@@ -27,6 +27,7 @@ import {
 export interface CourseForWorkflow {
   id: string
   title: string
+  slug: string
   startDate: Date | null
   endDate: Date | null
   examDate: Date | null
@@ -112,6 +113,7 @@ export async function getCoursesForWorkflowAssignment(
     select: {
       id: true,
       title: true,
+      slug: true,
       startDate: true,
       endDate: true,
       examDate: true,
@@ -368,6 +370,7 @@ export async function assignWorkflowToCourse(data: {
     select: {
       id: true,
       title: true,
+      slug: true,
       startDate: true,
       endDate: true,
       examDate: true,
@@ -531,6 +534,7 @@ export async function generateExecutionsForNewStudent(
         select: {
           id: true,
           title: true,
+          slug: true,
           startDate: true,
           endDate: true,
           examDate: true,
@@ -1063,6 +1067,7 @@ export async function recalculateExecutionsForCourse(
     select: {
       id: true,
       title: true,
+      slug: true,
       startDate: true,
       endDate: true,
       examDate: true,

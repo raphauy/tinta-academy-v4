@@ -277,6 +277,7 @@ export async function getCoursesForAssignmentAction(): Promise<
     Array<{
       id: string
       title: string
+      slug: string
       startDate: Date | null
       endDate: Date | null
       examDate: Date | null
