@@ -38,6 +38,7 @@ export interface EducatorCourseQuickAccess {
   modality: string
   status: string
   priceUSD: number
+  priceUYU: number | null
   duration: string | null
   startDate: Date | null
   enrolledCount: number
@@ -99,6 +100,7 @@ export async function getEducatorDashboardMetrics(
       modality: true,
       status: true,
       priceUSD: true,
+      priceUYU: true,
       duration: true,
       startDate: true,
       enrolledCount: true,
@@ -177,6 +179,7 @@ export async function getEducatorDashboardMetrics(
     modality: course.modality,
     status: course.status,
     priceUSD: course.priceUSD,
+    priceUYU: course.priceUYU,
     duration: course.duration,
     startDate: course.startDate,
     enrolledCount: course.enrolledCount,

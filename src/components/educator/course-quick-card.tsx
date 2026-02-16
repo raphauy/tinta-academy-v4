@@ -84,9 +84,9 @@ export function CourseQuickCard({ course }: CourseQuickCardProps) {
   }
 
   const formatPrice = () => {
-    if (course.priceUSD === 0) return 'Gratis'
-    if (course.priceUSD) return `USD ${course.priceUSD}`
-    return 'Sin precio'
+    if (course.priceUSD > 0) return `USD ${course.priceUSD}`
+    if ((course.priceUYU ?? 0) > 0) return `UYU ${course.priceUYU}`
+    return 'Gratis'
   }
 
   const formatDate = (date: Date | null) => {
