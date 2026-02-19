@@ -13,6 +13,20 @@ import {
   cancelScheduledCampaign,
   getCampaignsWithStats,
 } from '@/services/email-campaign-service'
+import { renderTemplate, type TemplateVariables } from '@/lib/email/template-variables'
+import { sendDynamicEmail } from '@/services/email-service'
+
+const TEST_EMAIL_VARIABLES: TemplateVariables = {
+  studentName: 'María García',
+  studentFirstName: 'María',
+  studentEmail: 'maria@example.com',
+  courseName: 'WSET Nivel 1 en Vinos',
+  courseStartDate: '15 de marzo de 2025',
+  courseEndDate: '20 de marzo de 2025',
+  examDate: '20 de marzo de 2025',
+  educatorName: 'Gabriela Zimmer',
+  courseUrl: 'https://academy.tinta.wine/student/courses/abc123',
+}
 import { getStudentsByCourse } from '@/services/student-selection-service'
 import { getStudentIdsByFilter } from '@/services/audience-filter-service'
 import { prisma } from '@/lib/prisma'
@@ -35,6 +49,11 @@ const sendCampaignSchema = z.object({
 
 const cancelCampaignSchema = z.object({
   campaignId: z.string().min(1, 'El ID de campaña es requerido'),
+})
+
+const sendTestEmailSchema = z.object({
+  templateId: z.string().min(1, 'La plantilla es requerida'),
+  email: z.string().email('Email inválido'),
 })
 
 const getCampaignsFiltersSchema = z.object({
@@ -399,6 +418,69 @@ export async function getCampaignsAction(
     console.error('Error getting campaigns:', error)
     const message =
       error instanceof Error ? error.message : 'Error al obtener las campañas'
+    return {
+      success: false,
+      error: message,
+    }
+  }
+}
+
+/**
+ * Send a test email with sample data to verify how a template looks
+ */
+export async function sendTestEmailAction(
+  data: z.infer<typeof sendTestEmailSchema>
+): Promise<ActionResult> {
+  const validated = sendTestEmailSchema.safeParse(data)
+
+  if (!validated.success) {
+    return {
+      success: false,
+      error: validated.error.issues[0].message,
+    }
+  }
+
+  const { templateId, email } = validated.data
+
+  const authResult = await getAuthenticatedEducator()
+
+  if ('error' in authResult) {
+    return { success: false, error: authResult.error }
+  }
+
+  const { educator } = authResult
+
+  try {
+    const template = await getTemplateById(templateId, educator.id)
+
+    if (!template) {
+      return {
+        success: false,
+        error: 'Plantilla no encontrada o sin acceso',
+      }
+    }
+
+    const renderedSubject = renderTemplate(template.subject, TEST_EMAIL_VARIABLES)
+    const renderedBody = renderTemplate(template.body, TEST_EMAIL_VARIABLES)
+
+    const result = await sendDynamicEmail({
+      to: email,
+      subject: `[PRUEBA] ${renderedSubject}`,
+      body: renderedBody,
+    })
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || 'Error al enviar el email de prueba',
+      }
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error sending test email:', error)
+    const message =
+      error instanceof Error ? error.message : 'Error al enviar el email de prueba'
     return {
       success: false,
       error: message,

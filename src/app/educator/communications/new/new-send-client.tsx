@@ -9,6 +9,7 @@ import {
   Users,
   FileText,
   Send,
+  SendHorizonal,
   CheckCircle2,
   Loader2,
   Sparkles,
@@ -40,6 +41,7 @@ import {
   type TemplateForSelection,
 } from '@/components/educator/communications/template-selector'
 import { SendConfirmationDialog } from '@/components/educator/communications/send-confirmation-dialog'
+import { SendTestEmailDialog } from '@/components/educator/communications/send-test-email-dialog'
 import {
   SchedulePicker,
   type ScheduleValue,
@@ -110,6 +112,7 @@ export function NewSendClient({
 
   // Dialog and loading state
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [showTestEmailDialog, setShowTestEmailDialog] = useState(false)
   const [isSending, setIsSending] = useState(false)
 
   // Filter count state (real-time evaluation)
@@ -458,8 +461,18 @@ export function NewSendClient({
                   </div>
 
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between">
                       <h3 className="font-medium">Vista previa del email</h3>
+                      {selectedTemplate && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowTestEmailDialog(true)}
+                        >
+                          <SendHorizonal className="mr-2 h-4 w-4" />
+                          Enviar prueba
+                        </Button>
+                      )}
                     </div>
                     {selectedTemplate ? (
                       <TemplatePreview
@@ -621,6 +634,14 @@ export function NewSendClient({
         scheduledAt={schedule.mode === 'scheduled' ? schedule.scheduledAt : undefined}
         scheduledAtFormatted={scheduledAtFormatted}
       />
+
+      {selectedTemplateId && (
+        <SendTestEmailDialog
+          open={showTestEmailDialog}
+          onOpenChange={setShowTestEmailDialog}
+          templateId={selectedTemplateId}
+        />
+      )}
     </div>
   )
 }
