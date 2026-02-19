@@ -13,7 +13,7 @@ import {
   cancelScheduledCampaign,
   getCampaignsWithStats,
 } from '@/services/email-campaign-service'
-import { renderTemplate, type TemplateVariables } from '@/lib/email/template-variables'
+import { renderTemplate, formatDateSpanish, type TemplateVariables } from '@/lib/email/template-variables'
 import { sendDynamicEmail } from '@/services/email-service'
 
 const TEST_EMAIL_VARIABLES: TemplateVariables = {
@@ -54,6 +54,7 @@ const cancelCampaignSchema = z.object({
 const sendTestEmailSchema = z.object({
   templateId: z.string().min(1, 'La plantilla es requerida'),
   email: z.string().email('Email inválido'),
+  courseId: z.string().optional(),
 })
 
 const getCampaignsFiltersSchema = z.object({
@@ -440,7 +441,7 @@ export async function sendTestEmailAction(
     }
   }
 
-  const { templateId, email } = validated.data
+  const { templateId, email, courseId } = validated.data
 
   const authResult = await getAuthenticatedEducator()
 
@@ -460,8 +461,29 @@ export async function sendTestEmailAction(
       }
     }
 
-    const renderedSubject = renderTemplate(template.subject, TEST_EMAIL_VARIABLES)
-    const renderedBody = renderTemplate(template.body, TEST_EMAIL_VARIABLES)
+    // Build variables with real educator data and course data if available
+    const variables: TemplateVariables = {
+      ...TEST_EMAIL_VARIABLES,
+      educatorName: educator.name,
+    }
+
+    if (courseId) {
+      const course = await prisma.course.findFirst({
+        where: { id: courseId, educatorId: educator.id },
+        select: { id: true, title: true, startDate: true, endDate: true, examDate: true },
+      })
+
+      if (course) {
+        variables.courseName = course.title
+        variables.courseStartDate = formatDateSpanish(course.startDate)
+        variables.courseEndDate = formatDateSpanish(course.endDate)
+        variables.examDate = formatDateSpanish(course.examDate)
+        variables.courseUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://academy.tinta.wine'}/student/courses/${course.id}`
+      }
+    }
+
+    const renderedSubject = renderTemplate(template.subject, variables)
+    const renderedBody = renderTemplate(template.body, variables)
 
     const result = await sendDynamicEmail({
       to: email,

@@ -640,6 +640,7 @@ export function NewSendClient({
           open={showTestEmailDialog}
           onOpenChange={setShowTestEmailDialog}
           templateId={selectedTemplateId}
+          courseId={recipients.mode === 'course' ? recipients.courseId : undefined}
         />
       )}
     </div>

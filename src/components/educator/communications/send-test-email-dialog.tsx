@@ -24,12 +24,14 @@ interface SendTestEmailDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   templateId: string
+  courseId?: string
 }
 
 export function SendTestEmailDialog({
   open,
   onOpenChange,
   templateId,
+  courseId,
 }: SendTestEmailDialogProps) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
@@ -49,6 +51,7 @@ export function SendTestEmailDialog({
     const response = await sendTestEmailAction({
       templateId,
       email: email.trim(),
+      courseId,
     })
 
     setIsSending(false)
