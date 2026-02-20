@@ -81,7 +81,7 @@ export function FilterCard({
 
   return (
     <>
-      <Link href={`/educator/filters/${filter.id}/edit`} className="block h-full">
+      <Link href={isOwner ? `/educator/filters/${filter.id}/edit` : `/educator/filters/${filter.id}`} className="block h-full">
         <Card className="transition-colors hover:bg-muted/50 cursor-pointer h-full flex flex-col">
           <CardHeader className="pb-3">
           <div className="flex items-start justify-between">

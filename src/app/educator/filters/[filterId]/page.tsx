@@ -4,16 +4,16 @@ import { ArrowLeft } from 'lucide-react'
 
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
-import { getFilterById, getAllTags } from '@/services/audience-filter-service'
+import { getFilterById } from '@/services/audience-filter-service'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
-import { EditFilterClient } from './edit-filter-client'
+import { ViewFilterClient } from './view-filter-client'
 
-interface EditFilterPageProps {
+interface ViewFilterPageProps {
   params: Promise<{ filterId: string }>
 }
 
-export default async function EditFilterPage({ params }: EditFilterPageProps) {
+export default async function ViewFilterPage({ params }: ViewFilterPageProps) {
   const { filterId } = await params
   const session = await auth()
 
@@ -37,12 +37,7 @@ export default async function EditFilterPage({ params }: EditFilterPageProps) {
     notFound()
   }
 
-  // Only owner can edit - redirect to view page
-  if (filter.educatorId !== educator.id) {
-    redirect(`/educator/filters/${filterId}`)
-  }
-
-  const tags = await getAllTags()
+  const isOwner = filter.educatorId === educator.id
 
   return (
     <div className="container py-6 space-y-6">
@@ -53,12 +48,19 @@ export default async function EditFilterPage({ params }: EditFilterPageProps) {
           </Link>
         </Button>
         <PageHeader
-          title="Editar Filtro de Audiencia"
-          description={`Editando filtro: ${filter.name}`}
+          title={filter.name}
+          description={`Creado por ${filter.educator.name}`}
         />
+        {isOwner && (
+          <Button asChild className="ml-auto">
+            <Link href={`/educator/filters/${filter.id}/edit`}>
+              Editar
+            </Link>
+          </Button>
+        )}
       </div>
 
-      <EditFilterClient filter={filter} tags={tags} />
+      <ViewFilterClient filter={filter} />
     </div>
   )
 }
