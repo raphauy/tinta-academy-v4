@@ -44,6 +44,7 @@ const deleteFilterSchema = z.object({
 const previewFilterSchema = z.object({
   conditions: z.string().min(1, 'Las condiciones son requeridas'),
   limit: z.number().optional(),
+  offset: z.number().optional(),
 })
 
 // ============================================
@@ -301,7 +302,7 @@ export async function previewFilterAction(
 
   try {
     const conditions = JSON.parse(validated.data.conditions) as FilterConditions
-    const result = await evaluateFilter(conditions, validated.data.limit || 50)
+    const result = await evaluateFilter(conditions, validated.data.limit || 50, validated.data.offset)
 
     return { success: true, data: result }
   } catch (error) {

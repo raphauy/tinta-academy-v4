@@ -423,7 +423,8 @@ export function buildFilterWhereClause(
  */
 export async function evaluateFilter(
   conditions: FilterConditions,
-  limit?: number
+  limit?: number,
+  offset?: number
 ): Promise<FilterPreviewResult> {
   const whereClause = buildFilterWhereClause(conditions)
 
@@ -432,7 +433,7 @@ export async function evaluateFilter(
     where: whereClause,
   })
 
-  // Get students (with limit for preview)
+  // Get students (with limit/offset for pagination)
   const students = await prisma.student.findMany({
     where: whereClause,
     select: {
@@ -447,6 +448,7 @@ export async function evaluateFilter(
     },
     orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
     take: limit || 50,
+    ...(offset ? { skip: offset } : {}),
   })
 
   return {

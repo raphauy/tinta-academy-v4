@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
-import { Loader2, Users } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Loader2, Users } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
@@ -20,6 +21,8 @@ import type {
 } from '@/types/audience-filter'
 import { serializeConditions } from '@/types/audience-filter'
 
+const PAGE_SIZE = 20
+
 interface FilterPreviewProps {
   conditions: FilterConditions
   debounceMs?: number
@@ -32,6 +35,7 @@ export function FilterPreview({
   const [preview, setPreview] = useState<FilterPreviewResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [page, setPage] = useState(0)
 
   // Memoize serialized conditions to use as stable dependency
   const conditionsJson = useMemo(
@@ -42,7 +46,7 @@ export function FilterPreview({
   // Request ID to handle race conditions
   const requestIdRef = useRef(0)
 
-  const fetchPreview = useCallback(async () => {
+  const fetchPreview = useCallback(async (pageNum: number) => {
     // Parse conditions from stable JSON string
     const parsedConditions = JSON.parse(conditionsJson) as FilterConditions
 
@@ -62,7 +66,8 @@ export function FilterPreview({
     try {
       const result = await previewFilterAction({
         conditions: conditionsJson,
-        limit: 20,
+        limit: PAGE_SIZE,
+        offset: pageNum * PAGE_SIZE,
       })
 
       // Ignore if a newer request has been made
@@ -85,10 +90,22 @@ export function FilterPreview({
     }
   }, [conditionsJson])
 
+  // Reset to page 0 when conditions change
   useEffect(() => {
-    const timer = setTimeout(fetchPreview, debounceMs)
+    setPage(0)
+    const timer = setTimeout(() => fetchPreview(0), debounceMs)
     return () => clearTimeout(timer)
-  }, [fetchPreview, debounceMs])
+  }, [conditionsJson, fetchPreview, debounceMs])
+
+  // Fetch when page changes (but not on initial mount / conditions change)
+  const isFirstRender = useRef(true)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    fetchPreview(page)
+  }, [page, fetchPreview])
 
   const getStudentName = (student: FilterPreviewStudent) => {
     if (student.firstName || student.lastName) {
@@ -96,6 +113,10 @@ export function FilterPreview({
     }
     return student.email
   }
+
+  const totalPages = preview ? Math.ceil(preview.count / PAGE_SIZE) : 0
+  const showingFrom = preview && preview.count > 0 ? page * PAGE_SIZE + 1 : 0
+  const showingTo = preview ? Math.min((page + 1) * PAGE_SIZE, preview.count) : 0
 
   return (
     <Card>
@@ -133,7 +154,7 @@ export function FilterPreview({
 
         {!error && preview && preview.count > 0 && (
           <div className="space-y-3">
-            <div className="border rounded-md max-h-[300px] overflow-y-auto">
+            <div className="border rounded-md max-h-[400px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -156,10 +177,37 @@ export function FilterPreview({
               </Table>
             </div>
 
-            {preview.count > preview.students.length && (
-              <p className="text-xs text-muted-foreground text-center">
-                Mostrando {preview.students.length} de {preview.count} estudiantes
-              </p>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between">
+                <p className="text-xs text-muted-foreground">
+                  {showingFrom}-{showingTo} de {preview.count}
+                </p>
+                <div className="flex items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setPage((p) => p - 1)}
+                    disabled={page === 0 || loading}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground px-2">
+                    {page + 1} / {totalPages}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setPage((p) => p + 1)}
+                    disabled={page >= totalPages - 1 || loading}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         )}
