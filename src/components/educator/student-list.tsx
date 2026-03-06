@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Users, UserCheck, Clock, UserX, Search, Wallet } from 'lucide-react'
+import { Users, UserCheck, Clock, UserX, Search, Wallet, Download, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { StudentTable, type StudentEnrollment } from './student-table'
 import type { Course, Educator, EnrollmentStatus } from '@prisma/client'
@@ -22,6 +23,12 @@ type EnrollmentWithStudent = {
     id: string
     firstName: string | null
     lastName: string | null
+    identityDocument: string | null
+    dateOfBirth: Date | null
+    phone: string | null
+    address: string | null
+    city: string | null
+    country: string | null
     user: {
       email: string
       name: string | null
@@ -71,6 +78,7 @@ function formatNumber(amount: number): string {
 
 export function StudentList({ course, enrollments }: StudentListProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [isExporting, setIsExporting] = useState(false)
 
   // Calculate metrics
   const metrics = useMemo(() => {
@@ -109,7 +117,17 @@ export function StudentList({ course, enrollments }: StudentListProps) {
     id: e.id,
     enrolledAt: e.enrolledAt,
     status: e.status,
-    student: e.student,
+    student: {
+      firstName: e.student.firstName,
+      lastName: e.student.lastName,
+      identityDocument: e.student.identityDocument,
+      dateOfBirth: e.student.dateOfBirth,
+      phone: e.student.phone,
+      address: e.student.address,
+      city: e.student.city,
+      country: e.student.country,
+      user: e.student.user,
+    },
     courseSpentUSD: e.courseSpentUSD,
     courseSpentUYU: e.courseSpentUYU,
   }))
@@ -166,15 +184,45 @@ export function StudentList({ course, enrollments }: StudentListProps) {
         />
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por nombre o email..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 bg-background"
-        />
+      {/* Search + Export */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nombre o email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-background"
+          />
+        </div>
+        <Button
+          variant="outline"
+          disabled={isExporting}
+          onClick={async () => {
+            setIsExporting(true)
+            try {
+              const res = await fetch(`/api/educator/students-export/${course.id}`)
+              const blob = await res.blob()
+              const url = URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              const disposition = res.headers.get('Content-Disposition')
+              const match = disposition?.match(/filename="(.+)"/)
+              a.download = match?.[1] || 'alumnos.csv'
+              a.click()
+              URL.revokeObjectURL(url)
+            } finally {
+              setIsExporting(false)
+            }
+          }}
+        >
+          {isExporting ? (
+            <Loader2 className="size-4 mr-2 animate-spin" />
+          ) : (
+            <Download className="size-4 mr-2" />
+          )}
+          Exportar CSV
+        </Button>
       </div>
 
       {/* Count */}
