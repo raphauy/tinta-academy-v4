@@ -20,6 +20,12 @@ type EnrollmentWithStudent = {
     id: string
     firstName: string | null
     lastName: string | null
+    identityDocument: string | null
+    dateOfBirth: Date | null
+    phone: string | null
+    address: string | null
+    city: string | null
+    country: string | null
     user: {
       email: string
       name: string | null

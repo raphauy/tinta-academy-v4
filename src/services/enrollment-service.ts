@@ -33,7 +33,16 @@ export async function getEnrollmentsByCourse(courseId: string) {
     where: { courseId },
     include: {
       student: {
-        include: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          identityDocument: true,
+          dateOfBirth: true,
+          phone: true,
+          address: true,
+          city: true,
+          country: true,
           user: {
             select: {
               email: true,
