@@ -54,8 +54,8 @@ export async function GET(
       students
     )
 
-    const today = format(new Date(), 'yyyy-MM-dd')
-    const filename = `WSET_CRF_${course.slug}_${today}.xlsx`
+    const monthYear = course.startDate ? format(course.startDate, 'MMyyyy') : '000000'
+    const filename = `wset_CRF_TintaAcademyWSET${course.wsetLevel}_${monthYear}.xlsx`
 
     return new Response(new Uint8Array(buffer), {
       headers: {
