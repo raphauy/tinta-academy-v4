@@ -48,6 +48,7 @@ const createCourseSchema = z.object({
   startTime: z.string().optional(),
   classDuration: z.coerce.number().int().positive().optional(),
   examDate: z.coerce.date().optional(),
+  examTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   registrationDeadline: z.coerce.date().optional(),
   // Other fields
   maxCapacity: z.coerce.number().int().positive().optional(),
@@ -157,6 +158,7 @@ export async function createCourseAction(
     startTime: (formData.get('startTime') as string) || undefined,
     classDuration: formData.get('classDuration') || undefined,
     examDate: formData.get('examDate') || undefined,
+    examTime: (formData.get('examTime') as string) || undefined,
     registrationDeadline: formData.get('registrationDeadline') || undefined,
     // Other fields
     maxCapacity: formData.get('maxCapacity') || undefined,
@@ -245,6 +247,7 @@ export async function updateCourseAction(
     startTime: formData.get('startTime') || undefined,
     classDuration: formData.get('classDuration') || undefined,
     examDate: formData.get('examDate') || undefined,
+    examTime: (formData.get('examTime') as string) || undefined,
     registrationDeadline: formData.get('registrationDeadline') || undefined,
     // Other fields
     maxCapacity: formData.get('maxCapacity') || undefined,

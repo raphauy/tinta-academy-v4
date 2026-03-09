@@ -88,6 +88,7 @@ interface CourseDatesData {
   startTime: string
   classDuration: number
   examDate?: Date
+  examTime?: string
   registrationDeadline?: Date
 }
 
@@ -124,6 +125,7 @@ export function PresencialCourseForm({
     startTime: course?.startTime ?? '17:00',
     classDuration: course?.classDuration ?? 180,
     examDate: course?.examDate ? new Date(course.examDate) : undefined,
+    examTime: course?.examTime ?? '',
     registrationDeadline: course?.registrationDeadline
       ? new Date(course.registrationDeadline)
       : undefined,
@@ -322,6 +324,9 @@ export function PresencialCourseForm({
     }
     if (courseDates.examDate) {
       formData.append('examDate', courseDates.examDate.toISOString())
+    }
+    if (courseDates.examTime) {
+      formData.append('examTime', courseDates.examTime)
     }
     if (courseDates.registrationDeadline) {
       formData.append(
@@ -602,6 +607,7 @@ export function PresencialCourseForm({
         startTime={courseDates.startTime}
         classDuration={courseDates.classDuration}
         examDate={courseDates.examDate}
+        examTime={courseDates.examTime}
         registrationDeadline={courseDates.registrationDeadline}
         showExamDate={watchType === 'wset'}
         onChange={setCourseDates}

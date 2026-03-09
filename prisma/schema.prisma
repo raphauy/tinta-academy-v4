@@ -136,6 +136,7 @@ model Course {
   startTime            String?         // e.g. "17:00"
   classDuration        Int?            // duration per class in minutes
   examDate             DateTime?
+  examTime             String?
   registrationDeadline DateTime?
   // Capacity and pricing
   maxCapacity          Int?

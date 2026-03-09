@@ -27,6 +27,7 @@ export interface CreateCourseInput {
   startTime?: string
   classDuration?: number
   examDate?: Date
+  examTime?: string
   registrationDeadline?: Date
   // Capacity and other fields
   maxCapacity?: number
@@ -58,6 +59,7 @@ export interface UpdateCourseInput {
   startTime?: string
   classDuration?: number
   examDate?: Date
+  examTime?: string
   registrationDeadline?: Date
   // Capacity and other fields
   maxCapacity?: number
@@ -260,6 +262,7 @@ export async function createCourse(data: CreateCourseInput) {
       startTime: data.startTime,
       classDuration: data.classDuration,
       examDate: data.examDate,
+      examTime: data.examTime,
       registrationDeadline: data.registrationDeadline,
       // Other fields
       maxCapacity: data.maxCapacity,
@@ -306,6 +309,7 @@ export async function updateCourse(id: string, data: UpdateCourseInput) {
       ...(data.startTime !== undefined && { startTime: data.startTime }),
       ...(data.classDuration !== undefined && { classDuration: data.classDuration }),
       ...(data.examDate !== undefined && { examDate: data.examDate }),
+      ...(data.examTime !== undefined && { examTime: data.examTime }),
       ...(data.registrationDeadline !== undefined && { registrationDeadline: data.registrationDeadline }),
       // Other fields
       ...(data.maxCapacity !== undefined && { maxCapacity: data.maxCapacity }),

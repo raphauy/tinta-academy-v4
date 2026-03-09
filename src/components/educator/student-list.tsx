@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Users, UserCheck, Clock, UserX, Search, Wallet, Download, Loader2 } from 'lucide-react'
+import { Users, UserCheck, Clock, UserX, Search, Wallet, Download, FileSpreadsheet, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -79,6 +79,7 @@ function formatNumber(amount: number): string {
 export function StudentList({ course, enrollments }: StudentListProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [isExporting, setIsExporting] = useState(false)
+  const [isExportingCrf, setIsExportingCrf] = useState(false)
 
   // Calculate metrics
   const metrics = useMemo(() => {
@@ -195,6 +196,37 @@ export function StudentList({ course, enrollments }: StudentListProps) {
             className="pl-10 bg-background"
           />
         </div>
+        {course.wsetLevel != null && (
+          <Button
+            variant="outline"
+            disabled={isExportingCrf}
+            onClick={async () => {
+              setIsExportingCrf(true)
+              try {
+                const res = await fetch(`/api/educator/wset-crf-export/${course.id}`)
+                if (!res.ok) throw new Error('Export failed')
+                const blob = await res.blob()
+                const url = URL.createObjectURL(blob)
+                const a = document.createElement('a')
+                a.href = url
+                const disposition = res.headers.get('Content-Disposition')
+                const match = disposition?.match(/filename="(.+)"/)
+                a.download = match?.[1] || 'WSET_CRF.xlsx'
+                a.click()
+                URL.revokeObjectURL(url)
+              } finally {
+                setIsExportingCrf(false)
+              }
+            }}
+          >
+            {isExportingCrf ? (
+              <Loader2 className="size-4 mr-2 animate-spin" />
+            ) : (
+              <FileSpreadsheet className="size-4 mr-2" />
+            )}
+            Exportar WSET CRF
+          </Button>
+        )}
         <Button
           variant="outline"
           disabled={isExporting}

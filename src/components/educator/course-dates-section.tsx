@@ -16,6 +16,7 @@ interface CourseDatesSectionProps {
   startTime: string
   classDuration: number
   examDate?: Date
+  examTime?: string
   registrationDeadline?: Date
   showExamDate?: boolean
   onChange: (data: {
@@ -23,6 +24,7 @@ interface CourseDatesSectionProps {
     startTime: string
     classDuration: number
     examDate?: Date
+    examTime?: string
     registrationDeadline?: Date
   }) => void
 }
@@ -32,6 +34,7 @@ export function CourseDatesSection({
   startTime,
   classDuration,
   examDate,
+  examTime,
   registrationDeadline,
   showExamDate = false,
   onChange,
@@ -57,6 +60,7 @@ export function CourseDatesSection({
       startTime,
       classDuration,
       examDate,
+      examTime,
       registrationDeadline,
     })
 
@@ -70,6 +74,7 @@ export function CourseDatesSection({
       startTime,
       classDuration,
       examDate,
+      examTime,
       registrationDeadline,
     })
   }
@@ -80,6 +85,7 @@ export function CourseDatesSection({
       startTime: value,
       classDuration,
       examDate,
+      examTime,
       registrationDeadline,
     })
   }
@@ -90,6 +96,7 @@ export function CourseDatesSection({
       startTime,
       classDuration: value,
       examDate,
+      examTime,
       registrationDeadline,
     })
   }
@@ -100,6 +107,18 @@ export function CourseDatesSection({
       startTime,
       classDuration,
       examDate: date,
+      examTime,
+      registrationDeadline,
+    })
+  }
+
+  const handleExamTimeChange = (value: string) => {
+    onChange({
+      classDates,
+      startTime,
+      classDuration,
+      examDate,
+      examTime: value,
       registrationDeadline,
     })
   }
@@ -110,6 +129,7 @@ export function CourseDatesSection({
       startTime,
       classDuration,
       examDate,
+      examTime,
       registrationDeadline: date,
     })
   }
@@ -240,15 +260,27 @@ export function CourseDatesSection({
 
         {/* Exam date and Registration deadline */}
         <div className={`grid gap-4 ${showExamDate ? 'sm:grid-cols-2' : ''}`}>
-          {/* Exam date (for WSET courses) */}
+          {/* Exam date and time (for WSET courses) */}
           {showExamDate && (
             <div className="space-y-2">
-              <Label>Fecha del Examen</Label>
-              <DatePicker
-                value={examDate}
-                onChange={handleExamDateChange}
-                placeholder="Seleccionar fecha del examen"
-              />
+              <Label>Fecha y Hora del Examen</Label>
+              <div className="grid grid-cols-2 gap-2">
+                <DatePicker
+                  value={examDate}
+                  onChange={handleExamDateChange}
+                  placeholder="Seleccionar fecha del examen"
+                />
+                <div className="relative">
+                  <Clock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    type="time"
+                    value={examTime ?? ''}
+                    onChange={(e) => handleExamTimeChange(e.target.value)}
+                    placeholder="Hora del examen"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
             </div>
           )}
 
