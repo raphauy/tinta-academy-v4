@@ -30,6 +30,7 @@ import {
   getCourseWorkflowStats,
   countAffectedExecutions,
   recalculateExecutionsForCourse,
+  regenerateExecutionsForWorkflow,
   type DateValidationResult,
   type SchedulePreviewItem,
   type ExecutionWithDetails,
@@ -172,6 +173,9 @@ export async function updateWorkflowAction(
 
   try {
     await updateWorkflow(id, educator.id, validated.data)
+
+    // Regenerate executions for courses using this workflow (new steps)
+    await regenerateExecutionsForWorkflow(id)
 
     revalidatePath('/educator/workflows')
     revalidatePath(`/educator/workflows/${id}/edit`)

@@ -501,6 +501,70 @@ async function generateExecutionsForCourseWorkflow(
 }
 
 /**
+ * Regenerate executions for all courses using a given workflow template.
+ * Called after editing a workflow to create executions for new/changed steps.
+ * Existing executions are preserved (dedup by courseWorkflowId+stepId+studentId).
+ */
+export async function regenerateExecutionsForWorkflow(
+  workflowTemplateId: string
+): Promise<number> {
+  // Find all active course workflows using this template
+  const courseWorkflows = await prisma.courseWorkflow.findMany({
+    where: {
+      workflowTemplateId,
+      status: 'active',
+    },
+    include: {
+      course: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          startDate: true,
+          endDate: true,
+          examDate: true,
+          classDates: true,
+          registrationDeadline: true,
+          enrolledCount: true,
+        },
+      },
+    },
+  })
+
+  if (courseWorkflows.length === 0) return 0
+
+  // Get the workflow template with steps
+  const workflow = await prisma.workflowTemplate.findUnique({
+    where: { id: workflowTemplateId },
+    include: {
+      steps: {
+        include: {
+          template: {
+            select: { id: true, name: true, subject: true, body: true },
+          },
+        },
+        orderBy: { order: 'asc' },
+      },
+    },
+  })
+
+  if (!workflow) return 0
+
+  let totalCreated = 0
+
+  for (const cw of courseWorkflows) {
+    const created = await generateExecutionsForCourseWorkflow(
+      cw.id,
+      cw.course,
+      workflow
+    )
+    totalCreated += created
+  }
+
+  return totalCreated
+}
+
+/**
  * Generate workflow executions for a newly enrolled student
  * Called when a student enrollment is confirmed
  */
