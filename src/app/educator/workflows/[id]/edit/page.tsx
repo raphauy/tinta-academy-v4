@@ -57,6 +57,7 @@ export default async function EditWorkflowPage({
     sendAtMinute: workflow.sendAtMinute,
     sendAtTimezone: workflow.sendAtTimezone,
     steps: workflow.steps.map((step) => ({
+      id: step.id,
       templateId: step.templateId,
       triggerType: step.triggerType,
       triggerOffset: step.triggerOffset,

@@ -5,6 +5,7 @@ import { z } from 'zod'
 // =============================================================================
 
 export const workflowStepSchema = z.object({
+  id: z.string().optional(),
   templateId: z.string().min(1, 'Selecciona una plantilla'),
   triggerType: z.enum([
     'course_start',

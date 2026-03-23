@@ -13,6 +13,10 @@ export interface CreateWorkflowStepInput {
   order: number
 }
 
+export interface UpdateWorkflowStepInput extends CreateWorkflowStepInput {
+  id?: string // existing step ID, undefined for new steps
+}
+
 export interface CreateWorkflowInput {
   name: string
   description?: string
@@ -30,7 +34,7 @@ export interface UpdateWorkflowInput {
   sendAtHour?: number
   sendAtMinute?: number
   sendAtTimezone?: string
-  steps?: CreateWorkflowStepInput[]
+  steps?: UpdateWorkflowStepInput[]
 }
 
 // =============================================================================
@@ -233,25 +237,55 @@ export async function updateWorkflow(
       },
     })
 
-    // If steps are provided, replace all steps
+    // If steps are provided, upsert them (preserving IDs for existing steps)
     if (data.steps) {
-      // Delete existing steps
-      await tx.workflowStep.deleteMany({
-        where: { workflowTemplateId: id },
+      const incomingIds = data.steps
+        .map((s) => s.id)
+        .filter((id): id is string => !!id)
+
+      // Delete executions for steps that are being removed
+      await tx.workflowExecution.deleteMany({
+        where: {
+          workflowStep: {
+            workflowTemplateId: id,
+            id: { notIn: incomingIds },
+          },
+        },
       })
 
-      // Create new steps
-      if (data.steps.length > 0) {
-        await tx.workflowStep.createMany({
-          data: data.steps.map((step) => ({
-            workflowTemplateId: id,
-            templateId: step.templateId,
-            triggerType: step.triggerType,
-            triggerOffset: step.triggerOffset,
-            triggerClassIndex: step.triggerClassIndex,
-            order: step.order,
-          })),
-        })
+      // Delete steps that are no longer in the list
+      await tx.workflowStep.deleteMany({
+        where: {
+          workflowTemplateId: id,
+          id: { notIn: incomingIds },
+        },
+      })
+
+      // Update existing steps and create new ones
+      for (const step of data.steps) {
+        if (step.id) {
+          await tx.workflowStep.update({
+            where: { id: step.id },
+            data: {
+              templateId: step.templateId,
+              triggerType: step.triggerType,
+              triggerOffset: step.triggerOffset,
+              triggerClassIndex: step.triggerClassIndex,
+              order: step.order,
+            },
+          })
+        } else {
+          await tx.workflowStep.create({
+            data: {
+              workflowTemplateId: id,
+              templateId: step.templateId,
+              triggerType: step.triggerType,
+              triggerOffset: step.triggerOffset,
+              triggerClassIndex: step.triggerClassIndex,
+              order: step.order,
+            },
+          })
+        }
       }
     }
 

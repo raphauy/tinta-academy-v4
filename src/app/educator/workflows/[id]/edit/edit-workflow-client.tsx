@@ -18,6 +18,7 @@ interface EditWorkflowClientProps {
     sendAtMinute: number
     sendAtTimezone: string
     steps: {
+      id?: string
       templateId: string
       triggerType: WorkflowTriggerType
       triggerOffset: number

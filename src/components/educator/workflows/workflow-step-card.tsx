@@ -25,6 +25,7 @@ import type { WorkflowTriggerType } from '@prisma/client'
 import { useState } from 'react'
 
 export interface WorkflowStepData {
+  id?: string
   templateId: string
   triggerType: WorkflowTriggerType
   triggerOffset: number

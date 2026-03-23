@@ -40,6 +40,7 @@ export function WorkflowForm({
 }: WorkflowFormProps) {
   const [steps, setSteps] = useState<WorkflowStepData[]>(
     defaultValues?.steps?.map((s) => ({
+      id: s.id,
       templateId: s.templateId,
       triggerType: s.triggerType,
       triggerOffset: s.triggerOffset,

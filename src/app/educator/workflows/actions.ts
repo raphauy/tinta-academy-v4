@@ -97,6 +97,7 @@ export async function createWorkflowAction(
     sendAtMinute: parseInt(formData.get('sendAtMinute') as string, 10),
     sendAtTimezone: formData.get('sendAtTimezone') as string,
     steps: JSON.parse(formData.get('steps') as string) as {
+      id?: string
       templateId: string
       triggerType: WorkflowTriggerType
       triggerOffset: number
@@ -151,6 +152,7 @@ export async function updateWorkflowAction(
     sendAtMinute: parseInt(formData.get('sendAtMinute') as string, 10),
     sendAtTimezone: formData.get('sendAtTimezone') as string,
     steps: JSON.parse(formData.get('steps') as string) as {
+      id?: string
       templateId: string
       triggerType: WorkflowTriggerType
       triggerOffset: number
