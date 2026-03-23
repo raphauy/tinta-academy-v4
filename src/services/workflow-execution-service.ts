@@ -508,7 +508,7 @@ async function generateExecutionsForCourseWorkflow(
 export async function regenerateExecutionsForWorkflow(
   workflowTemplateId: string
 ): Promise<number> {
-  // Find all active course workflows using this template
+  // Find active course workflows using this template
   const courseWorkflows = await prisma.courseWorkflow.findMany({
     where: {
       workflowTemplateId,
@@ -559,6 +559,7 @@ export async function regenerateExecutionsForWorkflow(
       workflow
     )
     totalCreated += created
+
   }
 
   return totalCreated

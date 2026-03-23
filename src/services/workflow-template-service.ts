@@ -287,6 +287,15 @@ export async function updateWorkflow(
           })
         }
       }
+
+      // Reactivate completed course workflows so new executions get generated
+      await tx.courseWorkflow.updateMany({
+        where: {
+          workflowTemplateId: id,
+          status: 'completed',
+        },
+        data: { status: 'active' },
+      })
     }
 
     return workflow
