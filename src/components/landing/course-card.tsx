@@ -41,6 +41,7 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
       taller: 'Taller',
       cata: 'Cata',
       curso: 'Curso',
+      experiencia: 'Experiencia',
     }
     return labels[type] || type
   }
@@ -51,6 +52,7 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
         return 'default'
       case 'taller':
       case 'cata':
+      case 'experiencia':
         return 'verde-uva'
       default:
         return 'muted'

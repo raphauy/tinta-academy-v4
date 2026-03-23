@@ -148,6 +148,12 @@ export function FiltersPanel({
               >
                 Curso
               </FilterButton>
+              <FilterButton
+                active={currentType === 'experiencia'}
+                onClick={() => onTypeChange('experiencia')}
+              >
+                Experiencia
+              </FilterButton>
             </div>
           </div>
         )}

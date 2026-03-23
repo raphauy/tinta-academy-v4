@@ -9,7 +9,8 @@ export const footerLinks: FooterLinks = {
   courses: [
     { label: "Certificaciones WSET", href: "/?type=wset#catalogo" },
     { label: "Talleres", href: "/?type=taller#catalogo" },
-    { label: "Catas", href: "/?type=cata#catalogo" }
+    { label: "Catas", href: "/?type=cata#catalogo" },
+    { label: "Experiencias", href: "/?type=experiencia#catalogo" }
   ],
   legal: [
     { label: "Política de Ajustes Razonables", href: "/politicas/ajuste-razonable" },

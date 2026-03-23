@@ -20,7 +20,7 @@ export interface Course {
   id: string
   slug: string
   title: string
-  type: 'wset' | 'taller' | 'cata' | 'curso'
+  type: 'wset' | 'taller' | 'cata' | 'curso' | 'experiencia'
   wsetLevel?: number | null
   modality: 'presencial' | 'online' | 'webinar'
   description: string
@@ -78,7 +78,7 @@ export interface ContactInfo {
 
 export interface CourseFilters {
   modality?: 'presencial' | 'online' | 'webinar' | null
-  type?: 'wset' | 'taller' | 'cata' | 'curso' | null
+  type?: 'wset' | 'taller' | 'cata' | 'curso' | 'experiencia' | null
   tagIds?: string[]
 }
 

@@ -32,7 +32,7 @@ import {
 } from '@/app/educator/actions'
 import type { Course, Tag } from '@prisma/client'
 
-const courseTypes = ['wset', 'taller', 'cata', 'curso'] as const
+const courseTypes = ['wset', 'taller', 'cata', 'curso', 'experiencia'] as const
 
 const webinarFormSchema = z.object({
   title: z.string().min(3, 'El titulo debe tener al menos 3 caracteres'),
@@ -270,6 +270,7 @@ export function WebinarCourseForm({
     { value: 'taller', label: 'Taller' },
     { value: 'cata', label: 'Cata' },
     { value: 'curso', label: 'Curso' },
+    { value: 'experiencia', label: 'Experiencia' },
   ]
 
   const wsetLevelOptions = [

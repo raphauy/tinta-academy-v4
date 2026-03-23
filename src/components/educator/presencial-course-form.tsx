@@ -34,7 +34,7 @@ import {
 import { countAffectedExecutionsAction } from '@/app/educator/workflows/actions'
 import type { Course, Tag } from '@prisma/client'
 
-const courseTypes = ['wset', 'taller', 'cata', 'curso'] as const
+const courseTypes = ['wset', 'taller', 'cata', 'curso', 'experiencia'] as const
 
 // Default descriptions for WSET levels (outside component to avoid recreating on each render)
 const wsetDefaultDescriptions: Record<number, string> = {
@@ -419,6 +419,7 @@ export function PresencialCourseForm({
     { value: 'taller', label: 'Taller' },
     { value: 'cata', label: 'Cata' },
     { value: 'curso', label: 'Curso' },
+    { value: 'experiencia', label: 'Experiencia' },
   ]
 
   const wsetLevelOptions = [

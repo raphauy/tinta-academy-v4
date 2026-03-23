@@ -77,6 +77,8 @@ function getCourseTypeName(type: Course['type'], wsetLevel?: number | null): str
       return 'Cata'
     case 'curso':
       return 'Curso'
+    case 'experiencia':
+      return 'Experiencia'
     default:
       return 'Curso'
   }

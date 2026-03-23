@@ -19,7 +19,7 @@ const ADMIN_STATUS_OPTIONS = [
   { value: 'finished', label: 'Finalizado' },
 ]
 
-type TypeFilter = 'all' | 'wset' | 'taller' | 'cata' | 'curso'
+type TypeFilter = 'all' | 'wset' | 'taller' | 'cata' | 'curso' | 'experiencia'
 
 export interface AdminCoursesProps {
   courses: AdminCourse[]

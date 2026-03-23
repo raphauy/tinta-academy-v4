@@ -78,6 +78,7 @@ function getTypeLabel(type: string, wsetLevel?: number | null) {
     taller: 'Taller',
     cata: 'Cata',
     curso: 'Curso',
+    experiencia: 'Experiencia',
   }
   return labels[type] || type
 }
@@ -88,6 +89,7 @@ function getTypeVariant(type: string): BadgeVariant {
       return 'default'
     case 'taller':
     case 'cata':
+    case 'experiencia':
       return 'verde-uva'
     default:
       return 'muted'

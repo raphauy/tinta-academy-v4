@@ -54,6 +54,7 @@ function getTypeLabel(type: string, wsetLevel?: number | null): string {
     taller: 'Taller',
     cata: 'Cata',
     curso: 'Curso',
+    experiencia: 'Experiencia',
   }
   return labels[type] || type
 }
@@ -64,6 +65,7 @@ function getTypeColor(type: string): string {
     wset: 'bg-primary text-primary-foreground',
     taller: 'bg-verde-uva-500 text-white',
     cata: 'bg-verde-uva-500 text-white',
+    experiencia: 'bg-verde-uva-500 text-white',
     curso: 'bg-muted-foreground text-white',
   }
   return colors[type] || 'bg-muted-foreground text-white'

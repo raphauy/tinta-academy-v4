@@ -65,6 +65,7 @@ const courseTypeLabels: Record<string, string> = {
   taller: 'Taller',
   cata: 'Cata',
   curso: 'Curso',
+  experiencia: 'Experiencia',
 }
 
 const paymentMethodLabels: Record<string, string> = {

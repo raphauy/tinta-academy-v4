@@ -197,6 +197,7 @@ export const COURSE_TYPE_OPTIONS: Record<
   taller: { label: 'Taller' },
   cata: { label: 'Cata' },
   curso: { label: 'Curso' },
+  experiencia: { label: 'Experiencia' },
 }
 
 export const COURSE_MODALITY_OPTIONS: Record<

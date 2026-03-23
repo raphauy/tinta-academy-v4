@@ -26,6 +26,8 @@ export function CourseQuickCard({ course }: CourseQuickCardProps) {
         return 'Cata'
       case 'curso':
         return 'Curso'
+      case 'experiencia':
+        return 'Experiencia'
       default:
         return course.type
     }
@@ -37,6 +39,7 @@ export function CourseQuickCard({ course }: CourseQuickCardProps) {
         return 'default'
       case 'taller':
       case 'cata':
+      case 'experiencia':
         return 'verde-uva'
       default:
         return 'muted'

@@ -43,7 +43,7 @@ interface CourseListProps {
 }
 
 type StatusFilter = 'all' | 'draft' | 'enrolling' | 'full' | 'in_progress' | 'finished'
-type TypeFilter = 'all' | 'wset' | 'taller' | 'cata' | 'curso'
+type TypeFilter = 'all' | 'wset' | 'taller' | 'cata' | 'curso' | 'experiencia'
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Todos' },
