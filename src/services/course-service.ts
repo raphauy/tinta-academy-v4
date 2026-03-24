@@ -113,6 +113,14 @@ export async function getCourses(filters: CourseFilters = {}) {
     include: {
       educator: true,
       tags: true,
+      modules: {
+        select: {
+          _count: { select: { lessons: true } },
+          lessons: {
+            select: { videoDuration: true },
+          },
+        },
+      },
     },
     orderBy: {
       startDate: 'asc'
@@ -152,6 +160,23 @@ export async function getCourseBySlug(slug: string, includeUnpublished = false) 
     include: {
       educator: true,
       tags: true,
+      modules: {
+        orderBy: { order: 'asc' },
+        include: {
+          lessons: {
+            orderBy: { order: 'asc' },
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              videoDuration: true,
+              videoStatus: true,
+              isFree: true,
+              order: true,
+            },
+          },
+        },
+      },
     },
   })
 

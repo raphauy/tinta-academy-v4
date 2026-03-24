@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -23,11 +24,29 @@ import {
   BookOpen,
   AlertCircle,
   ShoppingCart,
+  PlayCircle,
+  ChevronDown,
+  ChevronRight,
+  Lock,
 } from 'lucide-react'
 
 type CourseWithRelations = Course & {
   educator: Educator
   tags: Tag[]
+  modules?: Array<{
+    id: string
+    title: string
+    order: number
+    lessons: Array<{
+      id: string
+      title: string
+      slug: string
+      videoDuration: number | null
+      videoStatus: string
+      isFree: boolean
+      order: number
+    }>
+  }>
 }
 
 interface CourseDetailPageProps {
@@ -365,6 +384,11 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
               </Card>
             )}
 
+            {/* Curriculum Card - Online courses */}
+            {course.modality === 'online' && course.modules && course.modules.length > 0 && (
+              <CurriculumSection modules={course.modules} />
+            )}
+
             {/* Educator Card */}
             <Card>
               <CardHeader>
@@ -411,22 +435,53 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                 <CardTitle>Modalidad</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {course.duration && (
-                  <div className="flex items-center gap-3">
-                    <Clock className="size-5 text-muted-foreground" />
-                    <span>{course.duration}</span>
-                  </div>
-                )}
-                {course.location && (
-                  <div className="flex items-center gap-3">
-                    <MapPin className="size-5 text-muted-foreground" />
-                    <div>
-                      <span>{course.location}</span>
-                      {course.address && (
-                        <p className="text-sm text-muted-foreground">{course.address}</p>
-                      )}
+                {course.modality === 'online' ? (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <PlayCircle className="size-5 text-muted-foreground" />
+                      <span>Online · A tu ritmo</span>
                     </div>
-                  </div>
+                    {course.modules && course.modules.length > 0 && (
+                      <>
+                        <div className="flex items-center gap-3">
+                          <BookOpen className="size-5 text-muted-foreground" />
+                          <span>
+                            {course.modules.length} {course.modules.length === 1 ? 'módulo' : 'módulos'} · {course.modules.reduce((s, m) => s + m.lessons.length, 0)} lecciones
+                          </span>
+                        </div>
+                        {(() => {
+                          const totalSecs = course.modules.flatMap(m => m.lessons).reduce((s, l) => s + (l.videoDuration || 0), 0)
+                          const hours = Math.round(totalSecs / 3600 * 10) / 10
+                          return hours > 0 ? (
+                            <div className="flex items-center gap-3">
+                              <Clock className="size-5 text-muted-foreground" />
+                              <span>{hours}h de contenido en video</span>
+                            </div>
+                          ) : null
+                        })()}
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {course.duration && (
+                      <div className="flex items-center gap-3">
+                        <Clock className="size-5 text-muted-foreground" />
+                        <span>{course.duration}</span>
+                      </div>
+                    )}
+                    {course.location && (
+                      <div className="flex items-center gap-3">
+                        <MapPin className="size-5 text-muted-foreground" />
+                        <div>
+                          <span>{course.location}</span>
+                          {course.address && (
+                            <p className="text-sm text-muted-foreground">{course.address}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
                 {course.maxCapacity && (
                   <div className="flex items-center gap-3">
@@ -480,12 +535,21 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
             {isEnrollable && (
               <>
                 {isEnrolled ? (
-                  <Button asChild variant="outline" size="lg" className="w-full">
-                    <Link href="/student">
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Ya estás inscrito
-                    </Link>
-                  </Button>
+                  course.modality === 'online' ? (
+                    <Button asChild size="lg" className="w-full">
+                      <Link href={`/learn/${course.slug}`}>
+                        <PlayCircle className="w-4 h-4 mr-2" />
+                        Acceder al curso
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button asChild variant="outline" size="lg" className="w-full">
+                      <Link href="/student">
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Ya estás inscrito
+                      </Link>
+                    </Button>
+                  )
                 ) : canEnroll ? (
                   <Button asChild size="lg" className="w-full">
                     <Link href={`/checkout/${course.id}`}>
@@ -504,6 +568,16 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                     Inscripciones cerradas
                   </Button>
                 ) : null}
+
+                {/* Preview free lessons — only for online courses when not enrolled */}
+                {course.modality === 'online' && !isEnrolled && (
+                  <Button asChild variant="outline" size="lg" className="w-full">
+                    <Link href={`/learn/${course.slug}`}>
+                      <PlayCircle className="w-4 h-4 mr-2" />
+                      Ver lecciones gratuitas
+                    </Link>
+                  </Button>
+                )}
               </>
             )}
 
@@ -537,5 +611,112 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
         onSubscribe={handleSubscribe}
       />
     </div>
+  )
+}
+
+// =============================================================================
+// Curriculum Section for Online Courses
+// =============================================================================
+
+function formatLessonDuration(seconds: number): string {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+function CurriculumSection({
+  modules,
+}: {
+  modules: NonNullable<CourseWithRelations['modules']>
+}) {
+  const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0)
+  const totalSeconds = modules
+    .flatMap((m) => m.lessons)
+    .reduce((sum, l) => sum + (l.videoDuration || 0), 0)
+  const totalHours = Math.round((totalSeconds / 3600) * 10) / 10
+
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(
+    () => new Set(modules.length > 0 ? [modules[0].id] : [])
+  )
+
+  const toggleModule = (id: string) => {
+    setExpandedModules((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Contenido del curso</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {modules.length} {modules.length === 1 ? 'módulo' : 'módulos'} · {totalLessons}{' '}
+          {totalLessons === 1 ? 'lección' : 'lecciones'}
+          {totalHours > 0 && ` · ${totalHours}h de contenido`}
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-1">
+        {modules.map((mod) => {
+          const isExpanded = expandedModules.has(mod.id)
+
+          return (
+            <div key={mod.id} className="rounded-lg border">
+              <button
+                onClick={() => toggleModule(mod.id)}
+                className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left hover:bg-accent/50"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                )}
+                <span className="min-w-0 flex-1 text-sm font-medium">
+                  {mod.title}
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {mod.lessons.length} {mod.lessons.length === 1 ? 'lección' : 'lecciones'}
+                </span>
+              </button>
+
+              {isExpanded && (
+                <div className="border-t px-4 py-2">
+                  {mod.lessons.map((lesson) => (
+                    <div
+                      key={lesson.id}
+                      className="flex items-center gap-3 py-2 text-sm"
+                    >
+                      {lesson.isFree ? (
+                        <PlayCircle className="h-4 w-4 shrink-0 text-verde-uva-500" />
+                      ) : (
+                        <Lock className="h-4 w-4 shrink-0 text-muted-foreground/50" />
+                      )}
+                      <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                        {lesson.title}
+                      </span>
+                      {lesson.isFree && (
+                        <span className="shrink-0 rounded bg-verde-uva-100 px-1.5 py-0.5 text-[10px] font-medium text-verde-uva-700 dark:bg-verde-uva-900/50 dark:text-verde-uva-300">
+                          Gratis
+                        </span>
+                      )}
+                      {lesson.videoDuration && (
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {formatLessonDuration(lesson.videoDuration)}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </CardContent>
+    </Card>
   )
 }

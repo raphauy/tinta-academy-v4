@@ -8,6 +8,7 @@ import AdminTransferNotificationEmail from '@/components/emails/admin-transfer-n
 import AdminPaymentNotificationEmail from '@/components/emails/admin-payment-notification'
 import DynamicEmail from '@/components/emails/dynamic-email'
 import EducatorStatusReminderEmail from '@/components/emails/educator-status-reminder'
+import LessonCommentNotificationEmail from '@/components/emails/lesson-comment-notification'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const fromEmail = process.env.EMAIL_FROM || 'Tinta Academy <academy@tinta.wine>'
@@ -599,6 +600,59 @@ export async function sendDynamicEmail(
     return { success: true, resendId: result.data?.id }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return { success: false, error: errorMessage }
+  }
+}
+
+// =============================================================================
+// Lesson Comment Notification Email
+// =============================================================================
+
+interface SendLessonCommentNotificationInput {
+  educatorEmail: string
+  educatorName: string
+  studentName: string
+  courseName: string
+  lessonName: string
+  commentBody: string
+  courseSlug: string
+  lessonSlug: string
+}
+
+export async function sendLessonCommentNotification(
+  input: SendLessonCommentNotificationInput
+): Promise<{ success: boolean; error?: string }> {
+  if (!shouldSendEmail()) {
+    console.log(`[Comment Notification] ${input.studentName} commented on "${input.lessonName}" (${input.courseName})`)
+    return { success: true }
+  }
+
+  try {
+    const lessonUrl = `${baseUrl}/learn/${input.courseSlug}/${input.lessonSlug}`
+
+    const result = await resend.emails.send({
+      from: fromEmail,
+      to: input.educatorEmail,
+      subject: `Nuevo comentario de ${input.studentName} en "${input.lessonName}"`,
+      react: LessonCommentNotificationEmail({
+        educatorName: input.educatorName.split(' ')[0],
+        studentName: input.studentName,
+        courseName: input.courseName,
+        lessonName: input.lessonName,
+        commentBody: input.commentBody,
+        lessonUrl,
+      }),
+    })
+
+    if (result.error) {
+      console.error('Failed to send comment notification:', result.error)
+      return { success: false, error: result.error.message }
+    }
+
+    return { success: true }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Failed to send comment notification:', errorMessage)
     return { success: false, error: errorMessage }
   }
 }

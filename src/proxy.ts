@@ -88,6 +88,14 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Learn routes - student, educator, and superadmin can access (course player / preview)
+  if (pathname.startsWith('/learn')) {
+    if (user.role !== 'student' && user.role !== 'educator' && user.role !== 'superadmin') {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+    return NextResponse.next()
+  }
+
   // Student routes - student and superadmin can access
   if (pathname.startsWith('/student')) {
     if (user.role !== 'student' && user.role !== 'superadmin') {

@@ -123,7 +123,7 @@ export function StudentDashboard({ studentName, metrics, viewAs }: StudentDashbo
                     educator: course.educator,
                     tags: course.tags,
                   }}
-                  href={buildUrl(`/student/courses/${course.id}`)}
+                  href={course.modality === 'online' ? buildUrl(`/learn/${course.slug}`) : buildUrl(`/student/courses/${course.id}`)}
                   statusBadge={getStatusBadge(course)}
                 />
               ))}

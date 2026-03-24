@@ -25,6 +25,7 @@ model User {
   educator        Educator?
   orders          Order[]   @relation("UserOrders")
   cancelledOrders Order[]   @relation("CancelledOrders")
+  lessonComments  LessonComment[]
 
   @@index([email])
   @@index([isActive])
@@ -79,6 +80,9 @@ model Student {
   emailRecipients    EmailRecipient[]
   workflowExecutions WorkflowExecution[]
 
+  // Online course relations
+  lessonProgress LessonProgress[]
+
   @@index([userId])
 }
 
@@ -93,6 +97,10 @@ model Educator {
   title     String?
   bio       String?
   imageUrl  String?
+
+  // Notification preferences
+  notifyOnComments Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -166,6 +174,9 @@ model Course {
   emailCampaigns  EmailCampaign[]
   courseWorkflows CourseWorkflow[]
 
+  // Online course relations
+  modules CourseModule[]
+
   @@index([slug])
   @@index([educatorId])
   @@index([status])
@@ -192,6 +203,109 @@ model CourseMaterial {
 
   @@index([courseId])
   @@index([order])
+}
+
+// ============================================
+// ONLINE COURSE MODULES & LESSONS
+// ============================================
+
+model CourseModule {
+  id       String   @id @default(cuid())
+  courseId  String
+  title    String
+  order    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@index([courseId])
+  @@index([order])
+}
+
+model Lesson {
+  id            String      @id @default(cuid())
+  moduleId      String
+  title         String
+  slug          String
+  summary       String?     @db.Text
+  order         Int         @default(0)
+
+  // Video (Mux)
+  muxAssetId    String?
+  muxPlaybackId String?
+  muxUploadId   String?
+  videoDuration Int?        // duration in seconds
+  videoStatus   VideoStatus @default(pending)
+
+  // Access
+  isFree Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  module    CourseModule      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  materials LessonMaterial[]
+  progress  LessonProgress[]
+  comments  LessonComment[]
+
+  @@unique([moduleId, slug])
+  @@index([moduleId])
+  @@index([order])
+}
+
+model LessonMaterial {
+  id       String       @id @default(cuid())
+  lessonId String
+  name     String
+  url      String
+  type     MaterialType
+  order    Int          @default(0)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@index([order])
+}
+
+model LessonProgress {
+  id              String    @id @default(cuid())
+  lessonId        String
+  studentId       String
+  progressSeconds Int       @default(0)
+  completed       Boolean   @default(false)
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  lesson  Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, studentId])
+  @@index([lessonId])
+  @@index([studentId])
+}
+
+model LessonComment {
+  id       String   @id @default(cuid())
+  lessonId String
+  userId   String
+  parentId String?
+  body     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lesson  Lesson          @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  LessonComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies LessonComment[] @relation("CommentReplies")
+
+  @@index([lessonId])
+  @@index([userId])
+  @@index([parentId])
 }
 
 // ============================================
@@ -389,6 +503,14 @@ enum MaterialType {
   document
   video
   other
+}
+
+enum VideoStatus {
+  pending
+  uploading
+  processing
+  ready
+  errored
 }
 
 enum OrderStatus {

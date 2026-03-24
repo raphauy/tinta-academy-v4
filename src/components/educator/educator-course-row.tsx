@@ -16,7 +16,8 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  GraduationCap
+  GraduationCap,
+  MonitorPlay,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -236,6 +237,24 @@ export function EducatorCourseRow({
 
           {/* Action buttons - always at bottom */}
           <div className="flex items-center gap-2 order-2 sm:order-0 sm:mt-auto">
+            {/* Gestionar contenido + Previsualizar - solo para cursos online */}
+            {course.modality === 'online' && (
+              <>
+                <Button variant="outline" size="sm" asChild className="gap-2">
+                  <Link href={`/educator/courses/${course.id}/modules`}>
+                    <MonitorPlay className="size-4" />
+                    <span className="hidden sm:inline">Contenido</span>
+                  </Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild className="gap-2">
+                  <Link href={`/learn/${course.slug}`} target="_blank">
+                    <Eye className="size-4" />
+                    <span className="hidden sm:inline">Previsualizar</span>
+                  </Link>
+                </Button>
+              </>
+            )}
+
             {/* Ver estudiantes button */}
             <Button variant="outline" size="sm" asChild className="gap-2">
               <Link href={`/educator/courses/${course.id}/students`}>
@@ -260,6 +279,23 @@ export function EducatorCourseRow({
                   Editar
                 </Link>
               </DropdownMenuItem>
+
+              {course.modality === 'online' && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/educator/courses/${course.id}/modules`}>
+                      <MonitorPlay className="h-4 w-4 mr-2" />
+                      Gestionar contenido
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/learn/${course.slug}`} target="_blank">
+                      <Eye className="h-4 w-4 mr-2" />
+                      Previsualizar como estudiante
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
 
               <DropdownMenuItem asChild>
                 <Link href={`/educator/courses/${course.id}/students`}>

@@ -3,11 +3,16 @@
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { updateUser, getUserById } from '@/services/user-service'
+import { updateEducatorNotifications } from '@/services/educator-service'
 import { deleteImage } from '@/services/upload-service'
 import { updateProfileSchema } from '@/lib/validations/profile'
 
 type ActionResult =
   | { success: true; data: { name: string; image: string | null } }
+  | { success: false; error: string }
+
+type SimpleActionResult =
+  | { success: true }
   | { success: false; error: string }
 
 export async function updateProfileAction(
@@ -68,5 +73,30 @@ export async function updateProfileAction(
       success: false,
       error: 'Error al actualizar el perfil',
     }
+  }
+}
+
+export async function updateEducatorNotificationsAction(
+  notifyOnComments: boolean
+): Promise<SimpleActionResult> {
+  const session = await auth()
+
+  if (!session?.user?.id) {
+    return { success: false, error: 'No autenticado' }
+  }
+
+  const role = session.user.role as string
+  if (role !== 'educator' && role !== 'superadmin') {
+    return { success: false, error: 'No autorizado' }
+  }
+
+  try {
+    await updateEducatorNotifications(session.user.id, { notifyOnComments })
+
+    revalidatePath('/profile')
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating educator notifications:', error)
+    return { success: false, error: 'Error al actualizar las notificaciones' }
   }
 }

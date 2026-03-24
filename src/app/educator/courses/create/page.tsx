@@ -2,9 +2,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { getTags } from '@/services/tag-service'
-import { PresencialCourseForm, WebinarCourseForm } from '@/components/educator'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Construction } from 'lucide-react'
+import { PresencialCourseForm, WebinarCourseForm, OnlineCourseForm } from '@/components/educator'
 
 interface CreateCoursePageProps {
   searchParams: Promise<{ modality?: string }>
@@ -65,7 +63,7 @@ export default async function CreateCoursePage({ searchParams }: CreateCoursePag
     )
   }
 
-  // Online modality - coming soon
+  // Online modality
   if (modality === 'online') {
     return (
       <div className="space-y-6">
@@ -74,26 +72,11 @@ export default async function CreateCoursePage({ searchParams }: CreateCoursePag
             Crear Curso Online
           </h1>
           <p className="text-muted-foreground">
-            Cursos asincronos con materiales y contenido grabado.
+            Curso con videos grabados que los estudiantes pueden ver a su ritmo.
           </p>
         </div>
 
-        <Card className="border-dashed">
-          <CardHeader className="text-center pb-2">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-              <Construction className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <CardTitle>Proximamente</CardTitle>
-            <CardDescription>
-              Los cursos online estaran disponibles pronto.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center text-sm text-muted-foreground">
-            <p>
-              Mientras tanto, puedes crear cursos presenciales o webinars en vivo.
-            </p>
-          </CardContent>
-        </Card>
+        <OnlineCourseForm mode="create" initialTags={tags} />
       </div>
     )
   }
@@ -106,7 +89,7 @@ export default async function CreateCoursePage({ searchParams }: CreateCoursePag
           Crear Curso Presencial
         </h1>
         <p className="text-muted-foreground">
-          Completa la informacion para crear un nuevo curso presencial. Podras
+          Completá la información para crear un nuevo curso presencial. Podrás
           agregar materiales del curso despues de crearlo.
         </p>
       </div>

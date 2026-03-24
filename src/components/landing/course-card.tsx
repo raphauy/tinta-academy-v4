@@ -1,5 +1,5 @@
 import type { Course, Educator } from '@/types/landing'
-import { Calendar, Clock, Users, MapPin, Monitor, Video } from 'lucide-react'
+import { Calendar, Clock, Users, MapPin, Monitor, Video, BookOpen, PlayCircle } from 'lucide-react'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -134,26 +134,47 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
         <div className="mt-auto">
           {/* Meta */}
           <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
-            {course.startDate ? (
-              <span className="inline-flex items-center gap-1">
-                <Calendar size={14} className="text-primary" />
-                {formatDate(course.startDate)}
-              </span>
+            {course.modality === 'online' && course.moduleCount ? (
+              <>
+                <span className="inline-flex items-center gap-1">
+                  <BookOpen size={14} className="text-primary" />
+                  {course.moduleCount} {course.moduleCount === 1 ? 'módulo' : 'módulos'}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <PlayCircle size={14} className="text-primary" />
+                  {course.lessonCount} {course.lessonCount === 1 ? 'lección' : 'lecciones'}
+                </span>
+                {(course.totalVideoHours ?? 0) > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <Clock size={14} className="text-primary" />
+                    {course.totalVideoHours}h de video
+                  </span>
+                )}
+              </>
             ) : (
-              <span className="inline-flex items-center gap-1">
-                <Monitor size={14} className="text-primary" />
-                Acceso inmediato
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1">
-              <Clock size={14} className="text-primary" />
-              {course.duration}h
-            </span>
-            {course.maxCapacity && (
-              <span className="inline-flex items-center gap-1">
-                <Users size={14} className="text-primary" />
-                Máx. {course.maxCapacity}
-              </span>
+              <>
+                {course.startDate ? (
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar size={14} className="text-primary" />
+                    {formatDate(course.startDate)}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1">
+                    <Monitor size={14} className="text-primary" />
+                    Acceso inmediato
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1">
+                  <Clock size={14} className="text-primary" />
+                  {course.duration}h
+                </span>
+                {course.maxCapacity && (
+                  <span className="inline-flex items-center gap-1">
+                    <Users size={14} className="text-primary" />
+                    Máx. {course.maxCapacity}
+                  </span>
+                )}
+              </>
             )}
           </div>
 

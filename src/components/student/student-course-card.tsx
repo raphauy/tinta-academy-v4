@@ -118,10 +118,12 @@ export function StudentCourseCard({ enrollment, viewAs }: StudentCourseCardProps
   const materials = course.materials || []
   const materialsCount = materials.length
 
-  // Build course detail URL with viewAs if present
-  const courseDetailUrl = viewAs
-    ? `/student/courses/${course.id}?viewAs=${viewAs}`
-    : `/student/courses/${course.id}`
+  // Build course URL: online courses go to player, others to detail
+  const courseDetailUrl = course.modality === 'online'
+    ? viewAs ? `/learn/${course.slug}?viewAs=${viewAs}` : `/learn/${course.slug}`
+    : viewAs
+      ? `/student/courses/${course.id}?viewAs=${viewAs}`
+      : `/student/courses/${course.id}`
 
   return (
     <div className="bg-card rounded-2xl border border-border p-4 hover:shadow-md transition-shadow">
@@ -239,7 +241,7 @@ export function StudentCourseCard({ enrollment, viewAs }: StudentCourseCardProps
 
             <Button asChild size="sm" className="gap-2 min-h-[44px]">
               <Link href={courseDetailUrl}>
-                Ver detalles
+                {course.modality === 'online' ? 'Ir al curso' : 'Ver detalles'}
                 <ArrowRight className="size-4" />
               </Link>
             </Button>

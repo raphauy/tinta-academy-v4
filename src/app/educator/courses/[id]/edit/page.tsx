@@ -9,10 +9,15 @@ import { getConfirmedEnrollmentCount } from '@/services/enrollment-service'
 import {
   PresencialCourseForm,
   WebinarCourseForm,
+  OnlineCourseForm,
   MaterialsSection,
   CourseStatusActions,
 } from '@/components/educator'
 import { CourseWorkflowsSection } from '@/components/educator/courses/course-workflows-section'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { MonitorPlay } from 'lucide-react'
+import Link from 'next/link'
 
 interface EditCoursePageProps {
   params: Promise<{ id: string }>
@@ -99,7 +104,17 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
       )
     }
 
-    // Default to presencial form (also handles online for now)
+    if (course.modality === 'online') {
+      return (
+        <OnlineCourseForm
+          mode="edit"
+          course={course}
+          initialTags={tags}
+        />
+      )
+    }
+
+    // Default to presencial form
     return (
       <PresencialCourseForm
         mode="edit"
@@ -118,7 +133,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
             Editar {modalityLabels[course.modality] ?? 'Curso'}
           </h1>
           <p className="text-muted-foreground">
-            Modifica la informacion de &ldquo;{course.title}&rdquo;.
+            Modificá la información de &ldquo;{course.title}&rdquo;.
           </p>
         </div>
         <CourseStatusActions courseId={course.id} status={course.status} />
@@ -126,8 +141,32 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
 
       {renderForm()}
 
-      {/* Materials section - only for existing courses */}
-      <MaterialsSection courseId={course.id} materials={materials} />
+      {/* Module management link for online courses */}
+      {course.modality === 'online' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MonitorPlay className="h-5 w-5" />
+              Contenido del Curso
+            </CardTitle>
+            <CardDescription>
+              Gestioná los módulos y lecciones con videos de tu curso online.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href={`/educator/courses/${course.id}/modules`}>
+                Gestionar Módulos y Lecciones
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Materials section - only for non-online courses */}
+      {course.modality !== 'online' && (
+        <MaterialsSection courseId={course.id} materials={materials} />
+      )}
 
       {/* Workflows section */}
       <CourseWorkflowsSection

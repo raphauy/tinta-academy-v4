@@ -13,6 +13,10 @@ interface PageProps {
 type PrismaCourseWithRelations = PrismaCourse & {
   educator: PrismaEducator
   tags: PrismaTag[]
+  modules: Array<{
+    _count: { lessons: number }
+    lessons: Array<{ videoDuration: number | null }>
+  }>
 }
 
 // Transform Prisma data to landing page types
@@ -36,6 +40,20 @@ function transformCourse(prismaCourse: PrismaCourseWithRelations): Course {
     location = prismaCourse.location || ''
   }
 
+  // Calculate online course stats
+  let moduleCount: number | undefined
+  let lessonCount: number | undefined
+  let totalVideoHours: number | undefined
+
+  if (prismaCourse.modality === 'online' && prismaCourse.modules.length > 0) {
+    moduleCount = prismaCourse.modules.length
+    lessonCount = prismaCourse.modules.reduce((sum, m) => sum + m._count.lessons, 0)
+    const totalSeconds = prismaCourse.modules
+      .flatMap((m) => m.lessons)
+      .reduce((sum, l) => sum + (l.videoDuration || 0), 0)
+    totalVideoHours = Math.round(totalSeconds / 3600 * 10) / 10
+  }
+
   return {
     id: prismaCourse.id,
     slug: prismaCourse.slug,
@@ -55,6 +73,9 @@ function transformCourse(prismaCourse: PrismaCourseWithRelations): Course {
     address: prismaCourse.address,
     imageUrl: prismaCourse.imageUrl || '/placeholder-course.jpg',
     status: prismaCourse.status,
+    moduleCount,
+    lessonCount,
+    totalVideoHours,
     educator: {
       id: prismaCourse.educator.id,
       name: prismaCourse.educator.name,

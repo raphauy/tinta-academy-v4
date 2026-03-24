@@ -44,6 +44,10 @@ export interface Course {
   tags: Tag[]
   /** Status - online courses are always 'available', draft courses are not visible to public */
   status: 'draft' | 'announced' | 'enrolling' | 'full' | 'in_progress' | 'finished' | 'available'
+  /** Online course stats */
+  moduleCount?: number
+  lessonCount?: number
+  totalVideoHours?: number
 }
 
 export interface HeroContent {

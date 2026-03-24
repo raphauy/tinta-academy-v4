@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getUserById } from '@/services/user-service'
+import { getEducatorNotifications } from '@/services/educator-service'
 import { ProfileForm } from '@/components/profile/profile-form'
 import {
   Card,
@@ -23,6 +24,15 @@ export default async function ProfilePage() {
     redirect('/login')
   }
 
+  // Get educator notification preferences if applicable
+  let educatorNotifications: { notifyOnComments: boolean } | null = null
+  if (user.role === 'educator' || user.role === 'superadmin') {
+    const educator = await getEducatorNotifications(user.id)
+    if (educator) {
+      educatorNotifications = { notifyOnComments: educator.notifyOnComments }
+    }
+  }
+
   return (
     <div className="min-h-screen bg-secondary py-8">
       <div className="container mx-auto max-w-2xl px-4">
@@ -41,6 +51,7 @@ export default async function ProfilePage() {
                 email: user.email,
                 image: user.image,
               }}
+              educatorNotifications={educatorNotifications}
             />
           </CardContent>
         </Card>

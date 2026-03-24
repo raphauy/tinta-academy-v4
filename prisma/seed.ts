@@ -366,6 +366,209 @@ async function main() {
 
   console.log('✅ Created courses')
 
+  // ============================================
+  // ONLINE COURSE: Modules & Lessons
+  // ============================================
+
+  // Get the online course to add modules
+  const onlineCourse = await prisma.course.findUnique({
+    where: { slug: 'introduccion-vinos-chilenos' },
+  })
+
+  if (onlineCourse) {
+    // Clean up existing modules (for re-seeding)
+    await prisma.courseModule.deleteMany({
+      where: { courseId: onlineCourse.id },
+    })
+
+    // Module 1: Introducción al Vino Chileno
+    const mod1 = await prisma.courseModule.create({
+      data: {
+        courseId: onlineCourse.id,
+        title: 'Introducción al Vino Chileno',
+        order: 0,
+      },
+    })
+
+    await prisma.lesson.createMany({
+      data: [
+        {
+          moduleId: mod1.id,
+          title: 'Historia vitivinícola de Chile',
+          slug: 'historia-vitivinicola-chile',
+          summary: '## Acerca de este video\n\nUn recorrido por los orígenes y la evolución de la industria vitivinícola chilena, desde las primeras cepas traídas por los conquistadores españoles hasta el boom exportador del siglo XXI.\n\n## Qué aprenderás\n\n- Los orígenes coloniales de la viticultura en Chile\n- La influencia francesa en el desarrollo de la industria\n- El resurgimiento del vino chileno en los años 80 y 90\n- Chile como potencia exportadora mundial',
+          order: 0,
+          videoDuration: 720,
+          videoStatus: 'pending',
+          isFree: true,
+        },
+        {
+          moduleId: mod1.id,
+          title: 'Regiones y valles principales',
+          slug: 'regiones-valles-principales',
+          summary: '## Acerca de este video\n\nExplora la geografía vitivinícola de Chile, desde el desierto de Atacama hasta la Patagonia. Conoce los valles más importantes y sus características únicas.\n\n## Qué aprenderás\n\n- La clasificación de regiones vitivinícolas chilenas\n- Características del Valle Central, Valle de Casablanca y Valle del Maule\n- Cómo la geografía influye en los estilos de vino\n- Valles emergentes y tendencias actuales',
+          order: 1,
+          videoDuration: 900,
+          videoStatus: 'pending',
+          isFree: false,
+        },
+        {
+          moduleId: mod1.id,
+          title: 'Variedades emblema: Carmenère y más',
+          slug: 'variedades-emblema-carmenere',
+          summary: '## Acerca de este video\n\nDescubre las variedades de uva que definen la identidad del vino chileno, con especial foco en el Carmenère, la cepa insignia de Chile.\n\n## Qué aprenderás\n\n- La historia del Carmenère y su redescubrimiento en Chile\n- Cabernet Sauvignon, Sauvignon Blanc y País\n- Perfiles aromáticos y de sabor de cada variedad\n- Maridajes recomendados para cada cepa',
+          order: 2,
+          videoDuration: 1080,
+          videoStatus: 'pending',
+          isFree: false,
+        },
+      ],
+    })
+
+    // Module 2: Terroir y Viticultura
+    const mod2 = await prisma.courseModule.create({
+      data: {
+        courseId: onlineCourse.id,
+        title: 'Terroir y Viticultura',
+        order: 1,
+      },
+    })
+
+    await prisma.lesson.createMany({
+      data: [
+        {
+          moduleId: mod2.id,
+          title: 'Clima, suelo y geografía',
+          slug: 'clima-suelo-geografia',
+          summary: '## Acerca de este video\n\nEntiende cómo los factores climáticos y geológicos de Chile crean condiciones ideales para la viticultura. Desde la Corriente de Humboldt hasta los suelos aluviales.\n\n## Qué aprenderás\n\n- El concepto de terroir aplicado a Chile\n- Influencia del Océano Pacífico y la Cordillera de los Andes\n- Tipos de suelo y su impacto en el vino\n- Microclimas y sus efectos en las variedades',
+          order: 0,
+          videoDuration: 840,
+          videoStatus: 'pending',
+          isFree: false,
+        },
+        {
+          moduleId: mod2.id,
+          title: 'Prácticas de viticultura',
+          slug: 'practicas-viticultura',
+          summary: '## Acerca de este video\n\nConoce las técnicas de cultivo utilizadas en los viñedos chilenos, desde la conducción de la vid hasta el manejo sustentable.\n\n## Qué aprenderás\n\n- Sistemas de conducción más usados en Chile\n- Riego y manejo del canopy\n- Viticultura orgánica y biodinámica en Chile\n- Control de plagas y enfermedades',
+          order: 1,
+          videoDuration: 660,
+          videoStatus: 'pending',
+          isFree: false,
+        },
+        {
+          moduleId: mod2.id,
+          title: 'Vendimia y estacionalidad',
+          slug: 'vendimia-estacionalidad',
+          summary: '## Acerca de este video\n\nAcompaña el proceso de vendimia en un viñedo chileno. Aprende sobre la importancia del momento de cosecha y los factores que lo determinan.\n\n## Qué aprenderás\n\n- Cómo se determina el momento óptimo de cosecha\n- Vendimia manual vs. mecánica\n- El calendario vitivinícola del hemisferio sur\n- De la viña a la bodega: el recorrido de la uva',
+          order: 2,
+          videoDuration: 1200,
+          videoStatus: 'pending',
+          isFree: false,
+        },
+      ],
+    })
+
+    // Module 3: Cata de Vinos Chilenos
+    const mod3 = await prisma.courseModule.create({
+      data: {
+        courseId: onlineCourse.id,
+        title: 'Cata de Vinos Chilenos',
+        order: 2,
+      },
+    })
+
+    const mod3Lessons = await Promise.all([
+      prisma.lesson.create({
+        data: {
+          moduleId: mod3.id,
+          title: 'Técnica de cata aplicada',
+          slug: 'tecnica-cata-aplicada',
+          summary: '## Acerca de este video\n\nAprende la metodología profesional de cata paso a paso: vista, nariz y boca. Aplica estas técnicas a vinos chilenos representativos.\n\n## Qué aprenderás\n\n- Las tres fases de la cata profesional\n- Vocabulario técnico de cata\n- Cómo identificar defectos en el vino\n- Ejercicios prácticos para desarrollar tu paladar',
+          order: 0,
+          videoDuration: 960,
+          videoStatus: 'pending',
+          isFree: false,
+        },
+      }),
+      prisma.lesson.create({
+        data: {
+          moduleId: mod3.id,
+          title: 'Cata guiada: 6 vinos representativos',
+          slug: 'cata-guiada-6-vinos',
+          summary: '## Acerca de este video\n\nUna cata guiada virtual de 6 vinos chilenos seleccionados que representan la diversidad y calidad del país. Incluye notas de cata detalladas.\n\n## Qué aprenderás\n\n- Catar un Sauvignon Blanc de Casablanca\n- Catar un Carmenère del Valle de Rapel\n- Catar un Cabernet Sauvignon del Maipo\n- Comparar estilos y regiones en copa',
+          order: 1,
+          videoDuration: 1320,
+          videoStatus: 'pending',
+          isFree: false,
+        },
+      }),
+    ])
+
+    // Add sample materials to a lesson
+    await prisma.lessonMaterial.createMany({
+      data: [
+        {
+          lessonId: mod3Lessons[0].id,
+          name: 'Guía de Aromas del Vino (PDF)',
+          url: 'https://example.com/guia-aromas-vino.pdf',
+          type: 'document',
+          order: 0,
+        },
+        {
+          lessonId: mod3Lessons[1].id,
+          name: 'Fichas de Cata - 6 Vinos',
+          url: 'https://example.com/fichas-cata.pdf',
+          type: 'document',
+          order: 0,
+        },
+        {
+          lessonId: mod3Lessons[1].id,
+          name: 'Mapa de Regiones Vitivinícolas',
+          url: 'https://example.com/mapa-regiones.jpg',
+          type: 'image',
+          order: 1,
+        },
+      ],
+    })
+
+    // Module 4: Maridaje y Cultura
+    const mod4 = await prisma.courseModule.create({
+      data: {
+        courseId: onlineCourse.id,
+        title: 'Maridaje y Cultura',
+        order: 3,
+      },
+    })
+
+    await prisma.lesson.createMany({
+      data: [
+        {
+          moduleId: mod4.id,
+          title: 'Maridaje con cocina chilena',
+          slug: 'maridaje-cocina-chilena',
+          summary: '## Acerca de este video\n\nExplora las combinaciones perfectas entre vinos chilenos y la gastronomía local. Desde empanadas hasta curanto, descubre el maridaje ideal.\n\n## Qué aprenderás\n\n- Principios básicos del maridaje\n- Maridajes clásicos de la cocina chilena\n- Cómo el Carmenère complementa los sabores locales\n- Maridajes creativos y contemporáneos',
+          order: 0,
+          videoDuration: 780,
+          videoStatus: 'pending',
+          isFree: false,
+        },
+        {
+          moduleId: mod4.id,
+          title: 'Enoturismo y tendencias',
+          slug: 'enoturismo-tendencias',
+          summary: '## Acerca de este video\n\nDescubre las rutas del vino en Chile y las tendencias que están dando forma al futuro de la industria vitivinícola chilena.\n\n## Qué aprenderás\n\n- Las principales rutas del vino en Chile\n- Tendencias en vinificación: vinos naturales, naranjos y de autor\n- El movimiento de vinos de pequeñas bodegas\n- Cómo planificar tu viaje enoturístico por Chile',
+          order: 1,
+          videoDuration: 900,
+          videoStatus: 'pending',
+          isFree: false,
+        },
+      ],
+    })
+
+    console.log('✅ Created online course modules and lessons')
+  }
+
   console.log('🌱 Seeding complete!')
 }
 

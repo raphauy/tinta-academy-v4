@@ -600,3 +600,26 @@ export async function getEducatorByIdWithStats(
     totalRevenue,
   }
 }
+
+/**
+ * Get educator notification preferences by user ID
+ */
+export async function getEducatorNotifications(userId: string) {
+  return prisma.educator.findUnique({
+    where: { userId },
+    select: { notifyOnComments: true },
+  })
+}
+
+/**
+ * Update educator notification preferences
+ */
+export async function updateEducatorNotifications(
+  userId: string,
+  data: { notifyOnComments: boolean }
+) {
+  return prisma.educator.update({
+    where: { userId },
+    data,
+  })
+}
