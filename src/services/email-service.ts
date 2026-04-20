@@ -6,6 +6,7 @@ import PaymentRejectedEmail from '@/components/emails/payment-rejected'
 import WsetDataReminderEmail from '@/components/emails/wset-data-reminder'
 import AdminTransferNotificationEmail from '@/components/emails/admin-transfer-notification'
 import AdminPaymentNotificationEmail from '@/components/emails/admin-payment-notification'
+import AdminOrderCreatedNotificationEmail from '@/components/emails/admin-order-created-notification'
 import DynamicEmail from '@/components/emails/dynamic-email'
 import EducatorStatusReminderEmail from '@/components/emails/educator-status-reminder'
 import LessonCommentNotificationEmail from '@/components/emails/lesson-comment-notification'
@@ -441,6 +442,78 @@ export async function sendAdminPaymentNotificationEmail(
       to: adminEmail,
       subject: `Pago recibido - ${buyerName} - ${currency} ${amount}`,
       react: AdminPaymentNotificationEmail({
+        buyerName,
+        buyerEmail,
+        courseName,
+        amount,
+        currency,
+        paymentMethod,
+        orderNumber,
+        couponCode,
+        couponDiscount,
+        adminUrl,
+      }),
+    })
+  }
+}
+
+// =============================================================================
+// Admin Order Created Notification Email
+// =============================================================================
+
+interface SendAdminOrderCreatedNotificationEmailInput {
+  adminEmails: string[]
+  buyerName: string
+  buyerEmail: string
+  courseName: string
+  amount: string
+  currency: string
+  paymentMethod: string
+  orderNumber: string
+  couponCode?: string | null
+  couponDiscount?: number | null
+}
+
+export async function sendAdminOrderCreatedNotificationEmail(
+  input: SendAdminOrderCreatedNotificationEmailInput
+): Promise<void> {
+  const {
+    adminEmails,
+    buyerName,
+    buyerEmail,
+    courseName,
+    amount,
+    currency,
+    paymentMethod,
+    orderNumber,
+    couponCode,
+    couponDiscount,
+  } = input
+
+  const adminUrl = `${baseUrl}/admin/orders`
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\n========================================')
+    console.log('  ADMIN ORDER CREATED NOTIFICATION EMAIL')
+    console.log(`  To: ${adminEmails.join(', ')}`)
+    console.log(`  Buyer: ${buyerName} (${buyerEmail})`)
+    console.log(`  Course: ${courseName}`)
+    console.log(`  Amount: ${currency} ${amount}`)
+    console.log(`  Payment Method: ${paymentMethod}`)
+    console.log(`  Order: ${orderNumber}`)
+    console.log(`  Admin URL: ${adminUrl}`)
+    console.log('========================================\n')
+    return
+  }
+
+  if (!shouldSendEmail()) return
+
+  for (const adminEmail of adminEmails) {
+    await resend.emails.send({
+      from: fromEmail,
+      to: adminEmail,
+      subject: `Nueva orden creada - ${buyerName} - ${orderNumber}`,
+      react: AdminOrderCreatedNotificationEmail({
         buyerName,
         buyerEmail,
         courseName,

@@ -11,6 +11,7 @@ import {
   sendTransferInstructionsEmail,
   sendWsetDataReminderEmail,
   sendAdminPaymentNotificationEmail,
+  sendAdminOrderCreatedNotificationEmail,
 } from './email-service'
 import { generateExecutionsForNewStudent } from './workflow-execution-service'
 
@@ -121,6 +122,33 @@ function calculatePricing(
     finalPriceUYU,
     isFree: finalPriceUSD === 0 && finalPriceUYU === 0,
   }
+}
+
+async function notifyAdminsOrderCreated(
+  order: NonNullable<Awaited<ReturnType<typeof getOrderById>>>
+): Promise<void> {
+  const admins = await prisma.user.findMany({
+    where: { role: 'superadmin' },
+    select: { email: true },
+  })
+  const adminEmails = admins.map((a) => a.email)
+
+  if (adminEmails.length === 0) return
+
+  sendAdminOrderCreatedNotificationEmail({
+    adminEmails,
+    buyerName: order.user.name || 'Sin nombre',
+    buyerEmail: order.user.email,
+    courseName: order.course.title,
+    amount: order.finalAmount.toFixed(2),
+    currency: order.currency,
+    paymentMethod: paymentMethodLabels[order.paymentMethod] || order.paymentMethod,
+    orderNumber: order.orderNumber,
+    couponCode: order.coupon?.code || null,
+    couponDiscount: order.coupon?.discountPercent || null,
+  }).catch((error) => {
+    console.error('Error sending admin order created notification:', error)
+  })
 }
 
 // ============================================
@@ -321,6 +349,10 @@ export async function processCheckoutMercadoPago(
 
   const updatedOrder = await getOrderById(orderId)
 
+  if (updatedOrder) {
+    await notifyAdminsOrderCreated(updatedOrder)
+  }
+
   return {
     order: updatedOrder,
     redirectUrl: initPoint,
@@ -373,7 +405,13 @@ export async function processCheckoutBankTransfer(
     console.error('Error sending transfer instructions email:', error)
   })
 
-  return getOrderById(orderId)
+  const updatedOrder = await getOrderById(orderId)
+
+  if (updatedOrder) {
+    await notifyAdminsOrderCreated(updatedOrder)
+  }
+
+  return updatedOrder
 }
 
 /**
