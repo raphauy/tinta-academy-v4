@@ -321,20 +321,23 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
 
   // Calculate updated pricing when coupon changes
   const currentPricing = appliedCoupon?.valid
-    ? {
-        ...context.pricing,
-        discountPercent: appliedCoupon.discountPercent ?? 0,
-        discountAmountUSD: appliedCoupon.discountAmount ?? 0,
-        discountAmountUYU: Math.round(
-          (appliedCoupon.discountAmount ?? 0) * (context.pricing.originalPriceUYU / context.pricing.originalPriceUSD)
-        ),
-        finalPriceUSD: appliedCoupon.finalAmount ?? context.pricing.originalPriceUSD,
-        finalPriceUYU: Math.round(
-          (appliedCoupon.finalAmount ?? context.pricing.originalPriceUSD) *
-            (context.pricing.originalPriceUYU / context.pricing.originalPriceUSD)
-        ),
-        isFree: (appliedCoupon.finalAmount ?? 0) === 0,
-      }
+    ? (() => {
+        const discountPercent = appliedCoupon.discountPercent ?? 0
+        const { originalPriceUSD, originalPriceUYU } = context.pricing
+        const discountAmountUSD = Math.round((originalPriceUSD * discountPercent / 100) * 100) / 100
+        const discountAmountUYU = Math.round(originalPriceUYU * discountPercent / 100)
+        const finalPriceUSD = Math.max(0, Math.round((originalPriceUSD - discountAmountUSD) * 100) / 100)
+        const finalPriceUYU = Math.max(0, originalPriceUYU - discountAmountUYU)
+        return {
+          ...context.pricing,
+          discountPercent,
+          discountAmountUSD,
+          discountAmountUYU,
+          finalPriceUSD,
+          finalPriceUYU,
+          isFree: finalPriceUSD === 0 && finalPriceUYU === 0,
+        }
+      })()
     : context.pricing
 
   // Determine currency for bank transfer based on available prices
