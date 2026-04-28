@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { subscribe } from '@/services/newsletter-service'
 
-const emailSchema = z.string().email('Invalid email format')
+const emailSchema = z.string().trim().toLowerCase().email('Invalid email format')
 
 export async function subscribeToNewsletter(email: string) {
   try {

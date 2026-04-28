@@ -3,9 +3,13 @@ import { Role } from '@prisma/client'
 import { z } from 'zod'
 
 export const createUserSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().toLowerCase().email(),
   name: z.string().optional(),
 })
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
 
 export type CreateUserInput = z.infer<typeof createUserSchema>
 
@@ -26,7 +30,7 @@ function normalizeRole(role: string | null): string {
 
 export async function getUserByEmail(email: string): Promise<UserWithStringRole | null> {
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizeEmail(email) },
   })
 
   if (!user) return null
@@ -52,7 +56,7 @@ export async function getUserById(id: string): Promise<UserWithStringRole | null
 
 export async function getUserForAuth(email: string): Promise<UserWithStringRole | null> {
   const user = await prisma.user.findUnique({
-    where: { email },
+    where: { email: normalizeEmail(email) },
     select: {
       id: true,
       email: true,
@@ -90,13 +94,14 @@ export async function createUser(data: CreateUserInput): Promise<UserWithStringR
 }
 
 export async function getOrCreateUser(email: string): Promise<UserWithStringRole> {
-  const existingUser = await getUserByEmail(email)
+  const normalized = normalizeEmail(email)
+  const existingUser = await getUserByEmail(normalized)
 
   if (existingUser) {
     return existingUser
   }
 
-  return createUser({ email })
+  return createUser({ email: normalized })
 }
 
 export interface UpdateUserData {
@@ -108,7 +113,7 @@ export interface UpdateUserData {
 export async function updateUser(id: string, data: UpdateUserData) {
   const updateData: Record<string, unknown> = {}
 
-  if (data.email !== undefined) updateData.email = data.email
+  if (data.email !== undefined) updateData.email = normalizeEmail(data.email)
   if (data.name !== undefined) updateData.name = data.name
   if (data.image !== undefined) updateData.image = data.image
 

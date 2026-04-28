@@ -6,7 +6,7 @@ import { generateOtp, createOtpToken } from '@/services/auth-service'
 import { sendOtpEmail } from '@/services/email-service'
 import { z } from 'zod'
 
-const emailSchema = z.string().email('Email inválido')
+const emailSchema = z.string().trim().toLowerCase().email('Email inválido')
 
 type ActionResult = {
   success: boolean
