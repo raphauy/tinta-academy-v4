@@ -29,9 +29,17 @@ function normalizeRole(role: string | null): string {
 }
 
 export async function getUserByEmail(email: string): Promise<UserWithStringRole | null> {
-  const user = await prisma.user.findUnique({
-    where: { email: normalizeEmail(email) },
+  const normalized = normalizeEmail(email)
+  let user = await prisma.user.findUnique({
+    where: { email: normalized },
   })
+
+  if (!user) {
+    // Fallback for legacy rows stored with mixed-case email (pre-normalization)
+    user = await prisma.user.findFirst({
+      where: { email: { equals: normalized, mode: 'insensitive' } },
+    })
+  }
 
   if (!user) return null
 
@@ -55,19 +63,29 @@ export async function getUserById(id: string): Promise<UserWithStringRole | null
 }
 
 export async function getUserForAuth(email: string): Promise<UserWithStringRole | null> {
-  const user = await prisma.user.findUnique({
-    where: { email: normalizeEmail(email) },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      image: true,
-      role: true,
-      isActive: true,
-      createdAt: true,
-      updatedAt: true,
-    },
+  const normalized = normalizeEmail(email)
+  const select = {
+    id: true,
+    email: true,
+    name: true,
+    image: true,
+    role: true,
+    isActive: true,
+    createdAt: true,
+    updatedAt: true,
+  } as const
+
+  let user = await prisma.user.findUnique({
+    where: { email: normalized },
+    select,
   })
+
+  if (!user) {
+    user = await prisma.user.findFirst({
+      where: { email: { equals: normalized, mode: 'insensitive' } },
+      select,
+    })
+  }
 
   if (!user) return null
 

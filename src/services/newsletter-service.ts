@@ -2,17 +2,28 @@ import { prisma } from '@/lib/prisma'
 
 export async function subscribe(email: string) {
   const normalized = email.trim().toLowerCase()
-  const subscription = await prisma.newsletterSubscription.upsert({
-    where: { email: normalized },
-    update: {
-      isActive: true,
-      subscribedAt: new Date()
-    },
-    create: {
-      email: normalized,
-      isActive: true
-    }
+
+  // Match case-insensitively to avoid creating duplicates when a legacy row
+  // stored the email with mixed casing.
+  const existing = await prisma.newsletterSubscription.findFirst({
+    where: { email: { equals: normalized, mode: 'insensitive' } },
   })
 
-  return subscription
+  if (existing) {
+    return prisma.newsletterSubscription.update({
+      where: { id: existing.id },
+      data: {
+        email: normalized,
+        isActive: true,
+        subscribedAt: new Date(),
+      },
+    })
+  }
+
+  return prisma.newsletterSubscription.create({
+    data: {
+      email: normalized,
+      isActive: true,
+    },
+  })
 }
