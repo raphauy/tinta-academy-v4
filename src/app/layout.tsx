@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from '@/components/ui/sonner'
 import { SessionProvider } from '@/components/providers/session-provider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
+import { MetaPixel } from '@/components/analytics/meta-pixel'
 import './globals.css'
 
 const geistSans = Geist({
@@ -44,6 +45,7 @@ export default function RootLayout({
           </SessionProvider>
         </ThemeProvider>
         <Analytics />
+        <MetaPixel />
       </body>
     </html>
   )
