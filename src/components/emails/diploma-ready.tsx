@@ -145,6 +145,7 @@ const styles = {
     fontWeight: '700',
     lineHeight: '24px',
     margin: '0',
+    textAlign: 'center' as const,
   },
   footer: {
     borderTop: `1px solid ${emailTheme.colors.border}`,
