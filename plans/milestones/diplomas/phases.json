@@ -1,0 +1,35 @@
+{
+  "milestone": "diplomas",
+  "prdPath": "../diplomas.prd.md",
+  "createdAt": "2026-05-22",
+  "phases": [
+    {
+      "id": 1,
+      "name": "Fundamentos y Servicios",
+      "status": "completed",
+      "descriptionFile": "fase-1.md",
+      "tasksFile": "fase-1.tasks.json"
+    },
+    {
+      "id": 2,
+      "name": "Editor de Plantilla",
+      "status": "completed",
+      "descriptionFile": "fase-2.md",
+      "tasksFile": "fase-2.tasks.json"
+    },
+    {
+      "id": 3,
+      "name": "Flujo de Emisión Completo",
+      "status": "completed",
+      "descriptionFile": "fase-3.md",
+      "tasksFile": "fase-3.tasks.json"
+    },
+    {
+      "id": 4,
+      "name": "Panel Student y Operaciones Finas",
+      "status": "pending",
+      "descriptionFile": "fase-4.md",
+      "tasksFile": "fase-4.tasks.json"
+    }
+  ]
+}

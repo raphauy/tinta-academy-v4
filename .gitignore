@@ -43,6 +43,9 @@ next-env.d.ts
 dev.log
 /src/generated/prisma
 
+# scratch outputs locales (test-diploma-render.ts, etc.)
+/tmp/
+
 # audit files (internal use only)
 /plans/audit/
 

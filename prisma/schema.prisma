@@ -83,6 +83,9 @@ model Student {
   // Online course relations
   lessonProgress LessonProgress[]
 
+  // Diploma relations
+  diplomaIssues DiplomaIssue[]
+
   @@index([userId])
 }
 
@@ -176,6 +179,10 @@ model Course {
 
   // Online course relations
   modules CourseModule[]
+
+  // Diploma relations
+  diplomaTemplate DiplomaTemplate?
+  diplomaIssues   DiplomaIssue[]
 
   @@index([slug])
   @@index([educatorId])
@@ -340,6 +347,9 @@ model Enrollment {
 
   // Email communications relations
   workflowExecutions WorkflowExecution[]
+
+  // Diploma relations
+  diplomaIssues DiplomaIssue[]
 
   @@unique([studentId, courseId])
   @@index([studentId])
@@ -815,4 +825,115 @@ model AudienceFilter {
 
   @@index([educatorId])
   @@index([isPublic])
+}
+
+// ============================================
+// DIPLOMAS
+// ============================================
+
+model DiplomaTemplate {
+  id              String   @id @default(cuid())
+  courseId        String   @unique
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Imagen base (Vercel Blob)
+  baseImageUrl    String
+  baseImageWidth  Int
+  baseImageHeight Int
+
+  // Configuración del nombre (siempre activo)
+  nameFontFamily String        @default("Geist")
+  nameFontWeight Int           @default(700)
+  nameFontSize   Float         // % del alto de la imagen base
+  nameColor      String        @default("#0A0A0A")
+  nameX          Float         // % horizontal (0-100)
+  nameY          Float         // % vertical (0-100)
+  nameMaxWidth   Float         @default(50)
+  nameAnchor     DiplomaAnchor @default(left)
+
+  // Configuración de la fecha (opcional)
+  dateEnabled     Boolean         @default(false)
+  dateFontFamily  String?
+  dateFontWeight  Int?
+  dateFontSize    Float?
+  dateColor       String?
+  dateX           Float?
+  dateY           Float?
+  dateMaxWidth    Float?
+  dateAnchor      DiplomaAnchor?
+  dateFormat      String?         @default("d 'de' MMMM 'de' yyyy")
+  dateMode        DiplomaDateMode @default(last_class)
+  dateCustomValue DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  issues DiplomaIssue[]
+
+  @@index([courseId])
+}
+
+model DiplomaIssue {
+  id String @id @default(cuid())
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  studentId String
+  student   Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  enrollmentId String
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  templateId String
+  template   DiplomaTemplate @relation(fields: [templateId], references: [id], onDelete: Restrict)
+
+  // Snapshot congelado al generar
+  studentName String
+  issuedDate  DateTime
+  emailTo     String
+
+  // Assets en Vercel Blob
+  pngUrl String?
+  pdfUrl String?
+
+  // Estado
+  status       DiplomaStatus @default(pending)
+  errorMessage String?
+
+  // Tracking
+  resendId    String?
+  generatedAt DateTime?
+  sentAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([courseId, studentId])
+  @@index([courseId])
+  @@index([studentId])
+  @@index([enrollmentId])
+  @@index([templateId])
+  @@index([status])
+  @@index([resendId])
+}
+
+enum DiplomaStatus {
+  pending
+  generating
+  generated
+  sending
+  sent
+  failed
+}
+
+enum DiplomaDateMode {
+  last_class
+  custom
+}
+
+enum DiplomaAnchor {
+  left
+  center
+  right
 }

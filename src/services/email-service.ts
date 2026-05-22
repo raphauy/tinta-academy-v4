@@ -10,6 +10,7 @@ import AdminOrderCreatedNotificationEmail from '@/components/emails/admin-order-
 import DynamicEmail from '@/components/emails/dynamic-email'
 import EducatorStatusReminderEmail from '@/components/emails/educator-status-reminder'
 import LessonCommentNotificationEmail from '@/components/emails/lesson-comment-notification'
+import DiplomaReadyEmail from '@/components/emails/diploma-ready'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const fromEmail = process.env.EMAIL_FROM || 'Tinta Academy <academy@tinta.wine>'
@@ -670,6 +671,75 @@ export async function sendDynamicEmail(
       return { success: false, error: result.error.message }
     }
 
+    return { success: true, resendId: result.data?.id }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return { success: false, error: errorMessage }
+  }
+}
+
+// =============================================================================
+// Diploma Ready Email
+// =============================================================================
+
+interface SendDiplomaEmailInput {
+  to: string
+  studentName: string
+  courseName: string
+  pngUrl: string
+  pdfUrl: string
+  courseId: string
+}
+
+export interface SendDiplomaEmailResult {
+  success: boolean
+  resendId?: string
+  error?: string
+}
+
+export async function sendDiplomaEmail(
+  input: SendDiplomaEmailInput
+): Promise<SendDiplomaEmailResult> {
+  const { to, studentName, courseName, pngUrl, pdfUrl, courseId } = input
+
+  const courseUrl = `${baseUrl}/student/courses/${courseId}`
+  const subject = `¡Tu diploma de ${courseName} está listo!`
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('\n========================================')
+    console.log('  DIPLOMA READY EMAIL')
+    console.log(`  To: ${to}`)
+    console.log(`  Student: ${studentName}`)
+    console.log(`  Course: ${courseName}`)
+    console.log(`  PNG: ${pngUrl}`)
+    console.log(`  PDF: ${pdfUrl}`)
+    console.log(`  Course URL: ${courseUrl}`)
+    console.log('========================================\n')
+    return { success: true, resendId: `dev-mock-${Date.now()}` }
+  }
+
+  if (!shouldSendEmail()) {
+    return { success: false, error: 'Email sending is disabled' }
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: fromEmail,
+      to,
+      subject,
+      react: DiplomaReadyEmail({
+        studentName,
+        courseName,
+        pngUrl,
+        pdfUrl,
+        courseUrl,
+      }),
+      attachments: [{ filename: 'diploma.pdf', path: pdfUrl }],
+    })
+
+    if (result.error) {
+      return { success: false, error: result.error.message }
+    }
     return { success: true, resendId: result.data?.id }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
