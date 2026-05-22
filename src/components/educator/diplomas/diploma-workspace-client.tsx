@@ -163,6 +163,10 @@ export function DiplomaWorkspaceClient({
   // Sección "Emitir diplomas" (común a idle y a la zona inferior de otros estados)
   // ─────────────────────────────────────────────
   const renderEmissionBlock = () => {
+    // Sin plantilla guardada no podemos emitir: el botón disparaba la action
+    // y fallaba en `requireTemplate`, dejando un error silencioso para el
+    // educator que aún estaba configurando.
+    if (!initialTemplate) return null
     const retries = failedInBatch.length
     const total = enrollmentsPendingCount + retries
     if (total === 0) return null
