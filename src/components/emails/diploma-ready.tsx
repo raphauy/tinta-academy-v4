@@ -1,6 +1,5 @@
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
@@ -19,7 +18,6 @@ interface DiplomaReadyEmailProps {
   studentName?: string
   courseName?: string
   pngUrl?: string
-  pdfUrl?: string
   courseUrl?: string
 }
 
@@ -27,7 +25,6 @@ export default function DiplomaReadyEmail({
   studentName = 'Lorenzo Musetti',
   courseName = 'Uruguay en vinos',
   pngUrl = 'https://placehold.co/1200x800.png',
-  pdfUrl = 'https://example.com/diploma.pdf',
   courseUrl = 'https://academy.tinta.wine/student',
 }: DiplomaReadyEmailProps) {
   return (
@@ -60,14 +57,8 @@ export default function DiplomaReadyEmail({
               />
             </Section>
 
-            <Section style={styles.buttonContainer}>
-              <Button style={styles.button} href={pdfUrl}>
-                Descargar PDF
-              </Button>
-            </Section>
-
             <Text style={styles.smallText}>
-              También podés verlo y descargarlo desde{' '}
+              Te lo adjuntamos en PDF y también podés verlo desde{' '}
               <Link href={courseUrl} style={styles.link}>
                 tu panel de estudiante
               </Link>
@@ -132,20 +123,6 @@ const styles = {
     borderRadius: '6px',
     maxWidth: '100%',
     height: 'auto',
-  },
-  buttonContainer: {
-    textAlign: 'center' as const,
-    margin: '24px 0',
-  },
-  button: {
-    backgroundColor: emailTheme.colors.primary,
-    borderRadius: emailTheme.borderRadius,
-    color: emailTheme.colors.primaryForeground,
-    display: 'inline-block',
-    fontSize: '14px',
-    fontWeight: '600',
-    padding: '12px 24px',
-    textDecoration: 'none',
   },
   smallText: {
     color: emailTheme.colors.mutedForeground,

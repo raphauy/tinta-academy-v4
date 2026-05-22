@@ -11,6 +11,7 @@ import DynamicEmail from '@/components/emails/dynamic-email'
 import EducatorStatusReminderEmail from '@/components/emails/educator-status-reminder'
 import LessonCommentNotificationEmail from '@/components/emails/lesson-comment-notification'
 import DiplomaReadyEmail from '@/components/emails/diploma-ready'
+import { generateSlug } from '@/lib/utils'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const fromEmail = process.env.EMAIL_FROM || 'Tinta Academy <academy@tinta.wine>'
@@ -704,6 +705,8 @@ export async function sendDiplomaEmail(
 
   const courseUrl = `${baseUrl}/student/courses/${courseId}`
   const subject = `¡Tu diploma de ${courseName} está listo!`
+  const courseSlug = generateSlug(courseName) || 'curso'
+  const attachmentFilename = `diploma-${courseSlug}.pdf`
 
   if (process.env.NODE_ENV === 'development') {
     console.log('\n========================================')
@@ -731,10 +734,9 @@ export async function sendDiplomaEmail(
         studentName,
         courseName,
         pngUrl,
-        pdfUrl,
         courseUrl,
       }),
-      attachments: [{ filename: 'diploma.pdf', path: pdfUrl }],
+      attachments: [{ filename: attachmentFilename, path: pdfUrl }],
     })
 
     if (result.error) {
