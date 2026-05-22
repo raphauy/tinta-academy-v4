@@ -213,8 +213,9 @@ model Enrollment {
 
 ### Snapshot e inmutabilidad
 
-- `DiplomaIssue.studentName` y `DiplomaIssue.issuedDate` se congelan al generar. Si el estudiante cambia su nombre después, el diploma ya emitido no se actualiza automáticamente.
-- Si el educator edita la `DiplomaTemplate` después de emisiones, los assets en Blob **no se regeneran**. Aparece botón explícito **"Regenerar diplomas"** en la lista (regenera assets para todos los issues del curso, opcionalmente reenvía).
+- `DiplomaIssue.studentName` y `DiplomaIssue.issuedDate` se snapshotean al generar el diploma por primera vez.
+- Cualquier **regeneración explícita** posterior (acción "Reenviar" por fila, "Regenerar diplomas" global, o "Reintentar fallidos") **re-resuelve** `studentName` (regla del glosario) y `issuedDate` (`resolveDiplomaDate`) desde Student/User/Course en ese momento, y actualiza los valores en `DiplomaIssue`. El email ya entregado no se modifica retroactivamente.
+- Si el educator edita la `DiplomaTemplate` después de emisiones, los assets en Blob **no se regeneran** automáticamente. Aparece botón explícito **"Regenerar diplomas"** en la lista (regenera assets para todos los issues del curso, opcionalmente reenvía).
 
 ### Idempotencia del envío
 

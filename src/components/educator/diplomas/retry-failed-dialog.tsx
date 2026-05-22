@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Loader2, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { generateDiplomasAction } from '@/app/educator/courses/[id]/diploma/actions'
+import { retryFailedDiplomasAction } from '@/app/educator/courses/[id]/diploma/actions'
 import type { CourseDiplomaProgress } from '@/services/diploma-service'
 
 async function fetchProgress(
@@ -34,14 +34,6 @@ async function fetchProgress(
 
 const POLL_INTERVAL_MS = 2000
 
-type Phase = 'confirm' | 'progress'
-
-type Props = {
-  courseId: string
-  newCount: number
-  retryCount: number
-}
-
 const EMPTY_PROGRESS: CourseDiplomaProgress = {
   pending: 0,
   generating: 0,
@@ -52,18 +44,19 @@ const EMPTY_PROGRESS: CourseDiplomaProgress = {
   total: 0,
 }
 
-export function GenerateDiplomasDialog({
-  courseId,
-  newCount,
-  retryCount,
-}: Props) {
+type Phase = 'confirm' | 'progress'
+
+type Props = {
+  courseId: string
+  failedCount: number
+}
+
+export function RetryFailedDialog({ courseId, failedCount }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [phase, setPhase] = useState<Phase>('confirm')
   const [progress, setProgress] = useState<CourseDiplomaProgress>(EMPTY_PROGRESS)
   const stoppedRef = useRef(false)
-
-  const total = newCount + retryCount
 
   const closeAndReset = useCallback(() => {
     stoppedRef.current = true
@@ -80,32 +73,21 @@ export function GenerateDiplomasDialog({
     }
   }, [])
 
-  const handleGenerate = () => {
+  const handleRetry = () => {
     setPhase('progress')
     stoppedRef.current = false
+    setProgress({ ...EMPTY_PROGRESS, failed: failedCount, total: failedCount })
 
-    // Pre-cargar contadores con el total conocido para evitar el salto
-    // "0 → total" mientras llega el primer poll.
-    setProgress({
-      pending: total,
-      generating: 0,
-      generated: 0,
-      sending: 0,
-      sent: 0,
-      failed: 0,
-      total,
-    })
-
-    // La action es la fuente de verdad para "ya terminó". El polling solo
-    // refleja progreso intermedio en la barra. Evitamos cerrar el modal por
-    // condiciones derivadas del polling, que pueden dispararse antes de tiempo
-    // en flujos retry-only (todos los issues pre-existentes en `failed`).
     let actionDone = false
     let actionError: string | null = null
-    const actionPromise = generateDiplomasAction(courseId)
+    let actionSummary: string | null = null
+    const actionPromise = retryFailedDiplomasAction(courseId)
       .then((result) => {
         actionDone = true
         if (!result.success) actionError = result.error
+        else if (result.data) {
+          actionSummary = `${result.data.succeeded} OK · ${result.data.failed} con error`
+        }
       })
       .catch((err) => {
         actionDone = true
@@ -121,6 +103,8 @@ export function GenerateDiplomasDialog({
       if (actionDone) {
         stoppedRef.current = true
         if (actionError) toast.error(actionError)
+        else if (actionSummary) toast.success(actionSummary)
+        else toast.success('Reintento completado')
         router.refresh()
         setOpen(false)
         setPhase('confirm')
@@ -130,19 +114,15 @@ export function GenerateDiplomasDialog({
       setTimeout(tick, POLL_INTERVAL_MS)
     }
 
-    // Pequeño delay inicial para que la action alcance a crear los issues.
     setTimeout(tick, 600)
-    // Aseguramos que el modal cierre incluso si el polling falla siempre.
     void actionPromise
   }
 
-  // Denominador = total esperado del batch (sabido desde props).
-  // Numerador = solo éxitos puros (`generated`). NO sumamos `failed` porque
-  // si hay issues `failed` pre-existentes (p.ej. retries de un lote anterior)
-  // arrancarían el bar al 100% y bajaría al irse a `generating`. Si algunas
-  // fallan en el render, el bar queda en <100% — semánticamente correcto.
-  const denominator = Math.max(total, 1)
-  const completed = progress.generated
+  const denominator = Math.max(failedCount, 1)
+  // Para "reintentar fallidos" lo más fiel es contar cuántos quedan en `failed`
+  // todavía: bajan a medida que se procesan.
+  const remaining = Math.min(progress.failed, denominator)
+  const completed = denominator - remaining
   const percent =
     denominator > 0
       ? Math.min(100, Math.round((completed / denominator) * 100))
@@ -152,16 +132,19 @@ export function GenerateDiplomasDialog({
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        // Bloquear cierre mientras está procesando.
         if (phase === 'progress') return
         if (next) setOpen(true)
         else closeAndReset()
       }}
     >
       <DialogTrigger asChild>
-        <Button disabled={total === 0}>
-          <Sparkles className="mr-2 h-4 w-4" />
-          Generar diplomas para revisar
+        <Button
+          variant="outline"
+          disabled={failedCount === 0}
+          className="cursor-pointer disabled:cursor-not-allowed"
+        >
+          <RotateCcw className="mr-2 h-4 w-4" />
+          Reintentar fallidos ({failedCount})
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -177,27 +160,27 @@ export function GenerateDiplomasDialog({
           <>
             <DialogHeader>
               <DialogTitle>
-                Generar {total} diploma{total === 1 ? '' : 's'}
+                Reintentar {failedCount} emisión
+                {failedCount === 1 ? '' : 'es'} fallida
+                {failedCount === 1 ? '' : 's'}
               </DialogTitle>
               <DialogDescription>
-                Vamos a preparar el diploma de cada estudiante. Puede tardar
-                entre {Math.max(5, Math.round(total * 1.5))} y{' '}
-                {Math.max(10, total * 3)} segundos. Después vas a poder
-                revisarlos antes de enviarlos por email.
-                {retryCount > 0 && (
-                  <span className="mt-2 block text-foreground">
-                    {newCount} nuev{newCount === 1 ? 'o' : 'os'} ·{' '}
-                    {retryCount} reintento{retryCount === 1 ? '' : 's'} de
-                    fallidos
-                  </span>
-                )}
+                Vamos a regenerar cada diploma fallido y enviarlo por email. Si
+                el problema fue temporal (un error de red, un email rechazado
+                puntualmente), debería quedar en estado enviado.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <Button variant="ghost" onClick={closeAndReset}>
+              <Button
+                variant="ghost"
+                onClick={closeAndReset}
+                className="cursor-pointer"
+              >
                 Cancelar
               </Button>
-              <Button onClick={handleGenerate}>Generar</Button>
+              <Button onClick={handleRetry} className="cursor-pointer">
+                Reintentar
+              </Button>
             </DialogFooter>
           </>
         ) : (
@@ -205,10 +188,10 @@ export function GenerateDiplomasDialog({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                Generando diplomas…
+                Reintentando…
               </DialogTitle>
               <DialogDescription>
-                Estamos preparando cada diploma. Te aviso cuando termine.
+                Procesando cada diploma fallido. Te aviso cuando termine.
               </DialogDescription>
             </DialogHeader>
 
@@ -232,4 +215,3 @@ export function GenerateDiplomasDialog({
     </Dialog>
   )
 }
-

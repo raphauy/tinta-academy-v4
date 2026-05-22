@@ -14,10 +14,19 @@ import { Card, CardContent } from '@/components/ui/card'
 
 type Props = {
   issues: DiplomaIssue[]
+  /**
+   * Si es true, muestra cualquier issue con asset PNG disponible (incluye
+   * `sent` y `failed` con asset). Si es false (default), solo `generated`.
+   */
+  includeAllWithAssets?: boolean
 }
 
-export function DiplomaGrid({ issues }: Props) {
-  const visible = issues.filter((i) => i.status === 'generated' && i.pngUrl)
+export function DiplomaGrid({ issues, includeAllWithAssets = false }: Props) {
+  const visible = issues.filter((i) =>
+    includeAllWithAssets
+      ? !!i.pngUrl
+      : i.status === 'generated' && !!i.pngUrl
+  )
   const [zoomedIndex, setZoomedIndex] = useState<number | null>(null)
 
   const close = useCallback(() => setZoomedIndex(null), [])

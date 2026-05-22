@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Loader2, Sparkles } from 'lucide-react'
+import { Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -14,7 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { generateDiplomasAction } from '@/app/educator/courses/[id]/diploma/actions'
+import { regenerateDiplomasAction } from '@/app/educator/courses/[id]/diploma/actions'
 import type { CourseDiplomaProgress } from '@/services/diploma-service'
 
 async function fetchProgress(
@@ -34,14 +36,6 @@ async function fetchProgress(
 
 const POLL_INTERVAL_MS = 2000
 
-type Phase = 'confirm' | 'progress'
-
-type Props = {
-  courseId: string
-  newCount: number
-  retryCount: number
-}
-
 const EMPTY_PROGRESS: CourseDiplomaProgress = {
   pending: 0,
   generating: 0,
@@ -52,23 +46,26 @@ const EMPTY_PROGRESS: CourseDiplomaProgress = {
   total: 0,
 }
 
-export function GenerateDiplomasDialog({
-  courseId,
-  newCount,
-  retryCount,
-}: Props) {
+type Phase = 'confirm' | 'progress'
+
+type Props = {
+  courseId: string
+  totalIssues: number
+}
+
+export function RegenerateDiplomasDialog({ courseId, totalIssues }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [phase, setPhase] = useState<Phase>('confirm')
+  const [resendEmails, setResendEmails] = useState(false)
   const [progress, setProgress] = useState<CourseDiplomaProgress>(EMPTY_PROGRESS)
   const stoppedRef = useRef(false)
-
-  const total = newCount + retryCount
 
   const closeAndReset = useCallback(() => {
     stoppedRef.current = true
     setOpen(false)
     setPhase('confirm')
+    setResendEmails(false)
     setProgress(EMPTY_PROGRESS)
   }, [])
 
@@ -80,32 +77,23 @@ export function GenerateDiplomasDialog({
     }
   }, [])
 
-  const handleGenerate = () => {
+  const handleRegenerate = () => {
     setPhase('progress')
     stoppedRef.current = false
+    setProgress({ ...EMPTY_PROGRESS, total: totalIssues })
 
-    // Pre-cargar contadores con el total conocido para evitar el salto
-    // "0 → total" mientras llega el primer poll.
-    setProgress({
-      pending: total,
-      generating: 0,
-      generated: 0,
-      sending: 0,
-      sent: 0,
-      failed: 0,
-      total,
-    })
-
-    // La action es la fuente de verdad para "ya terminó". El polling solo
-    // refleja progreso intermedio en la barra. Evitamos cerrar el modal por
-    // condiciones derivadas del polling, que pueden dispararse antes de tiempo
-    // en flujos retry-only (todos los issues pre-existentes en `failed`).
     let actionDone = false
     let actionError: string | null = null
-    const actionPromise = generateDiplomasAction(courseId)
+    const actionPromise = regenerateDiplomasAction(courseId, { resendEmails })
       .then((result) => {
         actionDone = true
         if (!result.success) actionError = result.error
+        else if (result.data) {
+          actionError =
+            result.data.failed > 0
+              ? `${result.data.succeeded} OK · ${result.data.failed} con error`
+              : null
+        }
       })
       .catch((err) => {
         actionDone = true
@@ -121,28 +109,32 @@ export function GenerateDiplomasDialog({
       if (actionDone) {
         stoppedRef.current = true
         if (actionError) toast.error(actionError)
+        else
+          toast.success(
+            resendEmails
+              ? 'Diplomas regenerados y reenviados'
+              : 'Diplomas regenerados'
+          )
         router.refresh()
         setOpen(false)
         setPhase('confirm')
+        setResendEmails(false)
         setProgress(EMPTY_PROGRESS)
         return
       }
       setTimeout(tick, POLL_INTERVAL_MS)
     }
 
-    // Pequeño delay inicial para que la action alcance a crear los issues.
     setTimeout(tick, 600)
-    // Aseguramos que el modal cierre incluso si el polling falla siempre.
     void actionPromise
   }
 
-  // Denominador = total esperado del batch (sabido desde props).
-  // Numerador = solo éxitos puros (`generated`). NO sumamos `failed` porque
-  // si hay issues `failed` pre-existentes (p.ej. retries de un lote anterior)
-  // arrancarían el bar al 100% y bajaría al irse a `generating`. Si algunas
-  // fallan en el render, el bar queda en <100% — semánticamente correcto.
-  const denominator = Math.max(total, 1)
-  const completed = progress.generated
+  // Para la barra usamos el conteo de "no-pending/no-generating" como completados.
+  const denominator = Math.max(totalIssues, progress.total)
+  const completed =
+    denominator > 0
+      ? denominator - progress.pending - progress.generating - progress.sending
+      : 0
   const percent =
     denominator > 0
       ? Math.min(100, Math.round((completed / denominator) * 100))
@@ -152,16 +144,19 @@ export function GenerateDiplomasDialog({
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        // Bloquear cierre mientras está procesando.
         if (phase === 'progress') return
         if (next) setOpen(true)
         else closeAndReset()
       }}
     >
       <DialogTrigger asChild>
-        <Button disabled={total === 0}>
-          <Sparkles className="mr-2 h-4 w-4" />
-          Generar diplomas para revisar
+        <Button
+          variant="outline"
+          disabled={totalIssues === 0}
+          className="cursor-pointer disabled:cursor-not-allowed"
+        >
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Regenerar diplomas
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -177,27 +172,60 @@ export function GenerateDiplomasDialog({
           <>
             <DialogHeader>
               <DialogTitle>
-                Generar {total} diploma{total === 1 ? '' : 's'}
+                Regenerar {totalIssues} diploma
+                {totalIssues === 1 ? '' : 's'}
               </DialogTitle>
               <DialogDescription>
-                Vamos a preparar el diploma de cada estudiante. Puede tardar
-                entre {Math.max(5, Math.round(total * 1.5))} y{' '}
-                {Math.max(10, total * 3)} segundos. Después vas a poder
-                revisarlos antes de enviarlos por email.
-                {retryCount > 0 && (
-                  <span className="mt-2 block text-foreground">
-                    {newCount} nuev{newCount === 1 ? 'o' : 'os'} ·{' '}
-                    {retryCount} reintento{retryCount === 1 ? '' : 's'} de
-                    fallidos
-                  </span>
-                )}
+                Vamos a regenerar los assets de todas las emisiones usando la
+                plantilla actual y refrescando el nombre, la fecha y el email
+                desde los datos actuales del estudiante y del curso.
+                <span className="mt-2 block">
+                  Los emails ya enviados no se reenvían automáticamente: los
+                  estudiantes pueden seguir descargando el diploma actualizado
+                  desde su panel.
+                </span>
+                <span className="mt-2 block">
+                  Si algún estudiante cambió su email después del primer
+                  envío, los próximos reenvíos van a usar el email nuevo.
+                </span>
               </DialogDescription>
             </DialogHeader>
+
+            <div className="flex items-start gap-3 rounded-md border p-3">
+              <Checkbox
+                id="resend-emails"
+                checked={resendEmails}
+                onCheckedChange={(checked) =>
+                  setResendEmails(checked === true)
+                }
+                className="cursor-pointer"
+              />
+              <Label
+                htmlFor="resend-emails"
+                className="flex flex-col gap-1 cursor-pointer"
+              >
+                <span className="font-medium">También reenviar emails</span>
+                <span className="text-xs text-muted-foreground">
+                  Enviar de nuevo el email del diploma a todos los estudiantes,
+                  incluyendo a los que ya lo habían recibido.
+                </span>
+              </Label>
+            </div>
+
             <DialogFooter>
-              <Button variant="ghost" onClick={closeAndReset}>
+              <Button
+                variant="ghost"
+                onClick={closeAndReset}
+                className="cursor-pointer"
+              >
                 Cancelar
               </Button>
-              <Button onClick={handleGenerate}>Generar</Button>
+              <Button
+                onClick={handleRegenerate}
+                className="cursor-pointer"
+              >
+                {resendEmails ? 'Regenerar y reenviar' : 'Regenerar'}
+              </Button>
             </DialogFooter>
           </>
         ) : (
@@ -205,10 +233,12 @@ export function GenerateDiplomasDialog({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                Generando diplomas…
+                {resendEmails
+                  ? 'Regenerando y reenviando…'
+                  : 'Regenerando diplomas…'}
               </DialogTitle>
               <DialogDescription>
-                Estamos preparando cada diploma. Te aviso cuando termine.
+                Estamos procesando cada diploma. Te aviso cuando termine.
               </DialogDescription>
             </DialogHeader>
 
@@ -232,4 +262,3 @@ export function GenerateDiplomasDialog({
     </Dialog>
   )
 }
-

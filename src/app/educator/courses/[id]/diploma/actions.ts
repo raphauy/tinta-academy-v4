@@ -18,10 +18,14 @@ import {
   discardGeneratedBatch,
   generateBatchForCourse,
   getCourseProgress,
+  regenerateBatchForCourse,
+  resendDiploma,
+  retryFailedForCourse,
   sendBatchForCourse,
   type BatchResult,
   type CourseDiplomaProgress,
 } from '@/services/diploma-service'
+import { prisma } from '@/lib/prisma'
 import { renderDiploma } from '@/services/diploma-render-service'
 import { sendDiplomaEmail } from '@/services/email-service'
 import {
@@ -331,6 +335,104 @@ export async function deleteDiplomaTemplateAction(
         ? error.message
         : 'Error al eliminar la plantilla'
     console.error('[diploma] deleteDiplomaTemplateAction error:', error)
+    return { success: false, error: message }
+  }
+}
+
+// ============================================
+// FASE 4 — reenvío, regeneración, reintento
+// ============================================
+
+export async function resendDiplomaAction(
+  courseId: string,
+  issueId: string
+): Promise<ActionResult<{ ok: true }>> {
+  const authResult = await authorizeAccess()
+  if ('error' in authResult) return { success: false, error: authResult.error }
+  const courseResult = await verifyCourseAccess(courseId, authResult.ctx)
+  if ('error' in courseResult) {
+    return { success: false, error: courseResult.error }
+  }
+  const tmpl = await requireTemplate(courseId)
+  if ('error' in tmpl) return { success: false, error: tmpl.error }
+
+  try {
+    const issue = await prisma.diplomaIssue.findUnique({
+      where: { id: issueId },
+      select: { id: true, courseId: true, status: true },
+    })
+    if (!issue) {
+      return { success: false, error: 'Emisión no encontrada' }
+    }
+    if (issue.courseId !== courseId) {
+      return { success: false, error: 'La emisión no pertenece a este curso' }
+    }
+    if (issue.status !== 'sent' && issue.status !== 'failed') {
+      return {
+        success: false,
+        error:
+          'Solo se pueden reenviar emisiones en estado enviado o fallido',
+      }
+    }
+
+    await resendDiploma(issueId)
+    revalidateDiplomaPaths(courseId)
+    return { success: true, data: { ok: true } }
+  } catch (error) {
+    console.error('[diploma] resendDiplomaAction error:', error)
+    const message =
+      error instanceof Error ? error.message : 'Error al reenviar el diploma'
+    return { success: false, error: message }
+  }
+}
+
+export async function regenerateDiplomasAction(
+  courseId: string,
+  options: { resendEmails: boolean }
+): Promise<ActionResult<BatchResult>> {
+  const authResult = await authorizeAccess()
+  if ('error' in authResult) return { success: false, error: authResult.error }
+  const courseResult = await verifyCourseAccess(courseId, authResult.ctx)
+  if ('error' in courseResult) {
+    return { success: false, error: courseResult.error }
+  }
+  const tmpl = await requireTemplate(courseId)
+  if ('error' in tmpl) return { success: false, error: tmpl.error }
+
+  try {
+    const result = await regenerateBatchForCourse(courseId, options)
+    revalidateDiplomaPaths(courseId)
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('[diploma] regenerateDiplomasAction error:', error)
+    const message =
+      error instanceof Error ? error.message : 'Error al regenerar los diplomas'
+    return { success: false, error: message }
+  }
+}
+
+export async function retryFailedDiplomasAction(
+  courseId: string
+): Promise<ActionResult<BatchResult>> {
+  const authResult = await authorizeAccess()
+  if ('error' in authResult) return { success: false, error: authResult.error }
+  const courseResult = await verifyCourseAccess(courseId, authResult.ctx)
+  if ('error' in courseResult) {
+    return { success: false, error: courseResult.error }
+  }
+  const tmpl = await requireTemplate(courseId)
+  if ('error' in tmpl) return { success: false, error: tmpl.error }
+
+  try {
+    const result = await retryFailedForCourse(courseId)
+    revalidateDiplomaPaths(courseId)
+    return { success: true, data: result }
+  } catch (error) {
+    console.error('[diploma] retryFailedDiplomasAction error:', error)
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error al reintentar los diplomas fallidos'
     return { success: false, error: message }
   }
 }

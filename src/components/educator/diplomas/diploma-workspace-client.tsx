@@ -33,11 +33,15 @@ import {
 import { ImageBaseUpload, type DiplomaBaseImage } from './image-base-upload'
 import { TemplateEditor } from './template-editor'
 import { DiplomaGrid } from './diploma-grid'
+import { DiplomaIssuesList } from './diploma-issues-list'
+import { DiplomaViewToggle, type DiplomaViewMode } from './diploma-view-toggle'
 import { EmissionSummary } from './emission-summary'
 import { GenerationProgress } from './generation-progress'
 import { SendConfirmationDialog } from './send-confirmation-dialog'
 import { GenerateDiplomasDialog } from './generate-diplomas-dialog'
 import { DiscardBatchDialog } from './discard-batch-dialog'
+import { RegenerateDiplomasDialog } from './regenerate-diplomas-dialog'
+import { RetryFailedDialog } from './retry-failed-dialog'
 import { deleteDiplomaTemplateAction } from '@/app/educator/courses/[id]/diploma/actions'
 import type { CourseDiplomaProgress } from '@/services/diploma-service'
 
@@ -105,12 +109,14 @@ export function DiplomaWorkspaceClient({
       : null
   )
   const [deletingTemplate, setDeletingTemplate] = useState(false)
+  const [viewMode, setViewMode] = useState<DiplomaViewMode>('table')
 
   const generatedIssues = issues.filter((i) => i.status === 'generated')
   const failedInBatch = issues.filter((i) => i.status === 'failed')
   const sentOrFailed = issues.filter(
     (i) => i.status === 'sent' || i.status === 'failed'
   )
+  const issuesWithAssets = issues.filter((i) => i.pngUrl && i.pdfUrl)
   const state = deriveUiState(initialTemplate, baseImage, issues)
   const progress = buildProgress(issues)
 
@@ -161,18 +167,25 @@ export function DiplomaWorkspaceClient({
     const total = enrollmentsPendingCount + retries
     if (total === 0) return null
 
+    const parts: string[] = []
+    if (enrollmentsPendingCount > 0) {
+      parts.push(
+        `${enrollmentsPendingCount} nuev${enrollmentsPendingCount === 1 ? 'o' : 'os'}`
+      )
+    }
+    if (retries > 0) {
+      parts.push(
+        `${retries} reintento${retries === 1 ? '' : 's'} de fallidos`
+      )
+    }
+    const detail = parts.length > 0 ? ` (${parts.join(', ')})` : ''
+
     return (
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Emitir diplomas</CardTitle>
           <CardDescription>
-            {total} diploma{total === 1 ? '' : 's'} para procesar (
-            {enrollmentsPendingCount} nuev
-            {enrollmentsPendingCount === 1 ? 'o' : 'os'}
-            {retries > 0
-              ? `, ${retries} reintento${retries === 1 ? '' : 's'} de fallidos`
-              : ''}
-            ).
+            {total} diploma{total === 1 ? '' : 's'} para procesar{detail}.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -256,11 +269,62 @@ export function DiplomaWorkspaceClient({
     generatedIssues.length + failedInBatch.length > 0
   const showEditor = state.kind === 'no-template' || state.kind === 'idle'
 
+  // Sección de fase 4: tabla / galería de emisiones existentes + acciones globales.
+  const hasIssuesToShow = issues.length > 0 && state.kind === 'idle'
+
   return (
     <div className="space-y-6">
       {renderEmissionBlock()}
 
-      {sentOrFailed.length > 0 && <EmissionSummary issues={sentOrFailed} />}
+      {hasIssuesToShow ? (
+        <Card>
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <CardTitle className="text-base">Emisiones del curso</CardTitle>
+                <CardDescription>
+                  {issues.length} emisión{issues.length === 1 ? '' : 'es'} en
+                  total · {progress.sent} enviada
+                  {progress.sent === 1 ? '' : 's'}
+                  {failedInBatch.length > 0
+                    ? ` · ${failedInBatch.length} fallida${
+                        failedInBatch.length === 1 ? '' : 's'
+                      }`
+                    : ''}
+                  .
+                </CardDescription>
+              </div>
+              <DiplomaViewToggle value={viewMode} onChange={setViewMode} />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {viewMode === 'gallery' ? (
+              <DiplomaGrid issues={issuesWithAssets} includeAllWithAssets />
+            ) : (
+              <DiplomaIssuesList courseId={course.id} issues={issues} />
+            )}
+
+            <div className="flex flex-wrap justify-end gap-2 border-t pt-4">
+              {/* "Reintentar fallidos" regenera + envía email. Solo tiene
+                  sentido si ya hubo alguna emisión exitosa: si nunca hubo
+                  `sent` y solo hay `failed`, el educator debería usar
+                  "Generar diplomas para revisar" (arriba), no este botón. */}
+              {progress.sent > 0 && failedInBatch.length > 0 && (
+                <RetryFailedDialog
+                  courseId={course.id}
+                  failedCount={failedInBatch.length}
+                />
+              )}
+              <RegenerateDiplomasDialog
+                courseId={course.id}
+                totalIssues={issues.length}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        sentOrFailed.length > 0 && <EmissionSummary issues={sentOrFailed} />
+      )}
 
       {showEditor &&
         (state.kind === 'no-template' ? (

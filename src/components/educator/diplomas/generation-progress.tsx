@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { CourseDiplomaProgress } from '@/services/diploma-service'
 
@@ -30,18 +30,41 @@ type Props = {
 }
 
 const POLL_INTERVAL_MS = 2000
+// Cap absoluto: 10 min. Protege contra polling infinito si una issue queda
+// colgada (ej. crash del backend que dejó issues en `pending` sin procesar).
+// En producción esto es load-bearing: cada poll es 1 invocación de función.
+const POLL_TIMEOUT_MS = 10 * 60 * 1000
+const MAX_POLLS = Math.ceil(POLL_TIMEOUT_MS / POLL_INTERVAL_MS)
 
 export function GenerationProgress({ courseId, phase, initialProgress }: Props) {
   const router = useRouter()
   const [progress, setProgress] = useState(initialProgress)
+  const [timedOut, setTimedOut] = useState(false)
   const stoppedRef = useRef(false)
+
+  // Snapshot inicial: para mostrar progreso relativo a este batch específico,
+  // no al total absoluto del curso. Sin esto, un curso con issues `sent` de
+  // lotes anteriores inicia la barra "avanzada" cuando solo se quiere ver el
+  // progreso del envío nuevo.
+  const initialNumeratorRef = useRef(
+    phase === 'generation' ? initialProgress.generated : initialProgress.sent
+  )
+  const batchSizeRef = useRef(
+    phase === 'generation'
+      ? initialProgress.pending +
+        initialProgress.generating +
+        initialProgress.failed
+      : initialProgress.generated + initialProgress.sending
+  )
 
   useEffect(() => {
     stoppedRef.current = false
     let timer: ReturnType<typeof setTimeout> | null = null
+    let polls = 0
 
     const tick = async () => {
       if (stoppedRef.current) return
+      polls++
       const data = await fetchProgress(courseId)
       if (stoppedRef.current) return
       if (data) {
@@ -56,6 +79,12 @@ export function GenerationProgress({ courseId, phase, initialProgress }: Props) 
           return
         }
       }
+      if (polls >= MAX_POLLS) {
+        // Cap de seguridad: paramos el polling y mostramos un mensaje.
+        stoppedRef.current = true
+        setTimedOut(true)
+        return
+      }
       timer = setTimeout(tick, POLL_INTERVAL_MS)
     }
 
@@ -66,18 +95,42 @@ export function GenerationProgress({ courseId, phase, initialProgress }: Props) 
     }
   }, [courseId, phase, router])
 
-  const denominator =
-    phase === 'generation'
-      ? progress.pending +
-        progress.generating +
-        progress.generated +
-        progress.failed
-      : progress.sending + progress.sent + progress.failed
+  if (timedOut) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            El proceso está tardando demasiado
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-muted-foreground">
+          <p>
+            Dejamos de consultar el progreso después de 10 minutos. Refrescá
+            la página para ver el estado actual de las emisiones.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.refresh()}
+            className="cursor-pointer text-sm font-medium underline"
+          >
+            Refrescar ahora
+          </button>
+        </CardContent>
+      </Card>
+    )
+  }
 
-  const numerator =
-    phase === 'generation'
-      ? progress.generated + progress.failed
-      : progress.sent + progress.failed
+  // Numerador = éxitos puros desde que arrancó este batch (restamos los
+  // `generated`/`sent` que ya existían al montar). Si una issue estaba `sent`
+  // de un lote anterior, no infla el porcentaje. Si todas fallan en este
+  // batch, el bar termina en <100% — semánticamente correcto.
+  const rawNumerator =
+    phase === 'generation' ? progress.generated : progress.sent
+  const numerator = Math.max(0, rawNumerator - initialNumeratorRef.current)
+
+  // Denominador = tamaño fijo del batch capturado al montar. Curva monotónica.
+  const denominator = batchSizeRef.current
 
   const percent =
     denominator > 0 ? Math.min(100, Math.round((numerator / denominator) * 100)) : 0

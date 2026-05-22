@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { redirect, notFound } from 'next/navigation'
 import { resolveStudentForPage } from '@/lib/view-as'
 import { getStudentEnrollmentByCourse } from '@/services/enrollment-service'
+import { getDiplomaIssueByCourseAndStudent } from '@/services/diploma-service'
 import { StudentCourseDetail } from '@/components/student/student-course-detail'
 import { StudentCourseDetailSkeleton } from '@/components/student/skeletons'
 
@@ -55,7 +56,18 @@ async function CourseDetailContent({
     redirect(viewAs ? `/student/courses?viewAs=${viewAs}` : '/student/courses')
   }
 
-  return <StudentCourseDetail enrollment={enrollment} viewAs={viewAs} />
+  const diplomaIssue = await getDiplomaIssueByCourseAndStudent(
+    courseId,
+    student.id
+  )
+
+  return (
+    <StudentCourseDetail
+      enrollment={enrollment}
+      diplomaIssue={diplomaIssue}
+      viewAs={viewAs}
+    />
+  )
 }
 
 export default async function StudentCourseDetailPage({

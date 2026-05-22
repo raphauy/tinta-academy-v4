@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { resolveStudentForPage } from '@/lib/view-as'
 import { getStudentDashboardMetrics } from '@/services/student-service'
+import { getDiplomaIssuesByStudent } from '@/services/diploma-service'
 import { StudentDashboard } from '@/components/student/student-dashboard'
 import { StudentDashboardSkeleton } from '@/components/student/skeletons'
 
@@ -28,13 +29,23 @@ async function DashboardContent({ viewAs }: { viewAs: string | undefined }) {
   }
 
   const { student } = result
-  const metrics = await getStudentDashboardMetrics(student.id)
+  const [metrics, diplomaIssues] = await Promise.all([
+    getStudentDashboardMetrics(student.id),
+    getDiplomaIssuesByStudent(student.id),
+  ])
 
   const studentName = student.firstName
     ? `${student.firstName} ${student.lastName || ''}`.trim()
     : student.user?.name || 'Estudiante'
 
-  return <StudentDashboard studentName={studentName} metrics={metrics} viewAs={viewAs} />
+  return (
+    <StudentDashboard
+      studentName={studentName}
+      metrics={metrics}
+      diplomaIssues={diplomaIssues}
+      viewAs={viewAs}
+    />
+  )
 }
 
 export default async function StudentDashboardPage({

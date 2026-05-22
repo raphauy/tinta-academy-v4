@@ -27,8 +27,6 @@ export async function generateMetadata({ params }: DiplomaPageProps) {
   }
 }
 
-const TERMINAL_STATUSES = ['generated', 'sending', 'sent'] as const
-
 export default async function DiplomaPage({ params }: DiplomaPageProps) {
   const { id } = await params
   const session = await auth()
@@ -88,15 +86,10 @@ export default async function DiplomaPage({ params }: DiplomaPageProps) {
     }),
   ])
 
-  const occupiedStudentIds = new Set(
-    issues
-      .filter((i) =>
-        TERMINAL_STATUSES.includes(
-          i.status as (typeof TERMINAL_STATUSES)[number]
-        )
-      )
-      .map((i) => i.studentId)
-  )
+  // Cualquier studentId con DiplomaIssue (sin importar status) ya no es
+  // "nuevo": las issues `failed` son retries de `createIssuesForCourse`, no
+  // se crean issues duplicadas. Por eso contamos issues en TODOS los estados.
+  const occupiedStudentIds = new Set(issues.map((i) => i.studentId))
   const enrollmentsPendingCount = Math.max(
     0,
     confirmedEnrollmentsCount - occupiedStudentIds.size

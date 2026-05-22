@@ -22,11 +22,11 @@ Configuración asociada a un curso. Consta de una **imagen base** (subida por el
 
 ### Emisión de diploma (`DiplomaIssue`)
 Diploma concreto generado para un par (curso, estudiante). Incluye:
-- snapshot del nombre y fecha al momento de la emisión,
+- snapshot del nombre y fecha al momento de la última (re)generación,
 - assets renderizados (PNG y PDF en Vercel Blob),
 - estado del envío por email.
 
-Es inmutable salvo regeneración explícita por el educador.
+El snapshot se refresca en cada regeneración explícita por el educador (acciones "Reenviar", "Regenerar diplomas", "Reintentar fallidos"); el email ya entregado no se modifica retroactivamente.
 - *Aliases a evitar:* "diploma emitido" en código (en UI sí). En código: `DiplomaIssue`.
 - *Relaciones:* (Curso, Estudiante) → 0..1 Emisión. Una emisión está siempre ligada a un `Enrollment`.
 
@@ -42,7 +42,7 @@ Texto que se snapshotea en `DiplomaIssue.studentName` al momento de emisión. Se
 2. Sino, si `User.name` no es null: primer token + último token. Ej. `"Juan Carlos López"` → `"Juan López"`.
 3. Sino: la parte del email anterior a la `@` (local-part), como último recurso.
 
-Una vez snapshoteado, no se actualiza si el estudiante edita su perfil después.
+El snapshot se re-resuelve en cada regeneración explícita del diploma (acciones "Reenviar", "Regenerar diplomas", "Reintentar fallidos"), de modo que cualquier corrección posterior en el perfil del estudiante se ve reflejada en el asset regenerado.
 
 ### Fecha de última clase
 Valor calculado: `max(course.classDates)`, con fallback a `course.endDate` y luego `course.startDate`. Es la fecha default que figura en el diploma cuando el educador no la sobreescribe.

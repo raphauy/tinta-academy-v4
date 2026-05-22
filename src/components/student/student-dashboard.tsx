@@ -1,15 +1,28 @@
 'use client'
 
 import Link from 'next/link'
-import { BookOpen, GraduationCap, CheckCircle, Calendar, Search, ArrowRight } from 'lucide-react'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
+import {
+  ArrowRight,
+  BookOpen,
+  Calendar,
+  CheckCircle,
+  Download,
+  GraduationCap,
+  Search,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { MetricCard } from '@/components/educator/metric-card'
 import { CourseCard } from '@/components/course'
 import type { StudentDashboardMetrics, StudentCourseQuickAccess } from '@/services/student-service'
+import type { DiplomaIssueForStudent } from '@/services/diploma-service'
 
 interface StudentDashboardProps {
   studentName: string
   metrics: StudentDashboardMetrics
+  diplomaIssues: DiplomaIssueForStudent[]
   viewAs?: string
 }
 
@@ -32,7 +45,12 @@ function getStatusBadge(course: StudentCourseQuickAccess) {
   return undefined
 }
 
-export function StudentDashboard({ studentName, metrics, viewAs }: StudentDashboardProps) {
+export function StudentDashboard({
+  studentName,
+  metrics,
+  diplomaIssues,
+  viewAs,
+}: StudentDashboardProps) {
   const hasAnyCourses = metrics.totalCourses > 0
   const firstName = studentName.split(' ')[0]
 
@@ -152,6 +170,97 @@ export function StudentDashboard({ studentName, metrics, viewAs }: StudentDashbo
               Explorar Cursos
             </Link>
           </Button>
+        </div>
+      )}
+
+      {/* Mis diplomas */}
+      {diplomaIssues.length > 0 && (
+        <div>
+          <h2 className="text-base font-semibold text-stone-900 dark:text-stone-100 mb-4">
+            Mis diplomas
+          </h2>
+          <div className="flex flex-col gap-4">
+            {diplomaIssues.map((issue) => (
+              <Card key={issue.id} className="overflow-hidden">
+                <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+                  <Link
+                    href={buildUrl(`/student/courses/${issue.courseId}`)}
+                    className="block shrink-0 cursor-pointer"
+                  >
+                    <div className="aspect-[1.414/1] w-full overflow-hidden rounded-md border bg-muted sm:w-48">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={issue.pngUrl}
+                        alt={`Diploma de ${issue.courseTitle}`}
+                        loading="lazy"
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                  </Link>
+                  <div className="flex flex-1 flex-col gap-2 min-w-0">
+                    <div>
+                      <Link
+                        href={buildUrl(`/student/courses/${issue.courseId}`)}
+                        className="text-base font-semibold text-stone-900 dark:text-stone-100 hover:underline"
+                      >
+                        {issue.courseTitle}
+                      </Link>
+                      <p className="text-sm text-stone-500 dark:text-stone-400">
+                        Diploma emitido el{' '}
+                        {format(
+                          issue.issuedDate,
+                          "d 'de' MMMM 'de' yyyy",
+                          { locale: es }
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="outline"
+                        className="cursor-pointer"
+                      >
+                        <a
+                          href={issue.pngUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Download className="mr-1.5 h-3.5 w-3.5" />
+                          Descargar PNG
+                        </a>
+                      </Button>
+                      <Button
+                        asChild
+                        size="sm"
+                        className="cursor-pointer"
+                      >
+                        <a
+                          href={issue.pdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Download className="mr-1.5 h-3.5 w-3.5" />
+                          Descargar PDF
+                        </a>
+                      </Button>
+                      <Button
+                        asChild
+                        size="sm"
+                        variant="ghost"
+                        className="cursor-pointer"
+                      >
+                        <Link href={buildUrl(`/student/courses/${issue.courseId}`)}>
+                          Ver detalle del curso
+                          <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
 

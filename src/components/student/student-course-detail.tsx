@@ -28,12 +28,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toLocalDate } from '@/lib/utils'
 import type { getStudentEnrollmentByCourse } from '@/services/enrollment-service'
+import type { DiplomaIssueForStudent } from '@/services/diploma-service'
 import type { MaterialType } from '@prisma/client'
 
 type EnrollmentWithCourse = NonNullable<Awaited<ReturnType<typeof getStudentEnrollmentByCourse>>>
 
 interface StudentCourseDetailProps {
   enrollment: EnrollmentWithCourse
+  diplomaIssue: DiplomaIssueForStudent | null
   viewAs?: string
 }
 
@@ -143,7 +145,11 @@ function buildGoogleMapsUrl(address: string, location?: string | null): string {
   return `https://www.google.com/maps/search/?api=1&query=${query}`
 }
 
-export function StudentCourseDetail({ enrollment, viewAs }: StudentCourseDetailProps) {
+export function StudentCourseDetail({
+  enrollment,
+  diplomaIssue,
+  viewAs,
+}: StudentCourseDetailProps) {
   const course = enrollment.course
   const educator = course.educator
   const materials = course.materials || []
@@ -523,6 +529,58 @@ export function StudentCourseDetail({ enrollment, viewAs }: StudentCourseDetailP
           )}
         </CardContent>
       </Card>
+
+      {/* Tu diploma */}
+      {diplomaIssue && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <GraduationCap className="size-4 text-primary" />
+              Tu diploma
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Diploma emitido el{' '}
+              {format(diplomaIssue.issuedDate, "d 'de' MMMM 'de' yyyy", {
+                locale: es,
+              })}
+              .
+            </p>
+            <div className="overflow-hidden rounded-lg border bg-muted">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={diplomaIssue.pngUrl}
+                alt={`Diploma de ${diplomaIssue.studentName}`}
+                loading="lazy"
+                className="block w-full max-h-[600px] object-contain mx-auto"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="outline" className="cursor-pointer">
+                <a
+                  href={diplomaIssue.pngUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Download className="mr-2 size-4" />
+                  Descargar PNG
+                </a>
+              </Button>
+              <Button asChild className="cursor-pointer">
+                <a
+                  href={diplomaIssue.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Download className="mr-2 size-4" />
+                  Descargar PDF
+                </a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

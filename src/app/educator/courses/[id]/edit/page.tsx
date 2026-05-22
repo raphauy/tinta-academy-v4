@@ -17,8 +17,23 @@ import { CourseWorkflowsSection } from '@/components/educator/courses/course-wor
 import { getDiplomaTemplateByCourseId } from '@/services/diploma-template-service'
 import { getCourseProgress } from '@/services/diploma-service'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Award, MonitorPlay } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import {
+  AlertCircle,
+  Award,
+  CheckCircle2,
+  FileText,
+  Loader2,
+  MonitorPlay,
+  Users,
+} from 'lucide-react'
 import Link from 'next/link'
 
 interface EditCoursePageProps {
@@ -219,43 +234,211 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
 
       {/* Diploma section - excluido para WSET (los emite Londres) */}
       {course.type !== 'wset' && (
-        <Card>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
-            <div className="flex-1 min-w-0">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5" />
-                  Diploma del curso
-                </CardTitle>
-                <CardDescription>{diplomaCta.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild>
-                  <Link href={`/educator/courses/${course.id}/diploma`}>
-                    {diplomaCta.label}
-                  </Link>
-                </Button>
-              </CardContent>
-            </div>
-            {diplomaTemplate && (
-              <div className="shrink-0 px-6 pb-6 sm:px-0 sm:pr-6 sm:pt-6">
-                <Link
-                  href={`/educator/courses/${course.id}/diploma`}
-                  className="block cursor-pointer overflow-hidden rounded border bg-muted transition hover:ring-2 hover:ring-primary"
-                  aria-label="Ver plantilla del diploma"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={diplomaTemplate.baseImageUrl}
-                    alt="Vista previa de la plantilla del diploma"
-                    className="block h-28 w-auto object-contain"
-                  />
+        <Card className="@container relative overflow-hidden p-0 @[640px]:[--card-h:16rem] @[640px]:h-[var(--card-h)]">
+          {/*
+            Layout responsive con container queries (mide el ancho del propio
+            Card, no del viewport — así no nos rompe el sidebar lateral).
+
+            - Card <640px: SIN thumbnail. Stack vertical natural. Stats grid 2 cols.
+            - Card ≥640px: thumbnail derecha full-bleed (aspect-ratio del diploma
+              real). Altura card = 16rem (256px). Thumb width = 16rem × ratio
+              ≈ 362px. Izquierda reserva ese padding-right.
+          */}
+          <div
+            className="flex h-full flex-col gap-6 py-6 @[640px]:pr-[var(--thumb-w)]"
+            style={
+              diplomaTemplate
+                ? ({
+                    '--ratio': (
+                      diplomaTemplate.baseImageWidth /
+                      diplomaTemplate.baseImageHeight
+                    ).toFixed(4),
+                    '--thumb-w': 'calc(var(--card-h) * var(--ratio))',
+                  } as React.CSSProperties)
+                : undefined
+            }
+          >
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Diploma del curso
+              </CardTitle>
+              <CardDescription>{diplomaCta.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1">
+              {diplomaProgress && diplomaProgress.total > 0 ? (
+                <DiplomaStatsGrid progress={diplomaProgress} />
+              ) : hasDiplomaTemplate ? (
+                <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground">
+                  Plantilla lista. Cuando emitas los primeros diplomas,
+                  acá vas a ver el resumen por estado.
+                </div>
+              ) : (
+                <div className="rounded-lg border border-dashed bg-muted/30 p-4 text-sm text-muted-foreground">
+                  Subí la imagen base y posicioná el nombre del alumno
+                  para habilitar la emisión de diplomas.
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="mt-auto border-t pt-6">
+              <Button asChild className="cursor-pointer">
+                <Link href={`/educator/courses/${course.id}/diploma`}>
+                  {diplomaCta.label}
                 </Link>
-              </div>
-            )}
+              </Button>
+            </CardFooter>
           </div>
+
+          {/* Thumbnail full-bleed: anclajes inset-y-0/right-0 le dan altura
+              completa del Card; aspect-ratio le da el ancho exacto del diploma.
+              Toca top + right + bottom, proporciones perfectas. */}
+          {diplomaTemplate && (
+            <Link
+              href={`/educator/courses/${course.id}/diploma`}
+              className="group absolute inset-y-0 right-0 hidden cursor-pointer overflow-hidden bg-muted transition hover:ring-2 hover:ring-primary @[640px]:block"
+              style={{
+                aspectRatio: `${diplomaTemplate.baseImageWidth} / ${diplomaTemplate.baseImageHeight}`,
+              }}
+              aria-label="Ver plantilla del diploma"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={diplomaTemplate.baseImageUrl}
+                alt="Vista previa de la plantilla del diploma"
+                className="block h-full w-full object-cover transition group-hover:scale-[1.02]"
+              />
+            </Link>
+          )}
         </Card>
       )}
+    </div>
+  )
+}
+
+type DiplomaStatsGridProps = {
+  progress: {
+    pending: number
+    generating: number
+    generated: number
+    sending: number
+    sent: number
+    failed: number
+    total: number
+  }
+}
+
+function DiplomaStatsGrid({ progress }: DiplomaStatsGridProps) {
+  const inFlight = progress.pending + progress.generating + progress.sending
+
+  const tiles: Array<{
+    label: string
+    value: number
+    Icon: typeof Award
+    tone: 'success' | 'info' | 'warning' | 'destructive' | 'muted'
+    spin?: boolean
+  }> = [
+    {
+      label: 'Enviados',
+      value: progress.sent,
+      Icon: CheckCircle2,
+      tone: 'success',
+    },
+  ]
+  if (progress.generated > 0) {
+    tiles.push({
+      label: 'Listos',
+      value: progress.generated,
+      Icon: FileText,
+      tone: 'info',
+    })
+  }
+  if (inFlight > 0) {
+    tiles.push({
+      label: 'En proceso',
+      value: inFlight,
+      Icon: Loader2,
+      tone: 'warning',
+      spin: true,
+    })
+  }
+  if (progress.failed > 0) {
+    tiles.push({
+      label: 'Fallidos',
+      value: progress.failed,
+      Icon: AlertCircle,
+      tone: 'destructive',
+    })
+  }
+  tiles.push({
+    label: 'Total',
+    value: progress.total,
+    Icon: Users,
+    tone: 'muted',
+  })
+
+  return (
+    // Cada tile tiene su ancho natural (su contenido). flex-wrap acomoda la
+    // cantidad de tiles que haya y wrappea cuando no caben. No "estiramos"
+    // las tiles para llenar espacio — quedan compactas y consistentes.
+    <div className="flex flex-wrap gap-3">
+      {tiles.map((t) => (
+        <DiplomaStatTile key={t.label} {...t} />
+      ))}
+    </div>
+  )
+}
+
+const TONE_CLASSES: Record<
+  'success' | 'info' | 'warning' | 'destructive' | 'muted',
+  { bg: string; text: string }
+> = {
+  success: {
+    bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+    text: 'text-emerald-700 dark:text-emerald-300',
+  },
+  info: {
+    bg: 'bg-blue-100 dark:bg-blue-900/30',
+    text: 'text-blue-700 dark:text-blue-300',
+  },
+  warning: {
+    bg: 'bg-yellow-100 dark:bg-yellow-900/30',
+    text: 'text-yellow-700 dark:text-yellow-300',
+  },
+  destructive: {
+    bg: 'bg-red-100 dark:bg-red-900/30',
+    text: 'text-red-700 dark:text-red-300',
+  },
+  muted: {
+    bg: 'bg-stone-100 dark:bg-stone-800',
+    text: 'text-stone-700 dark:text-stone-300',
+  },
+}
+
+function DiplomaStatTile({
+  label,
+  value,
+  Icon,
+  tone,
+  spin,
+}: {
+  label: string
+  value: number
+  Icon: typeof Award
+  tone: 'success' | 'info' | 'warning' | 'destructive' | 'muted'
+  spin?: boolean
+}) {
+  const classes = TONE_CLASSES[tone]
+  return (
+    <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3">
+      <div className={`shrink-0 rounded-md p-2 ${classes.bg} ${classes.text}`}>
+        <Icon className={`h-4 w-4 ${spin ? 'animate-spin' : ''}`} />
+      </div>
+      <div className="flex items-baseline gap-1.5 whitespace-nowrap">
+        <span className="text-2xl font-bold leading-none tabular-nums">
+          {value}
+        </span>
+        <span className="text-sm text-muted-foreground">{label}</span>
+      </div>
     </div>
   )
 }
