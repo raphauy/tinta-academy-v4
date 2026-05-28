@@ -1,11 +1,24 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Users, UserCheck, Clock, UserX, Search, Wallet, Download, FileSpreadsheet, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { StudentTable, type StudentEnrollment } from './student-table'
+import { removeStudentFromCourseAction } from '@/app/educator/courses/[id]/students/actions'
 import type { Course, Educator, EnrollmentStatus } from '@prisma/client'
 
 // Type matching what getEnrollmentsByCourse returns
@@ -76,10 +89,48 @@ function formatNumber(amount: number): string {
   }).format(amount)
 }
 
+// El curso "no inició" mientras no esté en curso ni finalizado.
+const STARTED_COURSE_STATUSES = ['in_progress', 'finished']
+
 export function StudentList({ course, enrollments }: StudentListProps) {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [isExporting, setIsExporting] = useState(false)
   const [isExportingCrf, setIsExportingCrf] = useState(false)
+  const [removeTarget, setRemoveTarget] = useState<StudentEnrollment | null>(null)
+  const [isRemoving, startRemoving] = useTransition()
+
+  const canRemove = !STARTED_COURSE_STATUSES.includes(course.status)
+
+  const handleRemove = () => {
+    if (!removeTarget) return
+    startRemoving(async () => {
+      const result = await removeStudentFromCourseAction(course.id, removeTarget.id)
+      if (result.success) {
+        const { studentName, cancelledEmails, voidedOrders } = result.data!
+        const details: string[] = []
+        if (voidedOrders > 0) {
+          details.push(`${voidedOrders} orden${voidedOrders !== 1 ? 'es' : ''} anulada${voidedOrders !== 1 ? 's' : ''}`)
+        }
+        if (cancelledEmails > 0) {
+          details.push(`${cancelledEmails} email${cancelledEmails !== 1 ? 's' : ''} automático${cancelledEmails !== 1 ? 's' : ''} cancelado${cancelledEmails !== 1 ? 's' : ''}`)
+        }
+        toast.success(
+          `${studentName} fue quitado del curso`,
+          details.length > 0 ? { description: details.join(' · ') } : undefined
+        )
+        setRemoveTarget(null)
+        router.refresh()
+      } else {
+        toast.error(result.error)
+      }
+    })
+  }
+
+  const removeTargetName = removeTarget
+    ? `${removeTarget.student.firstName || ''} ${removeTarget.student.lastName || ''}`.trim() ||
+      removeTarget.student.user.email
+    : ''
 
   // Calculate metrics
   const metrics = useMemo(() => {
@@ -274,8 +325,59 @@ export function StudentList({ course, enrollments }: StudentListProps) {
           </p>
         </div>
       ) : (
-        <StudentTable enrollments={tableEnrollments} />
+        <StudentTable
+          enrollments={tableEnrollments}
+          onRemove={canRemove ? setRemoveTarget : undefined}
+        />
       )}
+
+      {/* Confirmación: quitar alumno del curso */}
+      <AlertDialog
+        open={removeTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !isRemoving) setRemoveTarget(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Quitar alumno del curso</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  Vas a quitar a <strong>{removeTargetName}</strong> de{' '}
+                  <strong>{course.title}</strong>. Esto va a:
+                </p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Cancelar su inscripción y liberar el cupo.</li>
+                  <li>Frenar los emails automáticos pendientes de este curso.</li>
+                  <li>
+                    Anular las órdenes pagas asociadas (se conservan en el
+                    historial como canceladas).
+                  </li>
+                </ul>
+                <p className="text-amber-600 dark:text-amber-500">
+                  No se reembolsa dinero automáticamente. Usalo cuando el pago ya
+                  se gestionó por fuera (ej. cambio de curso).
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isRemoving}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleRemove()
+              }}
+              disabled={isRemoving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isRemoving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Quitar del curso
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

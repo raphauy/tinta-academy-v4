@@ -1,5 +1,10 @@
 import { prisma } from '@/lib/prisma'
-import { EnrollmentStatus } from '@prisma/client'
+import {
+  CourseStatus,
+  EmailDeliveryStatus,
+  EnrollmentStatus,
+  OrderStatus,
+} from '@prisma/client'
 
 // ============================================
 // ENROLLMENT QUERIES
@@ -391,6 +396,136 @@ export async function cancelEnrollment(id: string) {
 
 export async function confirmEnrollment(id: string) {
   return updateEnrollmentStatus(id, 'confirmed')
+}
+
+// ============================================
+// REMOVE STUDENT FROM COURSE (anular inscripción)
+// ============================================
+
+// Estados que cuentan como "curso ya iniciado": no se permite quitar al alumno.
+const STARTED_COURSE_STATUSES: CourseStatus[] = [
+  CourseStatus.in_progress,
+  CourseStatus.finished,
+]
+
+export interface RemoveStudentFromCourseResult {
+  studentName: string
+  courseTitle: string
+  cancelledEmails: number
+  voidedOrders: number
+}
+
+/**
+ * Quita por completo a un alumno de un curso que aún no inició.
+ * En una sola transacción:
+ *  - Cancela la inscripción y decrementa enrolledCount (si estaba confirmada)
+ *  - Cancela los emails automáticos (WorkflowExecution) pendientes de ese alumno
+ *  - Anula las órdenes activas del alumno para ese curso (conserva el registro)
+ *
+ * Pensado para casos administrativos como cambios de curso, donde el dinero
+ * se gestionó por fuera (no es un reembolso).
+ */
+export async function removeStudentFromCourse(params: {
+  courseId: string
+  enrollmentId: string
+  cancelledById: string
+}): Promise<RemoveStudentFromCourseResult> {
+  const { courseId, enrollmentId, cancelledById } = params
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { id: enrollmentId },
+    include: {
+      course: { select: { id: true, title: true, status: true } },
+      student: {
+        select: {
+          id: true,
+          userId: true,
+          firstName: true,
+          lastName: true,
+          user: { select: { name: true, email: true } },
+        },
+      },
+    },
+  })
+
+  if (!enrollment) {
+    throw new Error('Inscripción no encontrada')
+  }
+
+  if (enrollment.courseId !== courseId) {
+    throw new Error('La inscripción no corresponde a este curso')
+  }
+
+  if (enrollment.status === EnrollmentStatus.cancelled) {
+    throw new Error('El alumno ya fue quitado de este curso')
+  }
+
+  if (STARTED_COURSE_STATUSES.includes(enrollment.course.status)) {
+    throw new Error(
+      'No se puede quitar al alumno: el curso ya está en curso o finalizado'
+    )
+  }
+
+  const wasConfirmed = enrollment.status === EnrollmentStatus.confirmed
+  const studentName =
+    [enrollment.student.firstName, enrollment.student.lastName]
+      .filter(Boolean)
+      .join(' ') ||
+    enrollment.student.user.name ||
+    enrollment.student.user.email
+
+  const result = await prisma.$transaction(async (tx) => {
+    // 1. Cancelar la inscripción
+    await tx.enrollment.update({
+      where: { id: enrollmentId },
+      data: { status: EnrollmentStatus.cancelled },
+    })
+
+    // 2. Decrementar el contador solo si estaba confirmada
+    if (wasConfirmed) {
+      await tx.course.update({
+        where: { id: enrollment.courseId },
+        data: { enrolledCount: { decrement: 1 } },
+      })
+    }
+
+    // 3. Cancelar los emails automáticos pendientes de este alumno
+    const cancelled = await tx.workflowExecution.deleteMany({
+      where: { enrollmentId, status: EmailDeliveryStatus.pending },
+    })
+
+    // 4. Anular las órdenes activas del alumno para este curso (conserva el registro)
+    const voided = await tx.order.updateMany({
+      where: {
+        courseId: enrollment.courseId,
+        OR: [
+          { studentId: enrollment.studentId },
+          { userId: enrollment.student.userId },
+        ],
+        status: {
+          notIn: [
+            OrderStatus.cancelled,
+            OrderStatus.refunded,
+            OrderStatus.rejected,
+          ],
+        },
+      },
+      data: {
+        status: OrderStatus.cancelled,
+        cancelledAt: new Date(),
+        cancelledById,
+      },
+    })
+
+    return { cancelledEmails: cancelled.count, voidedOrders: voided.count }
+  })
+
+  return {
+    studentName,
+    courseTitle: enrollment.course.title,
+    cancelledEmails: result.cancelledEmails,
+    voidedOrders: result.voidedOrders,
+  }
 }
 
 // ============================================

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { Mail, ChevronDown, Phone, MapPin, CreditCard, Calendar, Copy, Check } from 'lucide-react'
+import { Mail, ChevronDown, Phone, MapPin, CreditCard, Calendar, Copy, Check, MoreVertical, UserMinus } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -14,6 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { cn, toLocalDate } from '@/lib/utils'
 import type { EnrollmentStatus } from '@prisma/client'
 
@@ -47,6 +53,11 @@ export type StudentEnrollment = {
 interface StudentTableProps {
   enrollments: StudentEnrollment[]
   showCourse?: boolean
+  /**
+   * Si se provee, habilita la acción "Quitar del curso" por fila.
+   * El padre maneja la confirmación y la llamada al server action.
+   */
+  onRemove?: (enrollment: StudentEnrollment) => void
 }
 
 function formatDate(date: Date | null): string {
@@ -123,7 +134,7 @@ function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: stri
   )
 }
 
-export function StudentTable({ enrollments, showCourse = false }: StudentTableProps) {
+export function StudentTable({ enrollments, showCourse = false, onRemove }: StudentTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
   if (enrollments.length === 0) {
@@ -237,14 +248,47 @@ export function StudentTable({ enrollments, showCourse = false }: StudentTablePr
                     </span>
                   </TableCell>
                   <TableCell>
-                    <a
-                      href={`mailto:${student.user.email}`}
-                      className="p-2 rounded-lg hover:bg-muted inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                      title="Enviar email"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Mail className="size-4" />
-                    </a>
+                    {onRemove && enrollment.status !== 'cancelled' ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="p-2 rounded-lg hover:bg-muted inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            title="Acciones"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="size-4" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <DropdownMenuItem asChild>
+                            <a href={`mailto:${student.user.email}`}>
+                              <Mail className="mr-2 size-4" />
+                              Enviar email
+                            </a>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => onRemove(enrollment)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <UserMinus className="mr-2 size-4" />
+                            Quitar del curso
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <a
+                        href={`mailto:${student.user.email}`}
+                        className="p-2 rounded-lg hover:bg-muted inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                        title="Enviar email"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Mail className="size-4" />
+                      </a>
+                    )}
                   </TableCell>
                 </TableRow>
                 {isExpanded && (

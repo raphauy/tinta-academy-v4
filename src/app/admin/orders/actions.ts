@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
-import { OrderStatus, PaymentMethod, EnrollmentStatus } from '@prisma/client'
+import { OrderStatus, PaymentMethod, EnrollmentStatus, EmailDeliveryStatus } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 import {
   getOrders,
@@ -290,6 +290,14 @@ export async function refundOrderAction(
             where: { id: order.courseId },
             data: {
               enrolledCount: { decrement: 1 },
+            },
+          })
+
+          // Cancel pending workflow emails so the student stops receiving them
+          await tx.workflowExecution.deleteMany({
+            where: {
+              enrollmentId: enrollment.id,
+              status: EmailDeliveryStatus.pending,
             },
           })
         }

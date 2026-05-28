@@ -769,6 +769,10 @@ export async function getPendingWorkflowExecutions() {
       courseWorkflow: {
         status: 'active',
       },
+      // No enviar a alumnos que fueron dados de baja del curso
+      enrollment: {
+        status: { not: EnrollmentStatus.cancelled },
+      },
     },
     include: {
       courseWorkflow: {
