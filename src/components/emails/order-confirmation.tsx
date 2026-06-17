@@ -120,8 +120,8 @@ export default function OrderConfirmationEmail({
             <Section style={styles.contactBox}>
               <Text style={styles.contactItem}>
                 <strong>▪️ WhatsApp:</strong>{' '}
-                <Link href="https://wa.me/59892794526" style={styles.link}>
-                  +598 92794526
+                <Link href="https://wa.me/59892664933" style={styles.link}>
+                  +598 92 664 933
                 </Link>
               </Text>
               <Text style={styles.contactItem}>

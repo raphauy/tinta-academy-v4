@@ -116,7 +116,7 @@ export function Footer({ links, contactInfo, onNavigate, onSubscribe }: FooterPr
                 className="justify-start text-white/70 hover:text-verde-uva-300 hover:bg-white/5 h-auto p-2"
               >
                 <a
-                  href="https://api.whatsapp.com/send/?phone=59892043904&text=%C2%A1Hola%21+Me+gustar%C3%ADa+recibir+m%C3%A1s+informaci%C3%B3n&type=phone_number&app_absent=0"
+                  href="https://api.whatsapp.com/send/?phone=59892664933&text=%C2%A1Hola%21+Me+gustar%C3%ADa+recibir+m%C3%A1s+informaci%C3%B3n&type=phone_number&app_absent=0"
                   target="_blank"
                   rel="noopener noreferrer"
                 >

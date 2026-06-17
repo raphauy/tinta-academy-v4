@@ -26,6 +26,6 @@ export const footerLinks: FooterLinks = {
 
 export const contactInfo: ContactInfo = {
   email: "academy@tinta.wine",
-  phone: "59892043904",
+  phone: "59892664933",
   address: "Montevideo, Uruguay"
 }

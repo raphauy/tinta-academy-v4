@@ -1,6 +1,6 @@
 'use client'
 
-const WHATSAPP_NUMBER = '59892043904'
+const WHATSAPP_NUMBER = '59892664933'
 const DEFAULT_MESSAGE = 'Quiero más información sobre los cursos'
 
 function WhatsAppIcon({ className }: { className?: string }) {
