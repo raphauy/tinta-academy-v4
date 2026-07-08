@@ -14,7 +14,8 @@ export interface DynamicEmailProps {
   subject: string
   body: string // HTML content
   previewText?: string
-  profileUrl?: string
+  // Si es null/undefined no se muestra la línea de preferencias (destinatarios sin perfil de estudiante).
+  profileUrl?: string | null
 }
 
 export default function DynamicEmail({
@@ -44,13 +45,15 @@ export default function DynamicEmail({
               Tinta Academy - Centro de formación especializado en la educación
               sobre vinos
             </Text>
-            <Text style={styles.unsubscribeText}>
-              Puedes modificar tus preferencias de comunicación en{' '}
-              <a href={profileUrl} style={styles.unsubscribeLink}>
-                tu perfil
-              </a>
-              .
-            </Text>
+            {profileUrl ? (
+              <Text style={styles.unsubscribeText}>
+                Puedes modificar tus preferencias de comunicación en{' '}
+                <a href={profileUrl} style={styles.unsubscribeLink}>
+                  tu perfil
+                </a>
+                .
+              </Text>
+            ) : null}
           </Section>
         </Container>
       </Body>

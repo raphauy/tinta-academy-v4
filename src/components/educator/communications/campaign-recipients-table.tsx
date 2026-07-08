@@ -26,7 +26,10 @@ interface Recipient {
     user: {
       email: string
     }
-  }
+  } | null
+  user: {
+    name: string | null
+  } | null
 }
 
 interface CampaignRecipientsTableProps {
@@ -47,9 +50,12 @@ const statusConfig: Record<
   failed: { label: 'Fallido', variant: 'destructive' },
 }
 
-function getStudentName(student: Recipient['student']): string {
-  const parts = [student.firstName, student.lastName].filter(Boolean)
-  return parts.length > 0 ? parts.join(' ') : 'Sin nombre'
+function getRecipientName(recipient: Recipient): string {
+  if (recipient.student) {
+    const parts = [recipient.student.firstName, recipient.student.lastName].filter(Boolean)
+    if (parts.length > 0) return parts.join(' ')
+  }
+  return recipient.user?.name || 'Sin nombre'
 }
 
 export function CampaignRecipientsTable({ recipients }: CampaignRecipientsTableProps) {
@@ -82,7 +88,7 @@ export function CampaignRecipientsTable({ recipients }: CampaignRecipientsTableP
           return (
             <TableRow key={recipient.id}>
               <TableCell className="font-medium">
-                {getStudentName(recipient.student)}
+                {getRecipientName(recipient)}
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {recipient.email}

@@ -61,6 +61,7 @@ interface NewSendClientProps {
   students: StudentForSelection[]
   filters: FilterForSelection[]
   educatorId: string
+  usersWithoutCoursesCount: number
 }
 
 type Step = 1 | 2 | 3
@@ -92,6 +93,7 @@ export function NewSendClient({
   students,
   filters,
   educatorId,
+  usersWithoutCoursesCount,
 }: NewSendClientProps) {
   const router = useRouter()
 
@@ -169,8 +171,11 @@ export function NewSendClient({
     if (recipients.mode === 'filter' && recipients.filterId) {
       return filterCount
     }
+    if (recipients.mode === 'users_no_courses') {
+      return usersWithoutCoursesCount
+    }
     return recipients.studentIds.length
-  }, [recipients, courses, filterCount]) as number | null
+  }, [recipients, courses, filterCount, usersWithoutCoursesCount]) as number | null
 
   const selectedCourseName = useMemo(() => {
     if (recipients.mode === 'course' && recipients.courseId) {
@@ -212,8 +217,11 @@ export function NewSendClient({
     if (recipients.mode === 'filter') {
       return !!recipients.filterId
     }
+    if (recipients.mode === 'users_no_courses') {
+      return usersWithoutCoursesCount > 0
+    }
     return recipients.studentIds.length > 0
-  }, [recipients])
+  }, [recipients, usersWithoutCoursesCount])
 
   const canProceedFromStep2 = !!selectedTemplateId
 
@@ -245,6 +253,9 @@ export function NewSendClient({
         return 'Filtro seleccionado'
       }
       return 'Selecciona un filtro'
+    }
+    if (recipients.mode === 'users_no_courses') {
+      return `Usuarios sin cursos (${recipientCount ?? 0})`
     }
     return `${recipientCount} seleccionados`
   }, [recipients.mode, recipients.filterId, selectedCourseName, recipientCount, filters, loadingFilterCount])
@@ -426,6 +437,7 @@ export function NewSendClient({
                       onChange={setRecipients}
                       filterCount={filterCount}
                       loadingFilterCount={loadingFilterCount}
+                      usersWithoutCoursesCount={usersWithoutCoursesCount}
                     />
                   </div>
                 </div>

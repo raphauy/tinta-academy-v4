@@ -71,7 +71,10 @@ type CampaignDetail = {
       user: {
         email: string
       }
-    }
+    } | null
+    user: {
+      name: string | null
+    } | null
   }>
 }
 
@@ -367,11 +370,11 @@ export function CampaignDetailDialog({
                         recipientStatusConfig[recipient.status] ||
                         recipientStatusConfig.pending
                       const displayName = [
-                        recipient.student.firstName,
-                        recipient.student.lastName,
+                        recipient.student?.firstName,
+                        recipient.student?.lastName,
                       ]
                         .filter(Boolean)
-                        .join(' ') || recipient.email
+                        .join(' ') || recipient.user?.name || recipient.email
 
                       return (
                         <div

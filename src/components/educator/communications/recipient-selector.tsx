@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Users, UserCheck, Search, Filter, Globe, Lock, Loader2, ChevronDown } from 'lucide-react'
+import { Users, UserCheck, UserPlus, Search, Filter, Globe, Lock, Loader2, ChevronDown } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -44,7 +44,7 @@ export interface StudentForSelection {
 }
 
 export interface RecipientValue {
-  mode: 'course' | 'custom' | 'filter'
+  mode: 'course' | 'custom' | 'filter' | 'users_no_courses'
   courseId?: string
   studentIds: string[]
   filterId?: string
@@ -60,6 +60,8 @@ interface RecipientSelectorProps {
   // Filter count is managed by parent to avoid duplicate fetches
   filterCount?: number | null
   loadingFilterCount?: boolean
+  // Cantidad de usuarios registrados sin compras (audiencia "Usuarios sin cursos")
+  usersWithoutCoursesCount: number
 }
 
 export function RecipientSelector({
@@ -71,6 +73,7 @@ export function RecipientSelector({
   onChange,
   filterCount = null,
   loadingFilterCount = false,
+  usersWithoutCoursesCount,
 }: RecipientSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [displayLimit, setDisplayLimit] = useState(STUDENTS_PAGE_SIZE)
@@ -104,7 +107,9 @@ export function RecipientSelector({
   const hasMoreStudents = filteredStudents.length > displayLimit
   const remainingStudents = filteredStudents.length - displayLimit
 
-  const handleModeChange = (mode: 'course' | 'custom' | 'filter') => {
+  const handleModeChange = (
+    mode: 'course' | 'custom' | 'filter' | 'users_no_courses'
+  ) => {
     onChange({
       mode,
       courseId: mode === 'course' ? value.courseId : undefined,
@@ -174,8 +179,11 @@ export function RecipientSelector({
     if (value.mode === 'filter' && value.filterId) {
       return filterCount
     }
+    if (value.mode === 'users_no_courses') {
+      return usersWithoutCoursesCount
+    }
     return value.studentIds.length
-  }, [value.mode, value.courseId, value.studentIds, courses, value.filterId, filterCount])
+  }, [value.mode, value.courseId, value.studentIds, courses, value.filterId, filterCount, usersWithoutCoursesCount])
 
   const getStudentDisplayName = (student: StudentForSelection) => {
     if (student.firstName || student.lastName) {
@@ -194,7 +202,7 @@ export function RecipientSelector({
     <div className="space-y-4">
       <RadioGroup
         value={value.mode}
-        onValueChange={(v) => handleModeChange(v as 'course' | 'custom' | 'filter')}
+        onValueChange={(v) => handleModeChange(v as 'course' | 'custom' | 'filter' | 'users_no_courses')}
         className="space-y-4"
       >
         <div className="rounded-lg border p-4 space-y-3">
@@ -316,6 +324,28 @@ export function RecipientSelector({
             )}
           </div>
         )}
+
+        {/* Users without courses - audiencia especial fija */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="users_no_courses" id="mode-users-no-courses" />
+            <Label
+              htmlFor="mode-users-no-courses"
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <UserPlus className="h-4 w-4 text-muted-foreground" />
+              Usuarios sin cursos
+            </Label>
+          </div>
+
+          {value.mode === 'users_no_courses' && (
+            <p className="ml-7 text-sm text-muted-foreground">
+              {usersWithoutCoursesCount === 1
+                ? '1 usuario registrado que aún no compró ningún curso'
+                : `${usersWithoutCoursesCount} usuarios registrados que aún no compraron ningún curso`}
+            </p>
+          )}
+        </div>
 
         <div className="rounded-lg border p-4 space-y-4">
           <div className="flex items-center space-x-3">

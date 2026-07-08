@@ -29,6 +29,7 @@ const TEST_EMAIL_VARIABLES: TemplateVariables = {
 }
 import { getStudentsByCourse } from '@/services/student-selection-service'
 import { getStudentIdsByFilter } from '@/services/audience-filter-service'
+import { getUsersWithoutStudent } from '@/services/user-service'
 import { prisma } from '@/lib/prisma'
 import type { EmailCampaignStatus } from '@prisma/client'
 
@@ -39,7 +40,7 @@ import type { EmailCampaignStatus } from '@prisma/client'
 const sendCampaignSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   templateId: z.string().min(1, 'La plantilla es requerida'),
-  recipientMode: z.enum(['course', 'custom', 'filter']),
+  recipientMode: z.enum(['course', 'custom', 'filter', 'users_no_courses']),
   courseId: z.string().optional(),
   studentIds: z.array(z.string()).optional(),
   filterId: z.string().optional(),
@@ -156,7 +157,7 @@ export async function sendCampaignAction(
     }
 
     // Get recipients based on mode
-    let recipients: Array<{ studentId: string; email: string }> = []
+    let recipients: Array<{ studentId?: string; userId?: string; email: string }> = []
     let audienceFilterId: string | undefined
 
     if (recipientMode === 'course') {
@@ -216,6 +217,21 @@ export async function sendCampaignAction(
       recipients = students.map((s) => ({
         studentId: s.id,
         email: s.user.email,
+      }))
+    } else if (recipientMode === 'users_no_courses') {
+      // Usuarios registrados que no son estudiantes (nunca compraron)
+      const users = await getUsersWithoutStudent()
+
+      if (users.length === 0) {
+        return {
+          success: false,
+          error: 'No hay usuarios sin cursos para enviar',
+        }
+      }
+
+      recipients = users.map((u) => ({
+        userId: u.id,
+        email: u.email,
       }))
     } else {
       // Custom mode

@@ -26,6 +26,7 @@ model User {
   orders          Order[]   @relation("UserOrders")
   cancelledOrders Order[]   @relation("CancelledOrders")
   lessonComments  LessonComment[]
+  emailRecipients EmailRecipient[]
 
   @@index([email])
   @@index([isActive])
@@ -655,8 +656,12 @@ model EmailRecipient {
   campaignId String
   campaign   EmailCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
-  studentId String
-  student   Student @relation(fields: [studentId], references: [id])
+  studentId String?
+  student   Student? @relation(fields: [studentId], references: [id])
+
+  // Destinatarios que no son estudiantes (usuarios registrados sin compra)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
 
   email String
 
@@ -674,8 +679,10 @@ model EmailRecipient {
   updatedAt DateTime @updatedAt
 
   @@unique([campaignId, studentId])
+  @@unique([campaignId, userId])
   @@index([campaignId])
   @@index([studentId])
+  @@index([userId])
   @@index([status])
   @@index([resendId])
 }

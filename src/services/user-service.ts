@@ -122,6 +122,40 @@ export async function getOrCreateUser(email: string): Promise<UserWithStringRole
   return createUser({ email: normalized })
 }
 
+// ============================================
+// AUDIENCE: usuarios sin estudiante (comunicaciones)
+// ============================================
+
+export type UserWithoutStudent = {
+  id: string
+  email: string
+  name: string | null
+}
+
+// Usuarios registrados que nunca compraron: activos, sin Student, sin Educator, sin rol.
+// (Al comprar se crea el Student, y educadores/admins tienen rol asignado.)
+const usersWithoutStudentWhere = {
+  isActive: true,
+  role: null,
+  student: { is: null },
+  educator: { is: null },
+} as const
+
+/**
+ * Audiencia "Usuarios sin cursos": usuarios registrados que no son estudiantes.
+ */
+export async function getUsersWithoutStudent(): Promise<UserWithoutStudent[]> {
+  return prisma.user.findMany({
+    where: usersWithoutStudentWhere,
+    select: { id: true, email: true, name: true },
+    orderBy: { createdAt: 'desc' },
+  })
+}
+
+export async function getUsersWithoutStudentCount(): Promise<number> {
+  return prisma.user.count({ where: usersWithoutStudentWhere })
+}
+
 export interface UpdateUserData {
   email?: string
   name?: string

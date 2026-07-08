@@ -93,6 +93,11 @@ export async function getCampaignById(id: string, educatorId: string) {
                 }
               }
             }
+          },
+          user: {
+            select: {
+              name: true
+            }
           }
         },
         orderBy: { createdAt: 'asc' }
@@ -132,13 +137,14 @@ export async function createCampaign(data: {
  */
 export async function addRecipientsToCampaign(
   campaignId: string,
-  recipients: Array<{ studentId: string; email: string }>
+  recipients: Array<{ studentId?: string; userId?: string; email: string }>
 ) {
   // Use createMany for efficient bulk insert
   await prisma.emailRecipient.createMany({
     data: recipients.map((r) => ({
       campaignId,
-      studentId: r.studentId,
+      studentId: r.studentId ?? null,
+      userId: r.userId ?? null,
       email: r.email,
       status: 'pending' as const
     })),
@@ -254,6 +260,9 @@ export async function processCampaignSend(
                 select: { email: true }
               }
             }
+          },
+          user: {
+            select: { name: true, email: true }
           }
         }
       }
@@ -272,18 +281,24 @@ export async function processCampaignSend(
 
   // Process each recipient
   for (const recipient of campaign.recipients) {
-    // Build variables object
-    const studentName = [
-      recipient.student.firstName,
-      recipient.student.lastName
-    ]
-      .filter(Boolean)
-      .join(' ') || 'Estudiante'
+    // Los destinatarios pueden ser estudiantes o usuarios sin curso (student == null)
+    const isStudent = recipient.student != null
+
+    // Nombre para el saludo. Fallback 'Estudiante' cuando no hay nombre cargado
+    // (evita saludos tipo "Hola ,"). Para no-estudiantes usamos el nombre del User.
+    const fullName = isStudent
+      ? [recipient.student!.firstName, recipient.student!.lastName]
+          .filter(Boolean)
+          .join(' ')
+      : recipient.user?.name?.trim() ?? ''
+    const firstName = isStudent
+      ? recipient.student!.firstName ?? ''
+      : fullName.split(/\s+/)[0] ?? ''
 
     const variables: TemplateVariables = {
-      studentName,
-      studentFirstName: recipient.student.firstName || 'Estudiante',
-      studentEmail: recipient.student.user.email,
+      studentName: fullName || 'Estudiante',
+      studentFirstName: firstName || 'Estudiante',
+      studentEmail: recipient.email,
       courseName: campaign.course?.title,
       courseStartDate: formatDateForTemplate(campaign.course?.startDate),
       courseEndDate: formatDateForTemplate(campaign.course?.endDate),
@@ -298,11 +313,12 @@ export async function processCampaignSend(
     const renderedSubject = renderTemplate(campaign.template.subject, variables)
     const renderedBody = renderTemplate(campaign.template.body, variables)
 
-    // Send email
+    // Send email (sin link de preferencias para no-estudiantes: no tienen /student/profile)
     const result = await sendDynamicEmail({
       to: recipient.email,
       subject: renderedSubject,
-      body: renderedBody
+      body: renderedBody,
+      includeProfileLink: isStudent
     })
 
     // Update recipient status
@@ -534,6 +550,11 @@ export async function getCampaignRecipients(
               }
             }
           }
+        },
+        user: {
+          select: {
+            name: true
+          }
         }
       },
       orderBy: { createdAt: 'asc' },
@@ -689,6 +710,11 @@ export async function getCampaignByIdForAdmin(id: string) {
                   email: true
                 }
               }
+            }
+          },
+          user: {
+            select: {
+              name: true
             }
           }
         },

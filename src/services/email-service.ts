@@ -629,6 +629,9 @@ interface SendDynamicEmailInput {
   to: string
   subject: string
   body: string // HTML content with variables already replaced
+  // Muestra el link "modificá tus preferencias en tu perfil" en el footer.
+  // Se desactiva para destinatarios que no son estudiantes (no tienen /student/profile).
+  includeProfileLink?: boolean
 }
 
 export interface SendDynamicEmailResult {
@@ -644,7 +647,7 @@ export interface SendDynamicEmailResult {
 export async function sendDynamicEmail(
   input: SendDynamicEmailInput
 ): Promise<SendDynamicEmailResult> {
-  const { to, subject, body } = input
+  const { to, subject, body, includeProfileLink = true } = input
 
   // Log in development for debugging
   if (process.env.NODE_ENV === 'development') {
@@ -665,7 +668,11 @@ export async function sendDynamicEmail(
       from: fromEmail,
       to,
       subject,
-      react: DynamicEmail({ subject, body, profileUrl: `${baseUrl}/student/profile` }),
+      react: DynamicEmail({
+        subject,
+        body,
+        profileUrl: includeProfileLink ? `${baseUrl}/student/profile` : null,
+      }),
     })
 
     if (result.error) {

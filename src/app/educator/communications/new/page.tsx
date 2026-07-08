@@ -6,6 +6,7 @@ import { getTemplatesByEducator } from '@/services/email-template-service'
 import { getStudentsForSelection } from '@/services/student-selection-service'
 import { getEducatorCourses } from '@/services/course-service'
 import { getFiltersForSelection } from '@/services/audience-filter-service'
+import { getUsersWithoutStudentCount } from '@/services/user-service'
 import { NewSendClient } from './new-send-client'
 
 export default async function NewCommunicationPage() {
@@ -22,12 +23,14 @@ export default async function NewCommunicationPage() {
   }
 
   // Fetch all data in parallel
-  const [templates, courses, students, filters] = await Promise.all([
-    getTemplatesByEducator(educator.id),
-    getEducatorCourses(educator.id),
-    getStudentsForSelection(educator.id),
-    getFiltersForSelection(educator.id),
-  ])
+  const [templates, courses, students, filters, usersWithoutCoursesCount] =
+    await Promise.all([
+      getTemplatesByEducator(educator.id),
+      getEducatorCourses(educator.id),
+      getStudentsForSelection(educator.id),
+      getFiltersForSelection(educator.id),
+      getUsersWithoutStudentCount(),
+    ])
 
   // Transform templates for the selector
   const templatesForSelection = templates.map((t) => ({
@@ -69,6 +72,7 @@ export default async function NewCommunicationPage() {
         students={studentsForSelection}
         filters={filters}
         educatorId={educator.id}
+        usersWithoutCoursesCount={usersWithoutCoursesCount}
       />
     </div>
   )
