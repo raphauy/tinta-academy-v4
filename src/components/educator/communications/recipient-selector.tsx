@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Users, UserCheck, UserPlus, Search, Filter, Globe, Lock, Loader2, ChevronDown } from 'lucide-react'
+import { Users, UserCheck, UserPlus, Search, Filter, Globe, Lock, Loader2, ChevronDown, Mail } from 'lucide-react'
 
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -44,7 +44,7 @@ export interface StudentForSelection {
 }
 
 export interface RecipientValue {
-  mode: 'course' | 'custom' | 'filter' | 'users_no_courses'
+  mode: 'course' | 'custom' | 'filter' | 'users_no_courses' | 'newsletter'
   courseId?: string
   studentIds: string[]
   filterId?: string
@@ -62,6 +62,8 @@ interface RecipientSelectorProps {
   loadingFilterCount?: boolean
   // Cantidad de usuarios registrados sin compras (audiencia "Usuarios sin cursos")
   usersWithoutCoursesCount: number
+  // Cantidad de suscriptores activos del newsletter (audiencia "Suscriptores del newsletter")
+  newsletterSubscribersCount: number
 }
 
 export function RecipientSelector({
@@ -74,6 +76,7 @@ export function RecipientSelector({
   filterCount = null,
   loadingFilterCount = false,
   usersWithoutCoursesCount,
+  newsletterSubscribersCount,
 }: RecipientSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [displayLimit, setDisplayLimit] = useState(STUDENTS_PAGE_SIZE)
@@ -108,7 +111,7 @@ export function RecipientSelector({
   const remainingStudents = filteredStudents.length - displayLimit
 
   const handleModeChange = (
-    mode: 'course' | 'custom' | 'filter' | 'users_no_courses'
+    mode: 'course' | 'custom' | 'filter' | 'users_no_courses' | 'newsletter'
   ) => {
     onChange({
       mode,
@@ -182,8 +185,11 @@ export function RecipientSelector({
     if (value.mode === 'users_no_courses') {
       return usersWithoutCoursesCount
     }
+    if (value.mode === 'newsletter') {
+      return newsletterSubscribersCount
+    }
     return value.studentIds.length
-  }, [value.mode, value.courseId, value.studentIds, courses, value.filterId, filterCount, usersWithoutCoursesCount])
+  }, [value.mode, value.courseId, value.studentIds, courses, value.filterId, filterCount, usersWithoutCoursesCount, newsletterSubscribersCount])
 
   const getStudentDisplayName = (student: StudentForSelection) => {
     if (student.firstName || student.lastName) {
@@ -202,7 +208,7 @@ export function RecipientSelector({
     <div className="space-y-4">
       <RadioGroup
         value={value.mode}
-        onValueChange={(v) => handleModeChange(v as 'course' | 'custom' | 'filter' | 'users_no_courses')}
+        onValueChange={(v) => handleModeChange(v as 'course' | 'custom' | 'filter' | 'users_no_courses' | 'newsletter')}
         className="space-y-4"
       >
         <div className="rounded-lg border p-4 space-y-3">
@@ -343,6 +349,28 @@ export function RecipientSelector({
               {usersWithoutCoursesCount === 1
                 ? '1 usuario registrado que aún no compró ningún curso'
                 : `${usersWithoutCoursesCount} usuarios registrados que aún no compraron ningún curso`}
+            </p>
+          )}
+        </div>
+
+        {/* Newsletter subscribers - audiencia especial fija */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <div className="flex items-center space-x-3">
+            <RadioGroupItem value="newsletter" id="mode-newsletter" />
+            <Label
+              htmlFor="mode-newsletter"
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              Suscriptores del newsletter
+            </Label>
+          </div>
+
+          {value.mode === 'newsletter' && (
+            <p className="ml-7 text-sm text-muted-foreground">
+              {newsletterSubscribersCount === 1
+                ? '1 persona suscrita al newsletter'
+                : `${newsletterSubscribersCount} personas suscritas al newsletter`}
             </p>
           )}
         </div>

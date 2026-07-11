@@ -6,6 +6,7 @@ import {
   formatDateForTemplate,
   type TemplateVariables
 } from './email-template-service'
+import { signUnsubscribeToken } from '@/lib/unsubscribe-token'
 
 /**
  * Get recent campaigns for an educator (limited)
@@ -283,6 +284,11 @@ export async function processCampaignSend(
   for (const recipient of campaign.recipients) {
     // Los destinatarios pueden ser estudiantes o usuarios sin curso (student == null)
     const isStudent = recipient.student != null
+    // Destinatarios sin panel de preferencias (no-estudiantes: suscriptores del
+    // newsletter o usuarios sin curso) reciben un link de baja en el footer.
+    const unsubscribeUrl = isStudent
+      ? null
+      : `${baseUrl}/unsubscribe?token=${signUnsubscribeToken(recipient.email)}`
 
     // Nombre para el saludo. Fallback 'Estudiante' cuando no hay nombre cargado
     // (evita saludos tipo "Hola ,"). Para no-estudiantes usamos el nombre del User.
@@ -318,7 +324,8 @@ export async function processCampaignSend(
       to: recipient.email,
       subject: renderedSubject,
       body: renderedBody,
-      includeProfileLink: isStudent
+      includeProfileLink: isStudent,
+      unsubscribeUrl
     })
 
     // Update recipient status

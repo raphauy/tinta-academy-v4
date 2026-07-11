@@ -27,3 +27,36 @@ export async function subscribe(email: string) {
     },
   })
 }
+
+/**
+ * Marca la suscripción como inactiva (baja del newsletter).
+ * Idempotente: si el email no existe o ya estaba inactivo no falla.
+ */
+export async function unsubscribe(email: string) {
+  const normalized = email.trim().toLowerCase()
+
+  return prisma.newsletterSubscription.updateMany({
+    where: { email: { equals: normalized, mode: 'insensitive' } },
+    data: { isActive: false },
+  })
+}
+
+/**
+ * Suscriptores activos del newsletter (para audiencias de campañas).
+ */
+export async function getActiveSubscribers(): Promise<{ email: string }[]> {
+  return prisma.newsletterSubscription.findMany({
+    where: { isActive: true },
+    select: { email: true },
+    orderBy: { subscribedAt: 'desc' },
+  })
+}
+
+/**
+ * Cantidad de suscriptores activos del newsletter.
+ */
+export async function getActiveSubscribersCount(): Promise<number> {
+  return prisma.newsletterSubscription.count({
+    where: { isActive: true },
+  })
+}

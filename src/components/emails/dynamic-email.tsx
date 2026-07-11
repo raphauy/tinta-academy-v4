@@ -16,6 +16,8 @@ export interface DynamicEmailProps {
   previewText?: string
   // Si es null/undefined no se muestra la línea de preferencias (destinatarios sin perfil de estudiante).
   profileUrl?: string | null
+  // Link de baja para destinatarios del newsletter. Si está presente se muestra en el footer.
+  unsubscribeUrl?: string | null
 }
 
 export default function DynamicEmail({
@@ -23,6 +25,7 @@ export default function DynamicEmail({
   body = '<p>Contenido del email</p>',
   previewText,
   profileUrl = 'https://academy.tinta.wine/student/profile',
+  unsubscribeUrl = null,
 }: DynamicEmailProps) {
   return (
     <Html>
@@ -50,6 +53,15 @@ export default function DynamicEmail({
                 Puedes modificar tus preferencias de comunicación en{' '}
                 <a href={profileUrl} style={styles.unsubscribeLink}>
                   tu perfil
+                </a>
+                .
+              </Text>
+            ) : null}
+            {unsubscribeUrl ? (
+              <Text style={styles.unsubscribeText}>
+                ¿No quieres recibir más estos correos?{' '}
+                <a href={unsubscribeUrl} style={styles.unsubscribeLink}>
+                  Darse de baja
                 </a>
                 .
               </Text>

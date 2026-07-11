@@ -7,6 +7,7 @@ import { getStudentsForSelection } from '@/services/student-selection-service'
 import { getEducatorCourses } from '@/services/course-service'
 import { getFiltersForSelection } from '@/services/audience-filter-service'
 import { getUsersWithoutStudentCount } from '@/services/user-service'
+import { getActiveSubscribersCount } from '@/services/newsletter-service'
 import { NewSendClient } from './new-send-client'
 
 export default async function NewCommunicationPage() {
@@ -23,13 +24,14 @@ export default async function NewCommunicationPage() {
   }
 
   // Fetch all data in parallel
-  const [templates, courses, students, filters, usersWithoutCoursesCount] =
+  const [templates, courses, students, filters, usersWithoutCoursesCount, newsletterSubscribersCount] =
     await Promise.all([
       getTemplatesByEducator(educator.id),
       getEducatorCourses(educator.id),
       getStudentsForSelection(educator.id),
       getFiltersForSelection(educator.id),
       getUsersWithoutStudentCount(),
+      getActiveSubscribersCount(),
     ])
 
   // Transform templates for the selector
@@ -73,6 +75,7 @@ export default async function NewCommunicationPage() {
         filters={filters}
         educatorId={educator.id}
         usersWithoutCoursesCount={usersWithoutCoursesCount}
+        newsletterSubscribersCount={newsletterSubscribersCount}
       />
     </div>
   )

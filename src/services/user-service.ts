@@ -134,11 +134,13 @@ export type UserWithoutStudent = {
 
 // Usuarios registrados que nunca compraron: activos, sin Student, sin Educator, sin rol.
 // (Al comprar se crea el Student, y educadores/admins tienen rol asignado.)
+// Se excluye a quienes se dieron de baja de las comunicaciones (emailUnsubscribedAt).
 const usersWithoutStudentWhere = {
   isActive: true,
   role: null,
   student: { is: null },
   educator: { is: null },
+  emailUnsubscribedAt: null,
 } as const
 
 /**
@@ -154,6 +156,22 @@ export async function getUsersWithoutStudent(): Promise<UserWithoutStudent[]> {
 
 export async function getUsersWithoutStudentCount(): Promise<number> {
   return prisma.user.count({ where: usersWithoutStudentWhere })
+}
+
+/**
+ * Baja de comunicaciones para un usuario (link "Darse de baja" en campañas).
+ * Idempotente: si el email no existe o ya estaba dado de baja, no falla.
+ */
+export async function unsubscribeUser(email: string) {
+  const normalized = normalizeEmail(email)
+
+  return prisma.user.updateMany({
+    where: {
+      email: { equals: normalized, mode: 'insensitive' },
+      emailUnsubscribedAt: null,
+    },
+    data: { emailUnsubscribedAt: new Date() },
+  })
 }
 
 export interface UpdateUserData {

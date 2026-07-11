@@ -62,6 +62,7 @@ interface NewSendClientProps {
   filters: FilterForSelection[]
   educatorId: string
   usersWithoutCoursesCount: number
+  newsletterSubscribersCount: number
 }
 
 type Step = 1 | 2 | 3
@@ -94,6 +95,7 @@ export function NewSendClient({
   filters,
   educatorId,
   usersWithoutCoursesCount,
+  newsletterSubscribersCount,
 }: NewSendClientProps) {
   const router = useRouter()
 
@@ -174,8 +176,11 @@ export function NewSendClient({
     if (recipients.mode === 'users_no_courses') {
       return usersWithoutCoursesCount
     }
+    if (recipients.mode === 'newsletter') {
+      return newsletterSubscribersCount
+    }
     return recipients.studentIds.length
-  }, [recipients, courses, filterCount, usersWithoutCoursesCount]) as number | null
+  }, [recipients, courses, filterCount, usersWithoutCoursesCount, newsletterSubscribersCount]) as number | null
 
   const selectedCourseName = useMemo(() => {
     if (recipients.mode === 'course' && recipients.courseId) {
@@ -220,8 +225,11 @@ export function NewSendClient({
     if (recipients.mode === 'users_no_courses') {
       return usersWithoutCoursesCount > 0
     }
+    if (recipients.mode === 'newsletter') {
+      return newsletterSubscribersCount > 0
+    }
     return recipients.studentIds.length > 0
-  }, [recipients, usersWithoutCoursesCount])
+  }, [recipients, usersWithoutCoursesCount, newsletterSubscribersCount])
 
   const canProceedFromStep2 = !!selectedTemplateId
 
@@ -256,6 +264,9 @@ export function NewSendClient({
     }
     if (recipients.mode === 'users_no_courses') {
       return `Usuarios sin cursos (${recipientCount ?? 0})`
+    }
+    if (recipients.mode === 'newsletter') {
+      return `Suscriptores del newsletter (${recipientCount ?? 0})`
     }
     return `${recipientCount} seleccionados`
   }, [recipients.mode, recipients.filterId, selectedCourseName, recipientCount, filters, loadingFilterCount])
@@ -438,6 +449,7 @@ export function NewSendClient({
                       filterCount={filterCount}
                       loadingFilterCount={loadingFilterCount}
                       usersWithoutCoursesCount={usersWithoutCoursesCount}
+                      newsletterSubscribersCount={newsletterSubscribersCount}
                     />
                   </div>
                 </div>

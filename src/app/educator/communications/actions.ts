@@ -30,6 +30,7 @@ const TEST_EMAIL_VARIABLES: TemplateVariables = {
 import { getStudentsByCourse } from '@/services/student-selection-service'
 import { getStudentIdsByFilter } from '@/services/audience-filter-service'
 import { getUsersWithoutStudent } from '@/services/user-service'
+import { getActiveSubscribers } from '@/services/newsletter-service'
 import { prisma } from '@/lib/prisma'
 import type { EmailCampaignStatus } from '@prisma/client'
 
@@ -40,7 +41,7 @@ import type { EmailCampaignStatus } from '@prisma/client'
 const sendCampaignSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
   templateId: z.string().min(1, 'La plantilla es requerida'),
-  recipientMode: z.enum(['course', 'custom', 'filter', 'users_no_courses']),
+  recipientMode: z.enum(['course', 'custom', 'filter', 'users_no_courses', 'newsletter']),
   courseId: z.string().optional(),
   studentIds: z.array(z.string()).optional(),
   filterId: z.string().optional(),
@@ -232,6 +233,20 @@ export async function sendCampaignAction(
       recipients = users.map((u) => ({
         userId: u.id,
         email: u.email,
+      }))
+    } else if (recipientMode === 'newsletter') {
+      // Suscriptores activos del newsletter (solo email, sin Student ni User)
+      const subscribers = await getActiveSubscribers()
+
+      if (subscribers.length === 0) {
+        return {
+          success: false,
+          error: 'No hay suscriptores activos en el newsletter',
+        }
+      }
+
+      recipients = subscribers.map((s) => ({
+        email: s.email,
       }))
     } else {
       // Custom mode
