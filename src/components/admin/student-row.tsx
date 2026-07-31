@@ -9,6 +9,7 @@ import {
   CheckCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PendingPaymentBadge } from './pending-payment-badge'
 import type { StudentWithStats } from '@/services/student-service'
 
 interface StudentRowProps {
@@ -114,6 +115,7 @@ export function StudentRow({ student, onView, onEdit }: StudentRowProps) {
               {isRecentlyActive && (
                 <span className="w-2 h-2 rounded-full bg-[#143F3B] dark:bg-[#6B9B7A] flex-shrink-0" title="Activo recientemente" />
               )}
+              {!student.hasPurchased && <PendingPaymentBadge />}
             </div>
             <p className="text-sm text-stone-500 dark:text-stone-400 truncate">
               {student.user.email}
@@ -184,6 +186,7 @@ export function StudentRow({ student, onView, onEdit }: StudentRowProps) {
               {isRecentlyActive && (
                 <span className="w-2 h-2 rounded-full bg-[#143F3B] dark:bg-[#6B9B7A] flex-shrink-0" title="Activo recientemente" />
               )}
+              {!student.hasPurchased && <PendingPaymentBadge />}
             </div>
             <p className="text-sm text-stone-500 dark:text-stone-400 truncate">
               {student.user.email}

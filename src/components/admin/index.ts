@@ -12,6 +12,7 @@ export { AdminCourses } from './admin-courses'
 // Students Section
 export { StudentRow } from './student-row'
 export { AdminStudents } from './admin-students'
+export { PendingPaymentBadge } from './pending-payment-badge'
 
 // Educators Section
 export { EducatorCard } from './educator-card'

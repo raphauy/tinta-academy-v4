@@ -123,8 +123,10 @@ export function AdminStudents({
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Cuenta solo compradores: el listado de abajo ademas incluye a
+            quienes cargaron sus datos y no completaron el pago. */}
         <AdminMetricCard
-          label="Total Estudiantes"
+          label="Alumnos con Compra"
           value={stats.total.toLocaleString()}
           icon={<Users className="w-4 h-4" />}
           variant="primary"

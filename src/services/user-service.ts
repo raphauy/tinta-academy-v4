@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { Role } from '@prisma/client'
+import { Prisma, Role } from '@prisma/client'
 import { z } from 'zod'
 
 export const createUserSchema = z.object({
@@ -132,16 +132,22 @@ export type UserWithoutStudent = {
   name: string | null
 }
 
-// Usuarios registrados que nunca compraron: activos, sin Student, sin Educator, sin rol.
-// (Al comprar se crea el Student, y educadores/admins tienen rol asignado.)
+// Usuarios registrados que nunca compraron: activos, sin inscripciones, sin
+// Educator y sin rol. El Student se crea al generar la orden (antes de que el
+// pago se confirme), asi que "no compro" se mide por no tener inscripciones y
+// no por no tener Student: de lo contrario, quien deja una orden sin pagar
+// quedaria fuera de esta audiencia y de las de curso a la vez.
 // Se excluye a quienes se dieron de baja de las comunicaciones (emailUnsubscribedAt).
-const usersWithoutStudentWhere = {
+const usersWithoutStudentWhere: Prisma.UserWhereInput = {
   isActive: true,
   role: null,
-  student: { is: null },
   educator: { is: null },
   emailUnsubscribedAt: null,
-} as const
+  OR: [
+    { student: { is: null } },
+    { student: { enrollments: { none: {} } } },
+  ],
+}
 
 /**
  * Audiencia "Usuarios sin cursos": usuarios registrados que no son estudiantes.

@@ -13,6 +13,11 @@ import {
   type CheckoutContext,
 } from '@/services/checkout-service'
 import { validateCoupon, type ValidateCouponResult } from '@/services/coupon-service'
+import type { UpsertStudentProfileInput } from '@/services/student-service'
+import {
+  studentProfileSchema,
+  type StudentProfileFormData,
+} from '@/lib/validations/student-profile'
 import { getOrderById, markTransferAsSent, assignStudentRoleIfNeeded } from '@/services/order-service'
 import { getCourseById } from '@/services/course-service'
 import { sendAdminTransferNotificationEmail } from '@/services/email-service'
@@ -146,7 +151,8 @@ export async function initiateCheckoutAction(
   paymentMethod: 'mercadopago' | 'bank_transfer' | 'free',
   currency: 'USD' | 'UYU',
   couponCode?: string,
-  bankAccountId?: string
+  bankAccountId?: string,
+  profile?: StudentProfileFormData
 ): Promise<ActionResult<{ orderId: string; redirectUrl?: string; newRole?: string }>> {
   const authResult = await getAuthenticatedUser()
 
@@ -170,6 +176,23 @@ export async function initiateCheckoutAction(
     }
   }
 
+  // Datos de inscripcion. Se validan aca y se guardan junto con la orden; si
+  // no vienen, initiateCheckout rechaza cuando el perfil esta incompleto.
+  let profileData: UpsertStudentProfileInput | undefined
+
+  if (profile) {
+    const validatedProfile = studentProfileSchema.safeParse(profile)
+
+    if (!validatedProfile.success) {
+      return {
+        success: false,
+        error: validatedProfile.error.issues[0].message,
+      }
+    }
+
+    profileData = validatedProfile.data
+  }
+
   try {
     const method = validated.data.paymentMethod as PaymentMethod
     const curr = validated.data.currency as Currency
@@ -179,14 +202,15 @@ export async function initiateCheckoutAction(
       const result = await processFreeEnrollment(
         authResult.user.id,
         courseId,
-        couponCode
+        couponCode,
+        profileData
       )
 
       return {
         success: true,
         data: {
           orderId: result.order!.id,
-          newRole: result.isNewStudent ? 'student' : undefined,
+          newRole: result.roleAssigned ? 'student' : undefined,
         },
       }
     }
@@ -197,7 +221,8 @@ export async function initiateCheckoutAction(
       courseId,
       method,
       curr,
-      couponCode
+      couponCode,
+      profileData
     )
 
     if (!order) {

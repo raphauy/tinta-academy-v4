@@ -25,8 +25,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { CheckoutContext, Pricing } from '@/services/checkout-service'
 import type { ValidateCouponResult } from '@/services/coupon-service'
+import type { StudentProfileFormData } from '@/lib/validations/student-profile'
 import { initiateCheckoutAction, applyCouponAction } from '@/app/checkout/actions'
 import { CheckoutSummary } from './checkout-summary'
+import { CheckoutProfileForm } from './checkout-profile-form'
 
 // ============================================
 // TYPES
@@ -305,6 +307,43 @@ function CouponInput({
 
 
 // ============================================
+// PROFILE SUMMARY
+// ============================================
+
+interface ProfileSummaryProps {
+  profile: StudentProfileFormData
+  onEdit: () => void
+  disabled?: boolean
+}
+
+function ProfileSummary({ profile, onEdit, disabled }: ProfileSummaryProps) {
+  return (
+    <div className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-muted/30">
+      <div className="flex items-start gap-2 min-w-0">
+        <Check className="w-4 h-4 mt-0.5 text-verde-uva-600 shrink-0" />
+        <div className="min-w-0 text-sm">
+          <p className="font-medium truncate">
+            {profile.firstName} {profile.lastName}
+          </p>
+          <p className="text-muted-foreground truncate">
+            CI {profile.identityDocument} · {profile.phone}
+          </p>
+        </div>
+      </div>
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={onEdit}
+        disabled={disabled}
+      >
+        Editar
+      </Button>
+    </div>
+  )
+}
+
+// ============================================
 // MAIN CHECKOUT FORM
 // ============================================
 
@@ -318,6 +357,12 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
     context.couponValidation
   )
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // El paso de datos solo aparece si al alumno le falta algo; si ya los tiene
+  // cargados va directo al pago, con la opcion de editarlos.
+  const [step, setStep] = useState<'profile' | 'payment'>(
+    context.profileComplete ? 'payment' : 'profile'
+  )
+  const [profile, setProfile] = useState<StudentProfileFormData | null>(null)
 
   // Calculate updated pricing when coupon changes
   const currentPricing = appliedCoupon?.valid
@@ -359,7 +404,8 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
         paymentMethod,
         currency,
         couponCode,
-        bankAccountId
+        bankAccountId,
+        profile ?? undefined
       )
 
       if (!result.success) {
@@ -381,6 +427,11 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleProfileSubmit = (data: StudentProfileFormData) => {
+    setProfile(data)
+    setStep('payment')
   }
 
   const handleCouponApply = (result: ValidateCouponResult) => {
@@ -416,67 +467,84 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
           </p>
         </div>
 
-        {/* Payment Method Selector */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Método de pago</CardTitle>
-            <CardDescription>
-              Selecciona como deseas realizar el pago
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <PaymentMethodSelector
-              selected={paymentMethod}
-              onSelect={setPaymentMethod}
-              pricing={currentPricing}
+        {step === 'profile' ? (
+          <CheckoutProfileForm
+            defaultValues={profile ?? context.studentProfile}
+            onSubmit={handleProfileSubmit}
+            disabled={isSubmitting}
+          />
+        ) : (
+          <>
+            {/* Datos de inscripción ya cargados */}
+            <ProfileSummary
+              profile={profile ?? context.studentProfile}
+              onEdit={() => setStep('profile')}
+              disabled={isSubmitting}
             />
-          </CardContent>
-        </Card>
 
-        {/* Coupon Input */}
-        <CouponInput
-          courseId={context.course.id}
-          appliedCoupon={appliedCoupon}
-          onApply={handleCouponApply}
-          onRemove={handleCouponRemove}
-          disabled={isSubmitting}
-        />
+            {/* Payment Method Selector */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Método de pago</CardTitle>
+                <CardDescription>
+                  Selecciona como deseas realizar el pago
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PaymentMethodSelector
+                  selected={paymentMethod}
+                  onSelect={setPaymentMethod}
+                  pricing={currentPricing}
+                />
+              </CardContent>
+            </Card>
 
-        {/* Bank Account Info (shown when bank_transfer selected) */}
-        {paymentMethod === 'bank_transfer' && context.bankAccounts.length > 0 && (
-          <Card className="border-amber-200 bg-amber-50/50">
-            <CardContent className="pt-6">
-              <p className="text-sm text-amber-800">
-                <strong>Nota:</strong> Al seleccionar transferencia bancaria, te
-                mostraremos los datos de la cuenta para realizar el pago. Tu
-                inscripción quedará pendiente hasta confirmar la transferencia.
-              </p>
-            </CardContent>
-          </Card>
+            {/* Coupon Input */}
+            <CouponInput
+              courseId={context.course.id}
+              appliedCoupon={appliedCoupon}
+              onApply={handleCouponApply}
+              onRemove={handleCouponRemove}
+              disabled={isSubmitting}
+            />
+
+            {/* Bank Account Info (shown when bank_transfer selected) */}
+            {paymentMethod === 'bank_transfer' && context.bankAccounts.length > 0 && (
+              <Card className="border-amber-200 bg-amber-50/50">
+                <CardContent className="pt-6">
+                  <p className="text-sm text-amber-800">
+                    <strong>Nota:</strong> Al seleccionar transferencia bancaria, te
+                    mostraremos los datos de la cuenta para realizar el pago. Tu
+                    inscripción quedará pendiente hasta confirmar la transferencia.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Submit Button */}
+            <Button
+              size="lg"
+              className="w-full bg-verde-uva-600 hover:bg-verde-uva-700"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Procesando...
+                </>
+              ) : (
+                submitButtonText()
+              )}
+            </Button>
+
+            {/* Security Notice */}
+            <p className="text-xs text-center text-muted-foreground">
+              Tus datos están protegidos. Al continuar aceptas nuestros términos y
+              condiciones.
+            </p>
+          </>
         )}
-
-        {/* Submit Button */}
-        <Button
-          size="lg"
-          className="w-full bg-verde-uva-600 hover:bg-verde-uva-700"
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Procesando...
-            </>
-          ) : (
-            submitButtonText()
-          )}
-        </Button>
-
-        {/* Security Notice */}
-        <p className="text-xs text-center text-muted-foreground">
-          Tus datos están protegidos. Al continuar aceptas nuestros términos y
-          condiciones.
-        </p>
       </div>
 
       {/* Right Column - Order Summary */}

@@ -1,4 +1,14 @@
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
+
+/**
+ * Estudiantes que efectivamente compraron. El Student existe desde que se crea
+ * la orden (el checkout guarda los datos antes de pagar), asi que "compro" se
+ * mide por pago confirmado o inscripcion, no por la existencia del registro.
+ */
+export const purchasedStudentWhere: Prisma.StudentWhereInput = {
+  OR: [{ orders: { some: { status: 'paid' } } }, { enrollments: { some: {} } }],
+}
 
 /**
  * Get student by user ID with user relation
@@ -8,6 +18,28 @@ export async function getStudentByUserId(userId: string) {
     where: { userId },
     include: {
       user: true,
+    },
+  })
+}
+
+/**
+ * Solo los campos obligatorios del perfil. Se usa en el layout del panel de
+ * alumno, que corre en cada navegacion: evita traer el Student y el User
+ * completos para decidir si mostrar el aviso de datos faltantes.
+ */
+export async function getStudentRequiredFields(userId: string) {
+  return prisma.student.findUnique({
+    where: { userId },
+    select: {
+      firstName: true,
+      lastName: true,
+      identityDocument: true,
+      phone: true,
+      dateOfBirth: true,
+      address: true,
+      city: true,
+      zip: true,
+      country: true,
     },
   })
 }
@@ -251,6 +283,51 @@ export async function updateStudentProfile(
   })
 }
 
+export interface UpsertStudentProfileInput {
+  firstName: string
+  lastName: string
+  identityDocument: string
+  phone: string
+  dateOfBirth: Date
+  address: string
+  city: string
+  zip: string
+  country: string
+  billingName?: string
+  billingTaxId?: string
+  billingAddress?: string
+}
+
+/**
+ * Crea o actualiza el Student de un usuario con los datos de inscripcion.
+ *
+ * Se usa desde el checkout, donde el Student puede no existir todavia: el rol
+ * `student` se asigna recien al confirmarse el pago (o al marcar la
+ * transferencia como enviada), asi que este upsert no lo toca.
+ */
+export async function upsertStudentProfile(
+  userId: string,
+  data: UpsertStudentProfileInput
+) {
+  // Los opcionales vacios se omiten (igual que updateStudentProfileAction) para
+  // no pisar datos de facturacion ya cargados con strings vacios.
+  const emptyToUndefined = (value?: string) => (value?.trim() ? value : undefined)
+
+  const normalized = {
+    ...data,
+    billingName: emptyToUndefined(data.billingName),
+    billingTaxId: emptyToUndefined(data.billingTaxId),
+    billingAddress: emptyToUndefined(data.billingAddress),
+  }
+
+  return prisma.student.upsert({
+    where: { userId },
+    create: { userId, ...normalized },
+    update: normalized,
+    include: { user: true },
+  })
+}
+
 /**
  * Get all students with minimal data for selection (superadmin only)
  */
@@ -301,6 +378,12 @@ export interface StudentWithStats {
   totalSpentUSD: number
   totalSpentUYU: number
   lastActivityAt: Date | null
+  /**
+   * false para quien cargo sus datos en el checkout y nunca completo el pago.
+   * El Student existe desde que se crea la orden, asi que aparecen en el
+   * listado; esto los distingue de los compradores.
+   */
+  hasPurchased: boolean
 }
 
 export interface StudentStats {
@@ -387,6 +470,7 @@ export async function getAllStudentsWithStats(): Promise<StudentWithStats[]> {
       totalSpentUSD,
       totalSpentUYU,
       lastActivityAt,
+      hasPurchased: student.orders.length > 0 || student.enrollments.length > 0,
     }
   })
 }
@@ -400,31 +484,40 @@ export async function getStudentStats(): Promise<StudentStats> {
 
   const [total, newThisMonth, studentsWithActivity, studentsWithCompletedCourses] =
     await Promise.all([
-      // Total students
-      prisma.student.count(),
+      // Total students (solo compradores, ver purchasedStudentWhere)
+      prisma.student.count({ where: purchasedStudentWhere }),
       // New students this month
       prisma.student.count({
         where: {
+          ...purchasedStudentWhere,
           createdAt: { gte: thisMonthStart },
         },
       }),
-      // Students with activity this month (enrollments or orders)
+      // Students with activity this month (enrollments or orders).
+      // Va en AND (y no spread) porque purchasedStudentWhere tiene su propio OR
+      // de nivel superior: spreadearlos pisaria uno con el otro. Ademas debe
+      // seguir siendo subconjunto de `total`, que solo cuenta compradores.
       prisma.student.count({
         where: {
-          OR: [
+          AND: [
+            purchasedStudentWhere,
             {
-              enrollments: {
-                some: {
-                  enrolledAt: { gte: thisMonthStart },
+              OR: [
+                {
+                  enrollments: {
+                    some: {
+                      enrolledAt: { gte: thisMonthStart },
+                    },
+                  },
                 },
-              },
-            },
-            {
-              orders: {
-                some: {
-                  createdAt: { gte: thisMonthStart },
+                {
+                  orders: {
+                    some: {
+                      createdAt: { gte: thisMonthStart },
+                    },
+                  },
                 },
-              },
+              ],
             },
           ],
         },
@@ -531,6 +624,7 @@ export async function getStudentByIdWithStats(
     totalSpentUSD,
     totalSpentUYU,
     lastActivityAt,
+    hasPurchased: student.orders.length > 0 || student.enrollments.length > 0,
   }
 }
 
@@ -667,6 +761,7 @@ export async function getStudentsByActivity(days: number): Promise<StudentWithSt
       totalSpentUSD,
       totalSpentUYU,
       lastActivityAt,
+      hasPurchased: student.orders.length > 0 || student.enrollments.length > 0,
     }
   })
 }

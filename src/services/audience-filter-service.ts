@@ -411,11 +411,17 @@ export function buildFilterWhereClause(
     return { id: { equals: 'impossible_id' } }
   }
 
-  if (groupConditions.length === 1) {
-    return groupConditions[0]
-  }
+  const filterCondition =
+    groupConditions.length === 1 ? groupConditions[0] : { OR: groupConditions }
 
-  return { OR: groupConditions }
+  // Desde que el checkout guarda los datos antes de pagar, hay Student de gente
+  // que arranco una compra y no la termino. Esos usuarios quedan sin rol, y su
+  // audiencia es "Usuarios sin cursos": aca se excluyen para no mandarles un
+  // email escrito para alumnos. Los pendientes de transferencia (que ya tienen
+  // rol `student`) siguen incluidos.
+  return {
+    AND: [filterCondition, { user: { role: { not: null } } }],
+  }
 }
 
 /**

@@ -18,6 +18,8 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { initiateCheckoutAction } from '@/app/checkout/actions'
 import type { CheckoutContext } from '@/services/checkout-service'
+import type { StudentProfileFormData } from '@/lib/validations/student-profile'
+import { CheckoutProfileForm } from './checkout-profile-form'
 
 interface FreeCheckoutProps {
   context: CheckoutContext
@@ -44,7 +46,7 @@ export function FreeCheckout({ context }: FreeCheckoutProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { course, coupon, pricing } = context
 
-  const handleEnroll = async () => {
+  const handleEnroll = async (profile?: StudentProfileFormData) => {
     setIsLoading(true)
 
     try {
@@ -52,7 +54,9 @@ export function FreeCheckout({ context }: FreeCheckoutProps) {
         course.id,
         'free',
         'USD',
-        coupon?.code
+        coupon?.code,
+        undefined,
+        profile
       )
 
       if (!result.success) {
@@ -82,9 +86,11 @@ export function FreeCheckout({ context }: FreeCheckoutProps) {
     }
   }
 
+  const needsProfile = !context.profileComplete
+
   return (
-    <div className="flex items-center justify-center py-8">
-      <Card className="max-w-lg w-full">
+    <div className="flex flex-col items-center gap-6 py-8">
+      <Card className={`w-full ${needsProfile ? 'max-w-2xl' : 'max-w-lg'}`}>
         <CardHeader className="text-center">
           <div className="mx-auto w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
             <Gift className="w-8 h-8 text-green-600" />
@@ -166,24 +172,40 @@ export function FreeCheckout({ context }: FreeCheckoutProps) {
           )}
         </CardContent>
 
-        <CardFooter>
-          <Button
-            onClick={handleEnroll}
-            disabled={isLoading}
-            className="w-full"
-            size="lg"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Procesando...
-              </>
-            ) : (
-              'Inscribirme ahora'
-            )}
-          </Button>
-        </CardFooter>
+        {/* Sin datos pendientes se puede inscribir directo */}
+        {!needsProfile && (
+          <CardFooter>
+            <Button
+              onClick={() => handleEnroll()}
+              disabled={isLoading}
+              className="w-full"
+              size="lg"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Procesando...
+                </>
+              ) : (
+                'Inscribirme ahora'
+              )}
+            </Button>
+          </CardFooter>
+        )}
       </Card>
+
+      {/* Datos del alumno: se guardan junto con la inscripción */}
+      {needsProfile && (
+        <div className="w-full max-w-2xl">
+          <CheckoutProfileForm
+            defaultValues={context.studentProfile}
+            onSubmit={handleEnroll}
+            submitLabel="Inscribirme ahora"
+            disabled={isLoading}
+            isSubmitting={isLoading}
+          />
+        </div>
+      )}
     </div>
   )
 }

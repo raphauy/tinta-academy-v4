@@ -9,6 +9,7 @@ import {
   updateStudentProfile,
 } from '@/services/student-service'
 import { getOrdersByUserId } from '@/services/order-service'
+import { studentProfileSchema } from '@/lib/validations/student-profile'
 
 // ============================================
 // TYPES
@@ -52,21 +53,6 @@ async function getAuthenticatedStudent(): Promise<
 // ============================================
 // VALIDATION SCHEMAS
 // ============================================
-
-const updateProfileSchema = z.object({
-  firstName: z.string().min(1, 'El nombre es requerido'),
-  lastName: z.string().min(1, 'El apellido es requerido'),
-  identityDocument: z.string().min(1, 'La cédula es requerida'),
-  phone: z.string().min(1, 'El teléfono es requerido'),
-  dateOfBirth: z.coerce.date({ error: 'La fecha de nacimiento es requerida' }),
-  address: z.string().min(1, 'La dirección es requerida'),
-  city: z.string().min(1, 'La ciudad es requerida'),
-  zip: z.string().min(1, 'El código postal es requerido'),
-  country: z.string().min(1, 'El país es requerido'),
-  billingName: z.string().optional(),
-  billingTaxId: z.string().optional(),
-  billingAddress: z.string().optional(),
-})
 
 const notificationPreferencesSchema = z.object({
   notifyNewCourses: z.boolean(),
@@ -112,7 +98,7 @@ export async function updateStudentProfileAction(
     Object.entries(rawData).filter(([, v]) => v !== undefined)
   )
 
-  const validated = updateProfileSchema.safeParse(filteredData)
+  const validated = studentProfileSchema.safeParse(filteredData)
 
   if (!validated.success) {
     return {

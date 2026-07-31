@@ -3,9 +3,10 @@ import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import { ViewAsProvider } from '@/components/student/view-as-context'
 import { AppShellWithBannerClient } from '@/components/student/app-shell-with-banner'
-import { getAllStudents } from '@/services/student-service'
+import { getAllStudents, getStudentRequiredFields } from '@/services/student-service'
 import { getEducatorStudents } from '@/services/enrollment-service'
 import { getEducatorByUserId } from '@/services/educator-service'
+import { getMissingProfileFields } from '@/lib/validations/student-profile'
 import type { StudentForSelection } from '@/services/student-service'
 
 interface StudentLayoutProps {
@@ -55,6 +56,15 @@ export default async function StudentLayout({ children }: StudentLayoutProps) {
 
   const showBanner = canViewOthers && availableStudents.length > 0
 
+  // Aviso de datos faltantes: solo para el alumno sobre su propio perfil, no
+  // cuando un admin o educador esta viendo el panel de otro.
+  let missingProfileFields: string[] = []
+
+  if (role === 'student') {
+    const student = await getStudentRequiredFields(session.user.id)
+    missingProfileFields = getMissingProfileFields(student)
+  }
+
   return (
     <Suspense fallback={null}>
       <ViewAsProvider>
@@ -67,6 +77,7 @@ export default async function StudentLayout({ children }: StudentLayoutProps) {
           }}
           showBanner={showBanner}
           availableStudents={availableStudents}
+          missingProfileFields={missingProfileFields}
         >
           {children}
         </AppShellWithBannerClient>

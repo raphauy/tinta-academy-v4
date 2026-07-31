@@ -1,11 +1,13 @@
 import { prisma } from '@/lib/prisma'
 import { endOfDay } from 'date-fns'
-import { PaymentMethod, Currency, OrderStatus, EnrollmentStatus, Course, Coupon, BankAccount } from '@prisma/client'
+import { PaymentMethod, Currency, OrderStatus, EnrollmentStatus, Course, Coupon, BankAccount, Student } from '@prisma/client'
 import { createOrder, getOrderById, updateOrderStatus, setMercadoPagoPreference } from './order-service'
 import { validateCoupon, ValidateCouponResult } from './coupon-service'
 import { getActiveBankAccounts } from './bank-account-service'
 import { createPreference } from './mercadopago-service'
 import { createEnrollment } from './enrollment-service'
+import { upsertStudentProfile, type UpsertStudentProfileInput } from './student-service'
+import { isStudentProfileComplete } from '@/lib/validations/student-profile'
 import {
   sendOrderConfirmationEmail,
   sendTransferInstructionsEmail,
@@ -36,6 +38,25 @@ export interface Pricing {
   isFree: boolean
 }
 
+/**
+ * Datos del alumno listos para el formulario del checkout (strings, con
+ * dateOfBirth en formato yyyy-MM-dd para el input type="date").
+ */
+export interface CheckoutStudentProfile {
+  firstName: string
+  lastName: string
+  identityDocument: string
+  phone: string
+  dateOfBirth: string
+  address: string
+  city: string
+  zip: string
+  country: string
+  billingName: string
+  billingTaxId: string
+  billingAddress: string
+}
+
 export interface CheckoutContext {
   user: {
     id: string
@@ -55,6 +76,10 @@ export interface CheckoutContext {
   pricing: Pricing
   canEnroll: boolean
   enrollmentBlockReason: EnrollmentBlockReason | null
+  /** Datos ya cargados (o sugeridos) para prellenar el formulario de inscripcion. */
+  studentProfile: CheckoutStudentProfile
+  /** true si el alumno ya tiene todos los datos obligatorios cargados. */
+  profileComplete: boolean
 }
 
 // Default USD to UYU exchange rate (can be overridden by course.priceUYU)
@@ -93,6 +118,35 @@ function getCourseLocation(course: Course): string {
   if (course.modality === 'online') return 'Online'
   if (course.modality === 'webinar') return 'Webinar en vivo'
   return course.address || 'Por confirmar'
+}
+
+/**
+ * Arma los valores iniciales del formulario de inscripcion. Si el usuario
+ * todavia no tiene Student, sugiere nombre y apellido partiendo User.name
+ * (editables por el alumno antes de confirmar).
+ */
+function buildCheckoutStudentProfile(
+  student: Student | null,
+  userName: string | null
+): CheckoutStudentProfile {
+  const nameParts = (userName || '').trim().split(/\s+/).filter(Boolean)
+
+  return {
+    firstName: student?.firstName || nameParts[0] || '',
+    lastName: student?.lastName || nameParts.slice(1).join(' '),
+    identityDocument: student?.identityDocument || '',
+    phone: student?.phone || '',
+    dateOfBirth: student?.dateOfBirth
+      ? student.dateOfBirth.toISOString().split('T')[0]
+      : '',
+    address: student?.address || '',
+    city: student?.city || '',
+    zip: student?.zip || '',
+    country: student?.country || 'Uruguay',
+    billingName: student?.billingName || '',
+    billingTaxId: student?.billingTaxId || '',
+    billingAddress: student?.billingAddress || '',
+  }
 }
 
 function calculatePricing(
@@ -195,7 +249,6 @@ export async function getCheckoutContext(
   // Check if already enrolled
   const student = await prisma.student.findUnique({
     where: { userId },
-    select: { id: true },
   })
 
   if (student) {
@@ -264,6 +317,8 @@ export async function getCheckoutContext(
     pricing,
     canEnroll,
     enrollmentBlockReason,
+    studentProfile: buildCheckoutStudentProfile(student, user.name),
+    profileComplete: isStudentProfileComplete(student),
   }
 }
 
@@ -275,13 +330,24 @@ export async function initiateCheckout(
   courseId: string,
   paymentMethod: PaymentMethod,
   currency: Currency,
-  couponCode?: string
+  couponCode?: string,
+  profile?: UpsertStudentProfileInput
 ): Promise<{ order: Awaited<ReturnType<typeof getOrderById>>; context: CheckoutContext }> {
   // Get checkout context (validates eligibility)
   const context = await getCheckoutContext(userId, courseId, couponCode)
 
   if (!context.canEnroll) {
     throw new Error(`No puedes inscribirte: ${context.enrollmentBlockReason}`)
+  }
+
+  // Los datos se guardan recien cuando el alumno confirma la compra, no
+  // mientras completa el formulario: asi un checkout abandonado a mitad no deja
+  // un Student vacio. Si createOrder fallara justo despues, queda el Student ya
+  // cargado, lo cual es inocuo (son los datos del propio alumno).
+  if (profile) {
+    await upsertStudentProfile(userId, profile)
+  } else if (!context.profileComplete) {
+    throw new Error('Necesitamos tus datos para completar la inscripción')
   }
 
   // Determine final amount based on currency
@@ -421,23 +487,36 @@ export async function processCheckoutBankTransfer(
 export async function processFreeEnrollment(
   userId: string,
   courseId: string,
-  couponCode?: string
+  couponCode?: string,
+  profile?: UpsertStudentProfileInput
 ): Promise<{
   order: Awaited<ReturnType<typeof getOrderById>>
   enrollment: Awaited<ReturnType<typeof createEnrollment>>
   isNewStudent: boolean
+  roleAssigned: boolean
 }> {
-  const { order, context } = await initiateCheckout(
+  // Se valida antes de crear nada: si el curso no es gratuito, esta via no
+  // debe dejar una orden ni un Student a medio camino. El chequeo de
+  // elegibilidad va primero para no tapar un "ya estas inscrito" con un
+  // "no es gratuito"; initiateCheckout lo repite sobre su propia consulta.
+  const preview = await getCheckoutContext(userId, courseId, couponCode)
+
+  if (!preview.canEnroll) {
+    throw new Error(`No puedes inscribirte: ${preview.enrollmentBlockReason}`)
+  }
+
+  if (!preview.pricing.isFree) {
+    throw new Error('Este curso no es gratuito')
+  }
+
+  const { order } = await initiateCheckout(
     userId,
     courseId,
     PaymentMethod.free,
     Currency.USD,
-    couponCode
+    couponCode,
+    profile
   )
-
-  if (!context.pricing.isFree) {
-    throw new Error('Este curso no es gratuito')
-  }
 
   // Complete the checkout
   const result = await completeCheckout(order!.id)
@@ -453,6 +532,8 @@ export async function completeCheckout(orderId: string): Promise<{
   order: Awaited<ReturnType<typeof getOrderById>>
   enrollment: Awaited<ReturnType<typeof createEnrollment>>
   isNewStudent: boolean
+  /** true si en esta confirmacion se le asigno el rol `student` al usuario. */
+  roleAssigned: boolean
 }> {
   const order = await getOrderById(orderId)
 
@@ -470,6 +551,11 @@ export async function completeCheckout(orderId: string): Promise<{
     let isNewStudent = false
     let studentId: string
 
+    const user = await tx.user.findUnique({
+      where: { id: order.userId },
+      select: { name: true, role: true },
+    })
+
     // Check if user already has a student record
     const existingStudent = await tx.student.findUnique({
       where: { userId: order.userId },
@@ -478,11 +564,8 @@ export async function completeCheckout(orderId: string): Promise<{
     if (existingStudent) {
       studentId = existingStudent.id
     } else {
-      // Create student record
-      const user = await tx.user.findUnique({
-        where: { id: order.userId },
-      })
-
+      // Fallback: ordenes creadas antes de que el checkout pidiera los datos.
+      // Se arma un nombre partiendo User.name; el alumno lo completa despues.
       const newStudent = await tx.student.create({
         data: {
           userId: order.userId,
@@ -492,14 +575,19 @@ export async function completeCheckout(orderId: string): Promise<{
       })
       studentId = newStudent.id
       isNewStudent = true
+    }
 
-      // Update user role to student if not already set
-      if (!user?.role || user.role === 'student') {
-        await tx.user.update({
-          where: { id: order.userId },
-          data: { role: 'student' },
-        })
-      }
+    // La asignacion del rol va fuera de la creacion del Student: desde que el
+    // checkout guarda los datos antes de pagar, el Student ya existe cuando se
+    // confirma el pago. Se preservan superadmin y educator.
+    let roleAssigned = false
+
+    if (!user?.role) {
+      await tx.user.update({
+        where: { id: order.userId },
+        data: { role: 'student' },
+      })
+      roleAssigned = true
     }
 
     // Update order status to paid
@@ -559,7 +647,7 @@ export async function completeCheckout(orderId: string): Promise<{
       })
     }
 
-    return { enrollment, isNewStudent }
+    return { enrollment, isNewStudent, roleAssigned }
   })
 
   // Generar ejecuciones de workflows para el nuevo estudiante
@@ -652,6 +740,7 @@ export async function completeCheckout(orderId: string): Promise<{
     order: updatedOrder,
     enrollment: result.enrollment,
     isNewStudent: result.isNewStudent,
+    roleAssigned: result.roleAssigned,
   }
 }
 

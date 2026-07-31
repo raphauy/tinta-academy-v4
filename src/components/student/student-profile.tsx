@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { toast } from 'sonner'
 import {
   User,
@@ -26,24 +25,12 @@ import {
   updateNotificationPreferencesAction,
   updateStudentAvatarAction,
 } from '@/app/student/actions'
+import {
+  studentProfileFormSchema,
+  type StudentProfileFormData,
+} from '@/lib/validations/student-profile'
 
-// Zod schema for form validation
-const profileSchema = z.object({
-  firstName: z.string().min(1, 'El nombre es requerido'),
-  lastName: z.string().min(1, 'El apellido es requerido'),
-  identityDocument: z.string().min(1, 'La cédula es requerida'),
-  phone: z.string().min(1, 'El teléfono es requerido'),
-  dateOfBirth: z.string().min(1, 'La fecha de nacimiento es requerida'),
-  address: z.string().min(1, 'La dirección es requerida'),
-  city: z.string().min(1, 'La ciudad es requerida'),
-  zip: z.string().min(1, 'El código postal es requerido'),
-  country: z.string().min(1, 'El país es requerido'),
-  billingName: z.string().optional(),
-  billingTaxId: z.string().optional(),
-  billingAddress: z.string().optional(),
-})
-
-type ProfileFormData = z.infer<typeof profileSchema>
+type ProfileFormData = StudentProfileFormData
 
 interface StudentProfileProps {
   profile: {
@@ -122,7 +109,7 @@ export function StudentProfile({ profile, readOnly = false }: StudentProfileProp
     setValue,
     formState: { errors, isDirty },
   } = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
+    resolver: zodResolver(studentProfileFormSchema),
     defaultValues: {
       firstName: profile.firstName || '',
       lastName: profile.lastName || '',

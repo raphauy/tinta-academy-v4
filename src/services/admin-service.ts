@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { purchasedStudentWhere } from './student-service'
 
 // ============================================
 // TYPES
@@ -134,8 +135,8 @@ export async function getDashboardTotals(): Promise<DashboardTotals> {
   ] = await Promise.all([
     // Users count
     prisma.user.count({ where: { isActive: true } }),
-    // Students count
-    prisma.student.count(),
+    // Students count (solo compradores, igual que la metrica de /admin/users/students)
+    prisma.student.count({ where: purchasedStudentWhere }),
     // Educators count
     prisma.educator.count(),
     // Total courses count (not draft)

@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { PendingPaymentBadge } from './pending-payment-badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -126,7 +127,10 @@ export function StudentDetailDialog({
               </div>
             )}
             <div>
-              <DialogTitle>{displayName}</DialogTitle>
+              <div className="flex items-center gap-2">
+                <DialogTitle>{displayName}</DialogTitle>
+                {!student.hasPurchased && <PendingPaymentBadge />}
+              </div>
               <DialogDescription>{student.user.email}</DialogDescription>
             </div>
           </div>

@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { AppShell } from '@/components/shell'
 import { ViewAsBanner } from './view-as-banner'
+import { IncompleteProfileBanner } from './incomplete-profile-banner'
 import type { StudentForSelection } from '@/services/student-service'
 
 interface AppShellWithBannerClientProps {
@@ -15,6 +16,8 @@ interface AppShellWithBannerClientProps {
   }
   showBanner: boolean
   availableStudents: StudentForSelection[]
+  /** Campos del perfil que el alumno todavia no cargo (vacio si esta completo). */
+  missingProfileFields: string[]
 }
 
 export function AppShellWithBannerClient({
@@ -22,6 +25,7 @@ export function AppShellWithBannerClient({
   user,
   showBanner,
   availableStudents,
+  missingProfileFields,
 }: AppShellWithBannerClientProps) {
   const searchParams = useSearchParams()
   const viewAsStudentId = searchParams.get('viewAs')
@@ -52,6 +56,9 @@ export function AppShellWithBannerClient({
           availableStudents={availableStudents}
           isViewingAs={!!viewAsStudentId}
         />
+      )}
+      {missingProfileFields.length > 0 && (
+        <IncompleteProfileBanner missingFields={missingProfileFields} />
       )}
       {children}
     </AppShell>
