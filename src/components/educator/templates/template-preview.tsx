@@ -5,6 +5,11 @@ import {
   renderTemplate,
   type TemplateVariables,
 } from "@/lib/email/template-variables"
+import {
+  emailContentTypography,
+  prepareEmailContentHtml,
+} from "@/lib/email/email-content-html"
+import { emailTheme } from "@/components/emails/email-theme"
 
 // Sample data for preview - uses example values from AVAILABLE_VARIABLES
 const SAMPLE_VARIABLES: TemplateVariables = {
@@ -42,13 +47,11 @@ interface TemplatePreviewProps {
 export function TemplatePreview({ subject, body, variables }: TemplatePreviewProps) {
   const vars = variables || SAMPLE_VARIABLES
   const renderedSubject = renderTemplate(subject, vars)
-  const renderedBody = renderTemplate(body, vars)
 
-  // Preserve empty paragraphs by adding a non-breaking space
-  const preservedBody = renderedBody
-    .replace(/<p><\/p>/g, '<p>&nbsp;</p>')
-    .replace(/<p><br><\/p>/g, '<p>&nbsp;</p>')
-    .replace(/<p><br\/><\/p>/g, '<p>&nbsp;</p>')
+  // Exactamente el mismo HTML que recibe el destinatario: misma limpieza,
+  // mismos estilos inline. Si acá se ve una viñeta, en el email va a haber
+  // una viñeta.
+  const previewBody = prepareEmailContentHtml(renderTemplate(body, vars))
 
   return (
     <Card className="bg-muted/50">
@@ -70,15 +73,19 @@ export function TemplatePreview({ subject, body, variables }: TemplatePreviewPro
           </p>
         </div>
 
-        {/* Body preview */}
+        {/* Body preview: se muestra con el fondo y la tipografía del email */}
         <div className="rounded-md border bg-background p-4">
           <p className="text-xs font-medium text-muted-foreground mb-2">
             Contenido
           </p>
-          {preservedBody ? (
+          {previewBody ? (
             <div
-              className="prose prose-sm max-w-none dark:prose-invert [&>p]:mb-0 [&>p]:min-h-[1.5em]"
-              dangerouslySetInnerHTML={{ __html: preservedBody }}
+              className="rounded-md p-4"
+              style={{
+                backgroundColor: emailTheme.colors.background,
+                ...emailContentTypography,
+              }}
+              dangerouslySetInnerHTML={{ __html: previewBody }}
             />
           ) : (
             <p className="text-sm text-muted-foreground italic">

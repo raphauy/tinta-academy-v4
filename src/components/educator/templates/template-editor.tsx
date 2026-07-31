@@ -14,10 +14,16 @@ import {
   Unlink,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { buildEmailContentCss } from '@/lib/email/email-content-html'
+import { emailTheme } from '@/components/emails/email-theme'
 
 export interface TemplateEditorRef {
   insertAtCursor: (text: string) => void
 }
+
+// Las mismas reglas que se aplican inline en el email y en la vista previa,
+// para que lo que se escribe sea lo que se ve (viñetas incluidas).
+const EDITOR_CONTENT_CSS = buildEmailContentCss('.email-content')
 
 interface TemplateEditorProps {
   content: string
@@ -50,8 +56,7 @@ const TemplateEditor = forwardRef<TemplateEditorRef, TemplateEditorProps>(
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class:
-          'prose prose-sm max-w-none min-h-[200px] p-3 focus:outline-none',
+        class: 'email-content min-h-[200px] p-3 focus:outline-none',
       },
     },
     onUpdate: ({ editor }) => {
@@ -99,6 +104,7 @@ const TemplateEditor = forwardRef<TemplateEditorRef, TemplateEditorProps>(
 
   return (
     <div className="border rounded-md overflow-hidden bg-background">
+      <style dangerouslySetInnerHTML={{ __html: EDITOR_CONTENT_CSS }} />
       <div className="flex items-center gap-1 p-2 border-b bg-muted/50">
         <Button
           type="button"
@@ -164,12 +170,18 @@ const TemplateEditor = forwardRef<TemplateEditorRef, TemplateEditorProps>(
           </Button>
         )}
       </div>
-      <EditorContent editor={editor} />
-      {editor.isEmpty && (
-        <div className="absolute top-[52px] left-3 text-muted-foreground pointer-events-none">
-          {placeholder}
-        </div>
-      )}
+      {/* Fondo blanco como el del email: el contenido usa los colores del email */}
+      <div style={{ backgroundColor: emailTheme.colors.background }}>
+        <EditorContent editor={editor} />
+        {editor.isEmpty && (
+          <div
+            className="absolute top-[52px] left-3 pointer-events-none"
+            style={{ color: emailTheme.colors.mutedForeground }}
+          >
+            {placeholder}
+          </div>
+        )}
+      </div>
     </div>
   )
 })

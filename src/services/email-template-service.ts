@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import sanitize from 'sanitize-html'
+import { cleanEmailContentHtml } from '@/lib/email/email-content-html'
 
 // =============================================================================
 // HTML Sanitization Configuration
@@ -12,7 +13,7 @@ import sanitize from 'sanitize-html'
  * Allows only safe tags commonly used in email templates
  */
 export function sanitizeHtml(html: string): string {
-  return sanitize(html, {
+  const clean = sanitize(html, {
     allowedTags: [
       'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
       'a', 'ul', 'ol', 'li',
@@ -40,6 +41,10 @@ export function sanitizeHtml(html: string): string {
       }),
     },
   })
+
+  // Además de sanitizar, se descartan los ítems de lista vacíos que deja el
+  // editor: no se ven al escribir pero salen como una viñeta suelta en el email.
+  return cleanEmailContentHtml(clean)
 }
 
 // =============================================================================

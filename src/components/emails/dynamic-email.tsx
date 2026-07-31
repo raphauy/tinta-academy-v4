@@ -9,6 +9,10 @@ import {
 } from '@react-email/components'
 import { emailTheme } from './email-theme'
 import { EmailHeader } from './email-header'
+import {
+  emailContentTypography,
+  prepareEmailContentHtml,
+} from '@/lib/email/email-content-html'
 
 export interface DynamicEmailProps {
   subject: string
@@ -36,10 +40,16 @@ export default function DynamicEmail({
           <EmailHeader />
 
           <Section style={styles.content}>
-            {/* Render HTML body content */}
+            {/*
+              El HTML pasa por prepareEmailContentHtml para que se vea igual
+              que en el editor y en la vista previa (los clientes de correo
+              aplican sus propios estilos por defecto si no van inline).
+            */}
             <div
               style={styles.bodyContent}
-              dangerouslySetInnerHTML={{ __html: body }}
+              dangerouslySetInnerHTML={{
+                __html: prepareEmailContentHtml(body),
+              }}
             />
           </Section>
 
@@ -91,9 +101,7 @@ const styles = {
     padding: '32px',
   },
   bodyContent: {
-    color: emailTheme.colors.foreground,
-    fontSize: '14px',
-    lineHeight: '24px',
+    ...emailContentTypography,
   },
   footer: {
     borderTop: `1px solid ${emailTheme.colors.border}`,
