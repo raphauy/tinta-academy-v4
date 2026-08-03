@@ -42,6 +42,7 @@ import { GenerateDiplomasDialog } from './generate-diplomas-dialog'
 import { DiscardBatchDialog } from './discard-batch-dialog'
 import { RegenerateDiplomasDialog } from './regenerate-diplomas-dialog'
 import { RetryFailedDialog } from './retry-failed-dialog'
+import { RestoreIssueButton } from './exclude-issue-dialog'
 import { deleteDiplomaTemplateAction } from '@/app/educator/courses/[id]/diploma/actions'
 import type { CourseDiplomaProgress } from '@/services/diploma-service'
 
@@ -75,7 +76,11 @@ function deriveUiState(
   return { kind: 'idle' }
 }
 
-function buildProgress(issues: DiplomaIssue[]): CourseDiplomaProgress {
+/** Recibe solo las emisiones activas; los excluidos se pasan aparte. */
+function buildProgress(
+  activeIssues: DiplomaIssue[],
+  excludedCount: number
+): CourseDiplomaProgress {
   const progress: CourseDiplomaProgress = {
     pending: 0,
     generating: 0,
@@ -83,9 +88,10 @@ function buildProgress(issues: DiplomaIssue[]): CourseDiplomaProgress {
     sending: 0,
     sent: 0,
     failed: 0,
-    total: issues.length,
+    excluded: excludedCount,
+    total: activeIssues.length + excludedCount,
   }
-  for (const issue of issues) {
+  for (const issue of activeIssues) {
     progress[issue.status] += 1
   }
   return progress
@@ -111,14 +117,20 @@ export function DiplomaWorkspaceClient({
   const [deletingTemplate, setDeletingTemplate] = useState(false)
   const [viewMode, setViewMode] = useState<DiplomaViewMode>('table')
 
-  const generatedIssues = issues.filter((i) => i.status === 'generated')
-  const failedInBatch = issues.filter((i) => i.status === 'failed')
-  const sentOrFailed = issues.filter(
+  // Los excluidos salen de todos los cálculos de flujo: no se generan, no se
+  // envían y no deben trabar la UI en "revisando". Solo aparecen en la tabla
+  // y en el listado de exclusiones, para poder revertirlos.
+  const activeIssues = issues.filter((i) => !i.excludedAt)
+  const excludedIssues = issues.filter((i) => i.excludedAt)
+
+  const generatedIssues = activeIssues.filter((i) => i.status === 'generated')
+  const failedInBatch = activeIssues.filter((i) => i.status === 'failed')
+  const sentOrFailed = activeIssues.filter(
     (i) => i.status === 'sent' || i.status === 'failed'
   )
-  const issuesWithAssets = issues.filter((i) => i.pngUrl && i.pdfUrl)
-  const state = deriveUiState(initialTemplate, baseImage, issues)
-  const progress = buildProgress(issues)
+  const issuesWithAssets = activeIssues.filter((i) => i.pngUrl && i.pdfUrl)
+  const state = deriveUiState(initialTemplate, baseImage, activeIssues)
+  const progress = buildProgress(activeIssues, excludedIssues.length)
 
   // ─────────────────────────────────────────────
   // Empty state inicial: subir imagen base
@@ -233,8 +245,10 @@ export function DiplomaWorkspaceClient({
               Diplomas listos para revisar
             </CardTitle>
             <CardDescription>
-              Revisá cada diploma haciendo click para ampliar. Si querés
-              ajustar algo, podés volver al editor y descartar este lote.
+              Revisá cada diploma haciendo click para ampliar. Si alguien no
+              tiene que recibirlo (por ejemplo, no asistió), usá
+              &ldquo;No enviar&rdquo; en su tarjeta. Si querés ajustar el
+              diseño, podés volver al editor y descartar este lote.
               {failedInBatch.length > 0 && (
                 <span className="ml-1 text-destructive">
                   {failedInBatch.length} fallaron al generarse.
@@ -243,7 +257,32 @@ export function DiplomaWorkspaceClient({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <DiplomaGrid issues={generatedIssues} />
+            <DiplomaGrid issues={generatedIssues} courseId={course.id} />
+
+            {excludedIssues.length > 0 && (
+              <div className="space-y-2 rounded-md border border-dashed p-3">
+                <p className="text-sm font-medium">
+                  No reciben el diploma ({excludedIssues.length})
+                </p>
+                <ul className="divide-y">
+                  {excludedIssues.map((issue) => (
+                    <li
+                      key={issue.id}
+                      className="flex items-center justify-between gap-2 py-1"
+                    >
+                      <span className="truncate text-sm text-muted-foreground">
+                        {issue.studentName}
+                      </span>
+                      <RestoreIssueButton
+                        courseId={course.id}
+                        issueId={issue.id}
+                        studentName={issue.studentName}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="flex flex-wrap justify-between gap-2 border-t pt-4">
               <DiscardBatchDialog
@@ -295,6 +334,9 @@ export function DiplomaWorkspaceClient({
                         failedInBatch.length === 1 ? '' : 's'
                       }`
                     : ''}
+                  {excludedIssues.length > 0
+                    ? ` · ${excludedIssues.length} sin enviar por decisión tuya`
+                    : ''}
                   .
                 </CardDescription>
               </div>
@@ -319,9 +361,12 @@ export function DiplomaWorkspaceClient({
                   failedCount={failedInBatch.length}
                 />
               )}
+              {/* Solo las activas: regenerateBatchForCourse saltea a los
+                  excluidos, así que contarlos acá desincronizaría el diálogo
+                  y la barra de progreso con lo que realmente se procesa. */}
               <RegenerateDiplomasDialog
                 courseId={course.id}
-                totalIssues={issues.length}
+                totalIssues={activeIssues.length}
               />
             </div>
           </CardContent>

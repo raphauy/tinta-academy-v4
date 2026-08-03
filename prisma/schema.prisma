@@ -911,6 +911,12 @@ model DiplomaIssue {
   status       DiplomaStatus @default(pending)
   errorMessage String?
 
+  // Exclusión: el educador decidió que este alumno no recibe el diploma
+  // (p.ej. no asistió al taller). La fila se conserva para que no vuelva a
+  // aparecer como "nuevo" en cada emisión; el `status` queda intacto para
+  // poder reincluirlo sin regenerar.
+  excludedAt DateTime?
+
   // Tracking
   resendId    String?
   generatedAt DateTime?

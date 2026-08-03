@@ -23,6 +23,7 @@ export type CourseDiplomaProgress = {
   sending: number
   sent: number
   failed: number
+  excluded: number
   total: number
 }
 
@@ -41,7 +42,7 @@ const TERMINAL_STATUSES: DiplomaStatus[] = ['generated', 'sending', 'sent']
 /**
  * Crea DiplomaIssue en estado `pending` para cada Enrollment confirmed del curso
  * que aún no tenga issue. Idempotente: ignora estudiantes con issue existente
- * en estado `generated`, `sending` o `sent`.
+ * en estado `generated`, `sending` o `sent`, y los que el educador excluyó.
  *
  * Lanza si el curso no tiene plantilla de diploma configurada.
  */
@@ -80,6 +81,11 @@ export async function createIssuesForCourse(
 
   for (const enrollment of course.enrollments) {
     const existing = enrollment.student.diplomaIssues[0]
+    // Excluido por el educador: no se regenera ni se vuelve a ofrecer como
+    // "nuevo" hasta que lo reincluya explícitamente.
+    if (existing?.excludedAt) {
+      continue
+    }
     if (existing && TERMINAL_STATUSES.includes(existing.status)) {
       continue
     }
@@ -114,11 +120,19 @@ export async function createIssuesForCourse(
 export async function getCourseProgress(
   courseId: string
 ): Promise<CourseDiplomaProgress> {
-  const grouped = await prisma.diplomaIssue.groupBy({
-    by: ['status'],
-    where: { courseId },
-    _count: { _all: true },
-  })
+  // Los excluidos se cuentan aparte: no participan de la generación ni del
+  // envío, así que no deben mover la barra de progreso ni el criterio de
+  // "batch terminado" que evalúa el polling.
+  const [grouped, excluded] = await Promise.all([
+    prisma.diplomaIssue.groupBy({
+      by: ['status'],
+      where: { courseId, excludedAt: null },
+      _count: { _all: true },
+    }),
+    prisma.diplomaIssue.count({
+      where: { courseId, excludedAt: { not: null } },
+    }),
+  ])
 
   const progress: CourseDiplomaProgress = {
     pending: 0,
@@ -127,7 +141,8 @@ export async function getCourseProgress(
     sending: 0,
     sent: 0,
     failed: 0,
-    total: 0,
+    excluded,
+    total: excluded,
   }
 
   for (const row of grouped) {
@@ -332,6 +347,7 @@ export async function cleanupStaleDiplomaIssues(
   const result = await prisma.diplomaIssue.updateMany({
     where: {
       courseId,
+      excludedAt: null,
       status: { in: ['pending', 'generating', 'sending'] },
       updatedAt: { lt: threshold },
     },
@@ -347,12 +363,17 @@ export async function cleanupStaleDiplomaIssues(
 /**
  * Borra los issues `generated` y `failed` del curso (y sus assets en Blob,
  * best-effort). Usado por "Volver al editor" para descartar un lote pendiente.
- * No toca issues en `sent` o `sending`.
+ * No toca issues en `sent` o `sending`, ni las excluidas (borrarlas haría que
+ * el alumno excluido reaparezca como "nuevo" en la próxima emisión).
  */
 export async function discardGeneratedBatch(courseId: string): Promise<number> {
   const { del } = await import('@vercel/blob')
   const issues = await prisma.diplomaIssue.findMany({
-    where: { courseId, status: { in: ['generated', 'failed'] } },
+    where: {
+      courseId,
+      excludedAt: null,
+      status: { in: ['generated', 'failed'] },
+    },
     select: { id: true, pngUrl: true, pdfUrl: true },
   })
   if (issues.length === 0) return 0
@@ -385,7 +406,7 @@ export async function generateBatchForCourse(
   await createIssuesForCourse(courseId)
 
   const toProcess = await prisma.diplomaIssue.findMany({
-    where: { courseId, status: { in: ['pending', 'failed'] } },
+    where: { courseId, excludedAt: null, status: { in: ['pending', 'failed'] } },
     select: { id: true },
   })
 
@@ -442,7 +463,7 @@ export async function sendBatchForCourse(
   await cleanupStaleDiplomaIssues(courseId)
 
   const toSend = await prisma.diplomaIssue.findMany({
-    where: { courseId, status: 'generated' },
+    where: { courseId, excludedAt: null, status: 'generated' },
     select: { id: true },
   })
 
@@ -608,7 +629,7 @@ export async function regenerateBatchForCourse(
   await cleanupStaleDiplomaIssues(courseId)
 
   const issues = await prisma.diplomaIssue.findMany({
-    where: { courseId },
+    where: { courseId, excludedAt: null },
     select: { id: true, status: true },
   })
 
@@ -690,7 +711,7 @@ export async function retryFailedForCourse(
   await cleanupStaleDiplomaIssues(courseId)
 
   const issues = await prisma.diplomaIssue.findMany({
-    where: { courseId, status: 'failed' },
+    where: { courseId, excludedAt: null, status: 'failed' },
     select: { id: true },
   })
 
@@ -732,6 +753,80 @@ export async function retryFailedForCourse(
   return { processed: issues.length, succeeded, failed }
 }
 
+// ---------- exclusión de estudiantes ----------
+
+/**
+ * Estados desde los que tiene sentido excluir a un estudiante del envío.
+ *
+ * `pending` queda afuera a propósito: mientras hay issues en ese estado la UI
+ * muestra la pantalla de progreso, no la tabla, así que excluir uno solo sería
+ * alcanzable desde una pestaña desactualizada — y devolvería una emisión
+ * `pending` al flujo, trabando la UI en "generando" hasta el cleanup.
+ */
+export const EXCLUDABLE_STATUSES: DiplomaStatus[] = ['generated', 'failed']
+
+/**
+ * Excluye a un estudiante del envío de diplomas del curso: típicamente porque
+ * no asistió. La emisión deja de participar de la generación, el envío, la
+ * regeneración y el panel del alumno, pero la fila se conserva para que no
+ * vuelva a aparecer como "nuevo" en cada emisión.
+ *
+ * El `status` no se toca y los assets ya renderizados se conservan, de modo
+ * que reincluirlo es inmediato y no requiere volver a generar.
+ */
+export async function excludeIssue(issueId: string): Promise<void> {
+  await prisma.diplomaIssue.update({
+    where: { id: issueId },
+    data: { excludedAt: new Date() },
+  })
+}
+
+/**
+ * Revierte una exclusión: la emisión vuelve al flujo con el estado que tenía.
+ *
+ * Mientras estuvo excluida quedó deliberadamente fuera de "Volver al editor" y
+ * de "Regenerar diplomas", así que sus assets pueden ser de una versión
+ * anterior de la plantilla. Si detectamos que quedaron viejos los rehacemos
+ * antes de devolverla al flujo: si no, "Confirmar y enviar" le mandaría a este
+ * alumno un diploma con el diseño que el educador ya descartó.
+ *
+ * Devuelve si hubo que regenerar, para poder avisarlo en la UI.
+ */
+export async function restoreIssue(
+  issueId: string
+): Promise<{ regenerated: boolean }> {
+  const issue = await prisma.diplomaIssue.findUnique({
+    where: { id: issueId },
+    select: {
+      status: true,
+      generatedAt: true,
+      template: { select: { updatedAt: true } },
+    },
+  })
+  if (!issue) {
+    throw new Error(`DiplomaIssue ${issueId} no encontrado`)
+  }
+
+  await prisma.diplomaIssue.update({
+    where: { id: issueId },
+    data: { excludedAt: null },
+  })
+
+  const isStale =
+    issue.status === 'generated' &&
+    (!issue.generatedAt || issue.generatedAt < issue.template.updatedAt)
+
+  if (!isStale) {
+    return { regenerated: false }
+  }
+
+  // regenerateIssueAssets absorbe sus propios errores dejando la emisión en
+  // `failed`, así que un render fallido queda visible en la tabla en vez de
+  // reincorporar a alguien con assets rotos.
+  await regenerateIssueAssets(issueId)
+  return { regenerated: true }
+}
+
 // ---------- queries para panel student ----------
 
 export type DiplomaIssueForStudent = {
@@ -750,6 +845,10 @@ export type DiplomaIssueForStudent = {
 /**
  * Lista todas las emisiones de diploma del estudiante con assets disponibles
  * (pngUrl y pdfUrl no null). Ordenadas por fecha de envío descendente.
+ *
+ * Las emisiones excluidas quedan fuera aunque conserven sus assets: el
+ * educador decidió que ese alumno no recibe el diploma, así que tampoco debe
+ * poder descargarlo desde su panel.
  */
 export async function getDiplomaIssuesByStudent(
   studentId: string
@@ -757,6 +856,7 @@ export async function getDiplomaIssuesByStudent(
   const issues = await prisma.diplomaIssue.findMany({
     where: {
       studentId,
+      excludedAt: null,
       pngUrl: { not: null },
       pdfUrl: { not: null },
     },
@@ -782,7 +882,7 @@ export async function getDiplomaIssuesByStudent(
 
 /**
  * Obtiene la emisión de diploma para un par (curso, estudiante). Devuelve
- * null si no existe o si no tiene assets aún.
+ * null si no existe, si fue excluida, o si no tiene assets aún.
  */
 export async function getDiplomaIssueByCourseAndStudent(
   courseId: string,
@@ -794,7 +894,7 @@ export async function getDiplomaIssueByCourseAndStudent(
       course: { select: { id: true, title: true, slug: true } },
     },
   })
-  if (!issue || !issue.pngUrl || !issue.pdfUrl) return null
+  if (!issue || issue.excludedAt || !issue.pngUrl || !issue.pdfUrl) return null
   return {
     id: issue.id,
     courseId: issue.course.id,

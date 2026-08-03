@@ -43,6 +43,7 @@ const EMPTY_PROGRESS: CourseDiplomaProgress = {
   sending: 0,
   sent: 0,
   failed: 0,
+  excluded: 0,
   total: 0,
 }
 
@@ -130,7 +131,10 @@ export function RegenerateDiplomasDialog({ courseId, totalIssues }: Props) {
   }
 
   // Para la barra usamos el conteo de "no-pending/no-generating" como completados.
-  const denominator = Math.max(totalIssues, progress.total)
+  // `progress.total` incluye a los excluidos, que la regeneración saltea: los
+  // restamos para que el denominador sea el universo real del batch.
+  const activeTotal = progress.total - progress.excluded
+  const denominator = Math.max(totalIssues, activeTotal)
   const completed =
     denominator > 0
       ? denominator - progress.pending - progress.generating - progress.sending

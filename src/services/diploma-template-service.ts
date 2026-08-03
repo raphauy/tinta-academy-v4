@@ -14,13 +14,22 @@ export async function getDiplomaTemplateByCourseId(
  * lote pendiente: borra los `DiplomaIssue` con status `generated` o `failed`
  * (y sus assets en Blob, best-effort). Los issues en `sent`/`sending` no se
  * tocan — regenerarlos es un flujo aparte (fase 4).
+ *
+ * Las emisiones excluidas tampoco se borran: perder esa fila haría que el
+ * alumno excluido reaparezca como "nuevo" en la próxima emisión y termine
+ * recibiendo el diploma. Sus assets quedan viejos a propósito; `restoreIssue`
+ * los rehace al reincorporarlo.
  */
 export async function upsertDiplomaTemplate(
   courseId: string,
   data: DiplomaTemplateInput
 ): Promise<DiplomaTemplate> {
   const invalidated = await prisma.diplomaIssue.findMany({
-    where: { courseId, status: { in: ['generated', 'failed'] } },
+    where: {
+      courseId,
+      excludedAt: null,
+      status: { in: ['generated', 'failed'] },
+    },
     select: { id: true, pngUrl: true, pdfUrl: true },
   })
 

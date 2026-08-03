@@ -41,6 +41,7 @@ const EMPTY_PROGRESS: CourseDiplomaProgress = {
   sending: 0,
   sent: 0,
   failed: 0,
+  excluded: 0,
   total: 0,
 }
 

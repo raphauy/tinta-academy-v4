@@ -49,6 +49,7 @@ const EMPTY_PROGRESS: CourseDiplomaProgress = {
   sending: 0,
   sent: 0,
   failed: 0,
+  excluded: 0,
   total: 0,
 }
 
@@ -87,12 +88,8 @@ export function GenerateDiplomasDialog({
     // Pre-cargar contadores con el total conocido para evitar el salto
     // "0 → total" mientras llega el primer poll.
     setProgress({
+      ...EMPTY_PROGRESS,
       pending: total,
-      generating: 0,
-      generated: 0,
-      sending: 0,
-      sent: 0,
-      failed: 0,
       total,
     })
 

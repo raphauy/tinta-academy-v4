@@ -9,6 +9,7 @@ import {
   Download,
   FileText,
   Loader2,
+  UserMinus,
 } from 'lucide-react'
 import type { DiplomaIssue, DiplomaStatus } from '@prisma/client'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +29,10 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { ResendConfirmationDialog } from './resend-confirmation-dialog'
+import {
+  ExcludeIssueDialog,
+  RestoreIssueButton,
+} from './exclude-issue-dialog'
 
 type Props = {
   courseId: string
@@ -43,8 +48,15 @@ const STATUS_ORDER: Record<DiplomaStatus, number> = {
   sent: 5,
 }
 
+// Espejo de EXCLUDABLE_STATUSES del servicio: solo controla qué botón se
+// muestra. La validación real vive en excludeDiplomaIssueAction.
+const EXCLUDABLE: DiplomaStatus[] = ['generated', 'failed']
+
 function sortIssues(issues: DiplomaIssue[]): DiplomaIssue[] {
   return [...issues].sort((a, b) => {
+    // Los excluidos van al final: ya no participan del envío.
+    const byExcluded = Number(!!a.excludedAt) - Number(!!b.excludedAt)
+    if (byExcluded !== 0) return byExcluded
     const byStatus = STATUS_ORDER[a.status] - STATUS_ORDER[b.status]
     if (byStatus !== 0) return byStatus
     return a.studentName.localeCompare(b.studentName, 'es')
@@ -124,11 +136,13 @@ export function DiplomaIssuesList({ courseId, issues }: Props) {
           </TableHeader>
           <TableBody>
             {sorted.map((issue) => {
+              const isExcluded = !!issue.excludedAt
               const hasAssets = !!(issue.pngUrl && issue.pdfUrl)
               const canResend =
                 issue.status === 'sent' || issue.status === 'failed'
+              const canExclude = EXCLUDABLE.includes(issue.status)
               return (
-                <TableRow key={issue.id}>
+                <TableRow key={issue.id} className={isExcluded ? 'opacity-60' : undefined}>
                   <TableCell className="font-medium">
                     {issue.studentName}
                   </TableCell>
@@ -137,8 +151,15 @@ export function DiplomaIssuesList({ courseId, issues }: Props) {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <StatusBadge status={issue.status} />
-                      {issue.status === 'failed' && issue.errorMessage && (
+                      {isExcluded ? (
+                        <Badge variant="stone" className="gap-1">
+                          <UserMinus className="h-3.5 w-3.5" />
+                          No recibe
+                        </Badge>
+                      ) : (
+                        <StatusBadge status={issue.status} />
+                      )}
+                      {!isExcluded && issue.status === 'failed' && issue.errorMessage && (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <span className="cursor-help text-xs text-destructive underline decoration-dotted">
@@ -194,13 +215,30 @@ export function DiplomaIssuesList({ courseId, issues }: Props) {
                           </Button>
                         </>
                       )}
-                      {canResend && (
-                        <ResendConfirmationDialog
+                      {isExcluded ? (
+                        <RestoreIssueButton
                           courseId={courseId}
                           issueId={issue.id}
                           studentName={issue.studentName}
-                          emailTo={issue.emailTo}
                         />
+                      ) : (
+                        <>
+                          {canResend && (
+                            <ResendConfirmationDialog
+                              courseId={courseId}
+                              issueId={issue.id}
+                              studentName={issue.studentName}
+                              emailTo={issue.emailTo}
+                            />
+                          )}
+                          {canExclude && (
+                            <ExcludeIssueDialog
+                              courseId={courseId}
+                              issueId={issue.id}
+                              studentName={issue.studentName}
+                            />
+                          )}
+                        </>
                       )}
                     </div>
                   </TableCell>

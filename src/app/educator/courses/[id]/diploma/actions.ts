@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { del, put } from '@vercel/blob'
 import { imageSize } from 'image-size'
 import { z } from 'zod'
-import type { DiplomaTemplate } from '@prisma/client'
+import type { DiplomaStatus, DiplomaTemplate } from '@prisma/client'
 import { auth } from '@/lib/auth'
 import { getCourseById } from '@/services/course-service'
 import { getEducatorByUserId } from '@/services/educator-service'
@@ -16,12 +16,15 @@ import {
 } from '@/services/diploma-template-service'
 import {
   discardGeneratedBatch,
+  excludeIssue,
   generateBatchForCourse,
   getCourseProgress,
   regenerateBatchForCourse,
   resendDiploma,
+  restoreIssue,
   retryFailedForCourse,
   sendBatchForCourse,
+  EXCLUDABLE_STATUSES,
   type BatchResult,
   type CourseDiplomaProgress,
 } from '@/services/diploma-service'
@@ -359,13 +362,22 @@ export async function resendDiplomaAction(
   try {
     const issue = await prisma.diplomaIssue.findUnique({
       where: { id: issueId },
-      select: { id: true, courseId: true, status: true },
+      select: { id: true, courseId: true, status: true, excludedAt: true },
     })
     if (!issue) {
       return { success: false, error: 'Emisión no encontrada' }
     }
     if (issue.courseId !== courseId) {
       return { success: false, error: 'La emisión no pertenece a este curso' }
+    }
+    // Guarda contra pestañas desactualizadas: la UI no ofrece "Reenviar" a un
+    // excluido, pero la action no debe confiar en eso.
+    if (issue.excludedAt) {
+      return {
+        success: false,
+        error:
+          'Este alumno está excluido del envío. Volvé a incluirlo si querés mandarle el diploma.',
+      }
     }
     if (issue.status !== 'sent' && issue.status !== 'failed') {
       return {
@@ -434,6 +446,115 @@ export async function retryFailedDiplomasAction(
         ? error.message
         : 'Error al reintentar los diplomas fallidos'
     return { success: false, error: message }
+  }
+}
+
+// ============================================
+// EXCLUSIÓN — sacar / reincorporar estudiantes del envío
+// ============================================
+
+/**
+ * Localiza una emisión validando que pertenezca al curso indicado. Evita que
+ * un educator con acceso a un curso opere sobre emisiones de otro.
+ */
+type IssueInCourse = {
+  id: string
+  courseId: string
+  status: DiplomaStatus
+  excludedAt: Date | null
+  studentName: string
+}
+
+async function findIssueInCourse(
+  courseId: string,
+  issueId: string
+): Promise<{ error: string } | { issue: IssueInCourse }> {
+  const issue = await prisma.diplomaIssue.findUnique({
+    where: { id: issueId },
+    select: {
+      id: true,
+      courseId: true,
+      status: true,
+      excludedAt: true,
+      studentName: true,
+    },
+  })
+  if (!issue) return { error: 'Emisión no encontrada' as const }
+  if (issue.courseId !== courseId) {
+    return { error: 'La emisión no pertenece a este curso' as const }
+  }
+  return { issue }
+}
+
+export async function excludeDiplomaIssueAction(
+  courseId: string,
+  issueId: string
+): Promise<ActionResult<{ studentName: string }>> {
+  const authResult = await authorizeAccess()
+  if ('error' in authResult) return { success: false, error: authResult.error }
+  const courseResult = await verifyCourseAccess(courseId, authResult.ctx)
+  if ('error' in courseResult) {
+    return { success: false, error: courseResult.error }
+  }
+
+  try {
+    const found = await findIssueInCourse(courseId, issueId)
+    if ('error' in found) return { success: false, error: found.error }
+    const { issue } = found
+
+    if (issue.excludedAt) {
+      return { success: false, error: 'Este alumno ya está excluido' }
+    }
+    // Un diploma ya enviado no se puede "des-enviar": el email salió y el
+    // alumno lo tiene. Excluirlo solo generaría la ilusión de haberlo anulado.
+    if (!EXCLUDABLE_STATUSES.includes(issue.status)) {
+      return {
+        success: false,
+        error:
+          issue.status === 'sent'
+            ? 'El diploma ya fue enviado a este alumno, no se puede excluir'
+            : 'No se puede excluir mientras el diploma se está procesando',
+      }
+    }
+
+    await excludeIssue(issueId)
+    revalidateDiplomaPaths(courseId)
+    return { success: true, data: { studentName: issue.studentName } }
+  } catch (error) {
+    console.error('[diploma] excludeDiplomaIssueAction error:', error)
+    return { success: false, error: 'Error al excluir al alumno' }
+  }
+}
+
+export async function restoreDiplomaIssueAction(
+  courseId: string,
+  issueId: string
+): Promise<ActionResult<{ studentName: string; regenerated: boolean }>> {
+  const authResult = await authorizeAccess()
+  if ('error' in authResult) return { success: false, error: authResult.error }
+  const courseResult = await verifyCourseAccess(courseId, authResult.ctx)
+  if ('error' in courseResult) {
+    return { success: false, error: courseResult.error }
+  }
+
+  try {
+    const found = await findIssueInCourse(courseId, issueId)
+    if ('error' in found) return { success: false, error: found.error }
+    const { issue } = found
+
+    if (!issue.excludedAt) {
+      return { success: false, error: 'Este alumno no está excluido' }
+    }
+
+    const { regenerated } = await restoreIssue(issueId)
+    revalidateDiplomaPaths(courseId)
+    return {
+      success: true,
+      data: { studentName: issue.studentName, regenerated },
+    }
+  } catch (error) {
+    console.error('[diploma] restoreDiplomaIssueAction error:', error)
+    return { success: false, error: 'Error al reincorporar al alumno' }
   }
 }
 

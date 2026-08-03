@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { ExcludeIssueDialog } from './exclude-issue-dialog'
 
 type Props = {
   issues: DiplomaIssue[]
@@ -19,9 +20,18 @@ type Props = {
    * `sent` y `failed` con asset). Si es false (default), solo `generated`.
    */
   includeAllWithAssets?: boolean
+  /**
+   * Habilita "No enviar" por diploma. Requiere `courseId`. Se usa en el paso
+   * de revisión, donde el educador decide a quién le llega el diploma.
+   */
+  courseId?: string
 }
 
-export function DiplomaGrid({ issues, includeAllWithAssets = false }: Props) {
+export function DiplomaGrid({
+  issues,
+  includeAllWithAssets = false,
+  courseId,
+}: Props) {
   const visible = issues.filter((i) =>
     includeAllWithAssets
       ? !!i.pngUrl
@@ -94,6 +104,16 @@ export function DiplomaGrid({ issues, includeAllWithAssets = false }: Props) {
               <p className="text-xs text-muted-foreground truncate">
                 {issue.emailTo}
               </p>
+              {courseId && (
+                <div className="mt-2 flex justify-end border-t pt-2">
+                  <ExcludeIssueDialog
+                    courseId={courseId}
+                    issueId={issue.id}
+                    studentName={issue.studentName}
+                    stopPropagation
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}
