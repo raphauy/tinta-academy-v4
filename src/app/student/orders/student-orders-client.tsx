@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { StudentOrders } from '@/components/student/student-orders'
 import { ConfirmationDialog } from '@/components/admin/confirmation-dialog'
 import { cancelMyOrderAction } from './actions'
+import { formatAmountWithCurrency } from '@/lib/utils'
 
 interface Order {
   id: string
@@ -71,7 +72,7 @@ export function StudentOrdersClient({ orders, viewAs }: StudentOrdersClientProps
         title="Cancelar orden"
         description={
           orderToCancel
-            ? `¿Estás seguro de cancelar esta orden?\n\n• Orden: ${orderToCancel.orderNumber}\n• Curso: ${orderToCancel.course.title}\n• Monto: ${orderToCancel.currency === 'UYU' ? '$' : 'USD'} ${orderToCancel.finalAmount}\n\nEsta acción no se puede deshacer.`
+            ? `¿Estás seguro de cancelar esta orden?\n\n• Orden: ${orderToCancel.orderNumber}\n• Curso: ${orderToCancel.course.title}\n• Monto: ${formatAmountWithCurrency(orderToCancel.finalAmount, orderToCancel.currency)}\n\nEsta acción no se puede deshacer.`
             : ''
         }
         confirmLabel="Cancelar orden"

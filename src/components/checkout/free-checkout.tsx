@@ -20,6 +20,7 @@ import { initiateCheckoutAction } from '@/app/checkout/actions'
 import type { CheckoutContext } from '@/services/checkout-service'
 import type { StudentProfileFormData } from '@/lib/validations/student-profile'
 import { CheckoutProfileForm } from './checkout-profile-form'
+import { formatAmountWithCurrency } from '@/lib/utils'
 
 interface FreeCheckoutProps {
   context: CheckoutContext
@@ -157,12 +158,12 @@ export function FreeCheckout({ context }: FreeCheckoutProps) {
               <div className="flex justify-between items-center text-sm mb-2">
                 <span>Precio original</span>
                 <span className="line-through text-muted-foreground">
-                  USD {pricing.originalPriceUSD % 1 === 0 ? pricing.originalPriceUSD : pricing.originalPriceUSD.toFixed(2)}
+                  {formatAmountWithCurrency(pricing.originalPriceUSD, 'USD')}
                 </span>
               </div>
               <div className="flex justify-between items-center text-sm text-green-700">
                 <span>Descuento ({pricing.discountPercent}%)</span>
-                <span>-USD {pricing.discountAmountUSD % 1 === 0 ? pricing.discountAmountUSD : pricing.discountAmountUSD.toFixed(2)}</span>
+                <span>-{formatAmountWithCurrency(pricing.discountAmountUSD, 'USD')}</span>
               </div>
               <div className="flex justify-between items-center font-semibold mt-2 pt-2 border-t border-green-200">
                 <span>Total</span>

@@ -64,21 +64,6 @@ export async function getActiveBankAccounts(): Promise<BankAccount[]> {
   })
 }
 
-/**
- * Get bank accounts by currency
- */
-export async function getBankAccountsByCurrency(
-  currency: Currency
-): Promise<BankAccount[]> {
-  return prisma.bankAccount.findMany({
-    where: {
-      currency,
-      isActive: true,
-    },
-    orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
-  })
-}
-
 // ============================================
 // MUTATIONS
 // ============================================

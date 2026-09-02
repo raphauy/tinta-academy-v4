@@ -29,6 +29,7 @@ import type { StudentProfileFormData } from '@/lib/validations/student-profile'
 import { initiateCheckoutAction, applyCouponAction } from '@/app/checkout/actions'
 import { CheckoutSummary } from './checkout-summary'
 import { CheckoutProfileForm } from './checkout-profile-form'
+import { formatAmount, formatAmountWithCurrency } from '@/lib/utils'
 
 // ============================================
 // TYPES
@@ -105,7 +106,7 @@ function PaymentMethodSelector({
           </div>
           <div className="text-right">
             <span className="font-semibold">
-              $ {pricing.finalPriceUYU.toLocaleString('es-UY')}
+              $ {formatAmount(pricing.finalPriceUYU, 'UYU')}
             </span>
             <p className="text-xs text-muted-foreground">UYU</p>
           </div>
@@ -149,14 +150,14 @@ function PaymentMethodSelector({
             {pricing.finalPriceUSD > 0 ? (
               <>
                 <span className="font-semibold">
-                  USD {pricing.finalPriceUSD % 1 === 0 ? pricing.finalPriceUSD : pricing.finalPriceUSD.toFixed(2)}
+                  {formatAmountWithCurrency(pricing.finalPriceUSD, 'USD')}
                 </span>
                 <p className="text-xs text-muted-foreground">Dólares</p>
               </>
             ) : (
               <>
                 <span className="font-semibold">
-                  UYU {pricing.finalPriceUYU.toLocaleString('es-UY')}
+                  {formatAmountWithCurrency(pricing.finalPriceUYU, 'UYU')}
                 </span>
                 <p className="text-xs text-muted-foreground">Pesos uruguayos</p>
               </>
@@ -447,13 +448,13 @@ export function CheckoutForm({ context, paymentError }: CheckoutFormProps) {
   const submitButtonText = () => {
     if (isSubmitting) return 'Procesando...'
     if (paymentMethod === 'mercadopago') {
-      return `Pagar UYU ${currentPricing.finalPriceUYU.toLocaleString('es-UY')}`
+      return `Pagar ${formatAmountWithCurrency(currentPricing.finalPriceUYU, 'UYU')}`
     }
     // Bank transfer: show USD if available, otherwise UYU
     if (currentPricing.finalPriceUSD > 0) {
-      return `Pagar USD ${currentPricing.finalPriceUSD % 1 === 0 ? currentPricing.finalPriceUSD : currentPricing.finalPriceUSD.toFixed(2)}`
+      return `Pagar ${formatAmountWithCurrency(currentPricing.finalPriceUSD, 'USD')}`
     }
-    return `Pagar UYU ${currentPricing.finalPriceUYU.toLocaleString('es-UY')}`
+    return `Pagar ${formatAmountWithCurrency(currentPricing.finalPriceUYU, 'UYU')}`
   }
 
   return (

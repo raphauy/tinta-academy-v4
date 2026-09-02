@@ -13,26 +13,13 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import type { BankAccount, Currency } from '@prisma/client'
+import type { BankAccount } from '@prisma/client'
 
 interface BankAccountCardProps {
   account: BankAccount
   onEdit?: () => void
   onToggleActive?: () => void
   onDelete?: () => void
-}
-
-const currencyConfig: Record<Currency, { label: string; symbol: string; className: string }> = {
-  USD: {
-    label: 'USD',
-    symbol: '$',
-    className: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400',
-  },
-  UYU: {
-    label: 'UYU',
-    symbol: '$',
-    className: 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400',
-  },
 }
 
 export function BankAccountCard({
@@ -42,7 +29,6 @@ export function BankAccountCard({
   onDelete,
 }: BankAccountCardProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null)
-  const currency = currencyConfig[account.currency] || currencyConfig.USD
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text)
@@ -94,8 +80,11 @@ export function BankAccountCard({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className={`px-2 py-1 rounded text-xs font-bold ${currency.className}`}>
-              {currency.label}
+            <span
+              className="px-2 py-1 rounded text-xs font-medium bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400"
+              title="Moneda de referencia: la cuenta se muestra en todas las compras"
+            >
+              Ref. {account.currency}
             </span>
             {!account.isActive && (
               <span className="px-2 py-1 rounded text-xs font-medium bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-500">

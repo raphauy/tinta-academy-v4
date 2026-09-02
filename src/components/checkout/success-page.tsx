@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Confetti from 'react-confetti'
+import { formatAmountWithCurrency } from '@/lib/utils'
 
 interface OrderData {
   id: string
@@ -256,7 +257,7 @@ export function SuccessPage({ order, showDataBanner }: SuccessPageProps) {
                 <span>
                   {order.paymentMethod === 'free'
                     ? 'Gratis'
-                    : `${order.currency} ${order.finalAmount % 1 === 0 ? order.finalAmount : order.finalAmount.toFixed(2)}`}
+                    : formatAmountWithCurrency(order.finalAmount, order.currency)}
                 </span>
               </div>
             </div>

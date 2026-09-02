@@ -17,7 +17,6 @@ interface BankAccountInfo {
   accountHolder: string
   accountType: string
   accountNumber: string
-  currency: string
   swiftCode?: string | null
 }
 
@@ -26,6 +25,7 @@ interface TransferInstructionsEmailProps {
   orderNumber?: string
   courseName?: string
   amount?: string
+  currency?: string
   bankAccounts?: BankAccountInfo[]
 }
 
@@ -35,7 +35,6 @@ const defaultBankAccounts: BankAccountInfo[] = [
     accountHolder: 'Tinta Wine Education S.A.',
     accountType: 'Cuenta Corriente',
     accountNumber: '001-123456-001',
-    currency: 'USD',
     swiftCode: 'BABORUYK',
   },
   {
@@ -43,7 +42,6 @@ const defaultBankAccounts: BankAccountInfo[] = [
     accountHolder: 'Tinta Wine Education S.A.',
     accountType: 'Caja de Ahorro',
     accountNumber: '002-789012-002',
-    currency: 'USD',
     swiftCode: null,
   },
 ]
@@ -52,7 +50,8 @@ export default function TransferInstructionsEmail({
   customerName = 'María García',
   orderNumber = 'TA-20260110-0002',
   courseName = 'WSET Level 2 Award in Wines',
-  amount = '350.00',
+  amount = '3.200',
+  currency = 'UYU',
   bankAccounts = defaultBankAccounts,
 }: TransferInstructionsEmailProps) {
   return (
@@ -74,7 +73,9 @@ export default function TransferInstructionsEmail({
 
             <Section style={styles.amountBox}>
               <Text style={styles.amountLabel}>Monto a transferir</Text>
-              <Text style={styles.amount}>USD {amount}</Text>
+              <Text style={styles.amount}>
+                {currency} {amount}
+              </Text>
               <Text style={styles.orderRef}>Referencia: {orderNumber}</Text>
             </Section>
 
@@ -97,10 +98,6 @@ export default function TransferInstructionsEmail({
                 <Text style={styles.bankDetail}>
                   <span style={styles.bankLabel}>Numero de cuenta:</span>{' '}
                   {account.accountNumber}
-                </Text>
-                <Text style={styles.bankDetail}>
-                  <span style={styles.bankLabel}>Moneda:</span>{' '}
-                  {account.currency}
                 </Text>
                 {account.swiftCode && (
                   <Text style={styles.bankDetail}>

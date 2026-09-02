@@ -153,7 +153,6 @@ interface BankAccountForEmail {
   accountHolder: string
   accountType: string
   accountNumber: string
-  currency: string
   swiftCode?: string | null
 }
 
@@ -163,14 +162,22 @@ interface SendTransferInstructionsEmailInput {
   orderNumber: string
   courseName: string
   amount: string
+  currency: string
   bankAccounts: BankAccountForEmail[]
 }
 
 export async function sendTransferInstructionsEmail(
   input: SendTransferInstructionsEmailInput
 ): Promise<void> {
-  const { to, customerName, orderNumber, courseName, amount, bankAccounts } =
-    input
+  const {
+    to,
+    customerName,
+    orderNumber,
+    courseName,
+    amount,
+    currency,
+    bankAccounts,
+  } = input
 
   if (process.env.NODE_ENV === 'development') {
     console.log('\n========================================')
@@ -178,7 +185,7 @@ export async function sendTransferInstructionsEmail(
     console.log(`  To: ${to}`)
     console.log(`  Order: ${orderNumber}`)
     console.log(`  Course: ${courseName}`)
-    console.log(`  Amount: USD ${amount}`)
+    console.log(`  Amount: ${currency} ${amount}`)
     console.log(`  Bank accounts: ${bankAccounts.length}`)
     console.log('========================================\n')
     return
@@ -195,6 +202,7 @@ export async function sendTransferInstructionsEmail(
       orderNumber,
       courseName,
       amount,
+      currency,
       bankAccounts,
     }),
   })

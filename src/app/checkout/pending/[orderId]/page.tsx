@@ -96,7 +96,6 @@ export default async function CheckoutPendingPage({ params }: PageProps) {
     accountHolder: account.accountHolder,
     accountType: account.accountType,
     accountNumber: account.accountNumber,
-    currency: account.currency,
   }))
 
   return (

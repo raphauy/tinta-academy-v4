@@ -21,6 +21,7 @@ import {
 import { getOrderById, markTransferAsSent, assignStudentRoleIfNeeded } from '@/services/order-service'
 import { getCourseById } from '@/services/course-service'
 import { sendAdminTransferNotificationEmail } from '@/services/email-service'
+import { formatAmount } from '@/lib/utils'
 
 // ============================================
 // TYPES
@@ -328,7 +329,7 @@ export async function markTransferSentAction(
           buyerName: updatedOrder.user.name || 'Sin nombre',
           buyerEmail: updatedOrder.user.email,
           courseName: updatedOrder.course.title,
-          amount: updatedOrder.finalAmount.toFixed(2),
+          amount: formatAmount(updatedOrder.finalAmount, updatedOrder.currency),
           currency: updatedOrder.currency,
           orderNumber: updatedOrder.orderNumber,
           transferReference: reference || updatedOrder.transferReference,

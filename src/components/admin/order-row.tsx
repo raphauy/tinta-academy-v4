@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import type { Order, OrderStatus, PaymentMethod } from '@prisma/client'
+import { formatAmountWithCurrency } from '@/lib/utils'
 
 type OrderWithRelations = Order & {
   user: { id: string; email: string; name: string | null }
@@ -125,13 +126,6 @@ function formatDateTime(date: Date): string {
   })
 }
 
-function formatCurrency(amount: number, currency: string): string {
-  if (currency === 'UYU') {
-    return `UYU ${amount.toLocaleString('es-UY', { maximumFractionDigits: 2 })}`
-  }
-  return `USD ${amount % 1 === 0 ? amount : amount.toFixed(2)}`
-}
-
 export function OrderRow({
   order,
   onViewDetails,
@@ -189,7 +183,7 @@ export function OrderRow({
                     : 'text-stone-900 dark:text-stone-100'
                 }`}
               >
-                {formatCurrency(order.finalAmount, order.currency)}
+                {formatAmountWithCurrency(order.finalAmount, order.currency)}
               </p>
             ) : null}
             {hasDiscount && (
@@ -326,7 +320,7 @@ export function OrderRow({
                   : 'text-stone-900 dark:text-stone-100'
               }`}
             >
-              {formatCurrency(order.finalAmount, order.currency)}
+              {formatAmountWithCurrency(order.finalAmount, order.currency)}
             </p>
           ) : null}
           {hasDiscount && order.coupon && (

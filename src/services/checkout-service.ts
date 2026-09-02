@@ -16,6 +16,7 @@ import {
   sendAdminOrderCreatedNotificationEmail,
 } from './email-service'
 import { generateExecutionsForNewStudent } from './workflow-execution-service'
+import { formatAmount } from '@/lib/utils'
 
 // ============================================
 // TYPES
@@ -194,7 +195,7 @@ async function notifyAdminsOrderCreated(
     buyerName: order.user.name || 'Sin nombre',
     buyerEmail: order.user.email,
     courseName: order.course.title,
-    amount: order.finalAmount.toFixed(2),
+    amount: formatAmount(order.finalAmount, order.currency),
     currency: order.currency,
     paymentMethod: paymentMethodLabels[order.paymentMethod] || order.paymentMethod,
     orderNumber: order.orderNumber,
@@ -448,9 +449,9 @@ export async function processCheckoutBankTransfer(
     bankAccountId,
   })
 
-  // Get bank accounts for email
+  // Las cuentas sirven para transferencias en cualquier moneda, por eso se
+  // envian todas las activas sin filtrar por la moneda de la orden.
   const bankAccounts = await getActiveBankAccounts()
-  const usdBankAccounts = bankAccounts.filter((ba) => ba.currency === 'USD')
 
   // Send transfer instructions email (async, don't wait)
   sendTransferInstructionsEmail({
@@ -458,13 +459,13 @@ export async function processCheckoutBankTransfer(
     customerName: order.user.name || 'Estudiante',
     orderNumber: order.orderNumber,
     courseName: order.course.title,
-    amount: order.finalAmount.toFixed(2),
-    bankAccounts: usdBankAccounts.map((ba) => ({
+    amount: formatAmount(order.finalAmount, order.currency),
+    currency: order.currency,
+    bankAccounts: bankAccounts.map((ba) => ({
       bankName: ba.bankName,
       accountHolder: ba.accountHolder,
       accountType: ba.accountType,
       accountNumber: ba.accountNumber,
-      currency: ba.currency,
       swiftCode: ba.swiftCode,
     })),
   }).catch((error) => {
@@ -680,7 +681,7 @@ export async function completeCheckout(orderId: string): Promise<{
       startDate: formatDate(course.startDate),
       location: getCourseLocation(course),
       paymentMethod: paymentMethodLabels[updatedOrder.paymentMethod] || updatedOrder.paymentMethod,
-      amount: updatedOrder.finalAmount.toFixed(2),
+      amount: formatAmount(updatedOrder.finalAmount, updatedOrder.currency),
       currency: updatedOrder.currency,
       courseId: course.id,
       // Include streaming info for webinars
@@ -724,7 +725,7 @@ export async function completeCheckout(orderId: string): Promise<{
         buyerName: updatedOrder.user.name || 'Sin nombre',
         buyerEmail: updatedOrder.user.email,
         courseName: course.title,
-        amount: updatedOrder.finalAmount.toFixed(2),
+        amount: formatAmount(updatedOrder.finalAmount, updatedOrder.currency),
         currency: updatedOrder.currency,
         paymentMethod: paymentMethodLabels[updatedOrder.paymentMethod] || updatedOrder.paymentMethod,
         orderNumber: updatedOrder.orderNumber,

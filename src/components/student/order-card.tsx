@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { formatAmountWithCurrency } from '@/lib/utils'
 
 interface OrderCardProps {
   order: {
@@ -59,13 +60,6 @@ function formatDate(date: Date): string {
   return new Intl.DateTimeFormat('es-UY', {
     dateStyle: 'medium',
   }).format(new Date(date))
-}
-
-function formatAmount(amount: number, currency: string): string {
-  if (currency === 'UYU') {
-    return `UYU ${amount.toLocaleString('es-UY')}`
-  }
-  return `USD ${amount % 1 === 0 ? amount : amount.toFixed(2)}`
 }
 
 export function OrderCard({ order, viewAs, onCancel }: OrderCardProps) {
@@ -151,7 +145,7 @@ export function OrderCard({ order, viewAs, onCancel }: OrderCardProps) {
               <span>{paymentMethod.label}</span>
             </div>
             <div className="font-medium text-foreground">
-              {formatAmount(order.finalAmount, order.currency)}
+              {formatAmountWithCurrency(order.finalAmount, order.currency)}
             </div>
           </div>
 

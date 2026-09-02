@@ -54,3 +54,31 @@ export function generateSlug(title: string): string {
 
   return slug
 }
+
+/**
+ * Formats an order amount, e.g. "3.200" (UYU) or "350.50" (USD).
+ * Uruguayan pesos use local thousand separators; whole amounts drop the
+ * decimals in both currencies.
+ */
+export function formatAmount(amount: number, currency: string): string {
+  if (currency === 'UYU') {
+    return amount.toLocaleString('es-UY', {
+      minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    })
+  }
+
+  return amount % 1 === 0 ? String(amount) : amount.toFixed(2)
+}
+
+/**
+ * Formats an order amount with its currency, e.g. "UYU 3.200" or "USD 350.50".
+ * Use it wherever a student sees a price (checkout, orders, emails) so the web
+ * and the emails always show the same thing.
+ */
+export function formatAmountWithCurrency(
+  amount: number,
+  currency: string
+): string {
+  return `${currency} ${formatAmount(amount, currency)}`
+}

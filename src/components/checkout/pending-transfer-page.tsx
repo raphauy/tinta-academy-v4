@@ -35,6 +35,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { markTransferSentAction } from '@/app/checkout/actions'
+import { formatAmountWithCurrency } from '@/lib/utils'
 
 interface BankAccountData {
   id: string
@@ -42,7 +43,6 @@ interface BankAccountData {
   accountHolder: string
   accountType: string
   accountNumber: string
-  currency: string
 }
 
 interface OrderData {
@@ -295,10 +295,9 @@ export function PendingTransferPage({
     }
   }
 
-  // Filter bank accounts by order currency (USD for bank transfers)
-  const relevantAccounts = bankAccounts.filter(
-    (account) => account.currency === order.currency
-  )
+  // Las cuentas reciben transferencias en cualquier moneda, no se filtran por
+  // la moneda de la orden.
+  const relevantAccounts = bankAccounts
 
   return (
     <div className="relative max-w-3xl mx-auto py-8 px-4 space-y-6">
@@ -387,7 +386,7 @@ export function PendingTransferPage({
           <div className="flex items-center justify-between pt-3 border-t">
             <span className="font-medium">Total a transferir</span>
             <span className="text-2xl font-bold text-verde-uva-700">
-              {order.currency} {order.finalAmount % 1 === 0 ? order.finalAmount : order.finalAmount.toFixed(2)}
+              {formatAmountWithCurrency(order.finalAmount, order.currency)}
             </span>
           </div>
         </CardContent>
@@ -408,7 +407,7 @@ export function PendingTransferPage({
           {relevantAccounts.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
               <AlertCircle className="w-8 h-8 mx-auto mb-2" />
-              <p>No hay cuentas bancarias disponibles para {order.currency}</p>
+              <p>No hay cuentas bancarias disponibles</p>
               <p className="text-sm mt-1">
                 Por favor contactanos para recibir los datos de transferencia
               </p>
@@ -449,11 +448,6 @@ export function PendingTransferPage({
                       />
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Moneda</span>
-                    <span className="font-medium">{account.currency}</span>
-                  </div>
                 </div>
               </div>
             ))
@@ -474,7 +468,7 @@ export function PendingTransferPage({
             <li>
               Realiza la transferencia por{' '}
               <strong className="text-foreground">
-                {order.currency} {order.finalAmount % 1 === 0 ? order.finalAmount : order.finalAmount.toFixed(2)}
+                {formatAmountWithCurrency(order.finalAmount, order.currency)}
               </strong>{' '}
               a cualquiera de las cuentas indicadas
             </li>

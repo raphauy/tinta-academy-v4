@@ -31,6 +31,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import type { Order, OrderStatus, PaymentMethod } from '@prisma/client'
+import { formatAmountWithCurrency } from '@/lib/utils'
 
 type OrderWithRelations = Order & {
   user: { id: string; email: string; name: string | null }
@@ -107,13 +108,6 @@ function formatDate(date: Date): string {
     hour: '2-digit',
     minute: '2-digit',
   })
-}
-
-function formatCurrency(amount: number, currency: string): string {
-  if (currency === 'UYU') {
-    return `UYU ${amount.toLocaleString('es-UY', { maximumFractionDigits: 2 })}`
-  }
-  return `USD ${amount % 1 === 0 ? amount : amount.toFixed(2)}`
 }
 
 export function OrderDetailDialog({
@@ -212,7 +206,7 @@ export function OrderDetailDialog({
               {status.label}
             </span>
             <span className="text-lg font-bold text-stone-900 dark:text-stone-100">
-              {formatCurrency(order.finalAmount, order.currency)}
+              {formatAmountWithCurrency(order.finalAmount, order.currency)}
             </span>
           </div>
 
@@ -267,7 +261,7 @@ export function OrderDetailDialog({
                     {order.coupon.code} (-{order.discountPercent}%)
                   </p>
                   <p className="text-sm text-stone-500 dark:text-stone-400">
-                    Original: {formatCurrency(order.originalPriceUSD, 'USD')}
+                    Original: {formatAmountWithCurrency(order.originalPriceUSD, 'USD')}
                   </p>
                 </div>
               </div>

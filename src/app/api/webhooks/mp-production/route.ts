@@ -5,6 +5,7 @@ import { validateWebhookSignature, getPayment } from '@/services/mercadopago-ser
 import { getOrderById, getOrderByMpPaymentId, getOrderByMpPreferenceId, updateOrderStatus } from '@/services/order-service'
 import { completeCheckout } from '@/services/checkout-service'
 import { sendPaymentRejectedEmail, getMercadoPagoRejectionReason } from '@/services/email-service'
+import { formatAmount } from '@/lib/utils'
 
 // ============================================
 // TYPES
@@ -273,7 +274,7 @@ export async function POST(request: NextRequest) {
           orderNumber: order.orderNumber,
           courseName: order.course.title,
           courseType,
-          amount: order.finalAmount.toFixed(2),
+          amount: formatAmount(order.finalAmount, order.currency),
           currency: order.currency,
           reason: rejectionReason,
           courseId: order.courseId,

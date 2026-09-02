@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { purchasedStudentWhere } from './student-service'
+import { formatAmountWithCurrency } from '@/lib/utils'
 
 // ============================================
 // TYPES
@@ -316,7 +317,7 @@ export async function getRecentActivity(limit: number): Promise<RecentActivity[]
     activities.push({
       id: `payment-${payment.id}`,
       type: 'payment',
-      description: `${userName} pagó USD ${payment.finalAmount.toFixed(2)} por ${payment.course.title}`,
+      description: `${userName} pagó ${formatAmountWithCurrency(payment.finalAmount, payment.currency)} por ${payment.course.title}`,
       timestamp: payment.paidAt || payment.updatedAt,
     })
   }

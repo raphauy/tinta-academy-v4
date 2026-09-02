@@ -138,7 +138,7 @@ export function BankAccountFormDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="currency">Moneda *</Label>
+              <Label htmlFor="currency">Moneda de referencia</Label>
               <Select
                 value={formData.currency}
                 onValueChange={(value) =>
@@ -149,10 +149,14 @@ export function BankAccountFormDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="USD">USD - Dolares</SelectItem>
+                  <SelectItem value="USD">USD - Dólares</SelectItem>
                   <SelectItem value="UYU">UYU - Pesos Uruguayos</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                Solo informativa: la cuenta se muestra en todas las compras, sea
+                en pesos o en dólares.
+              </p>
             </div>
           </div>
 

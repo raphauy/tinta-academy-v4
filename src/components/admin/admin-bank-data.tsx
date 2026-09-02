@@ -1,14 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import {
-  Building2,
-  Plus,
-  DollarSign,
-  Globe,
-  CheckCircle,
-  XCircle,
-} from 'lucide-react'
+import { Building2, Plus, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -17,26 +10,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import type { BankAccount, Currency } from '@prisma/client'
+import type { BankAccount } from '@prisma/client'
 import { AdminMetricCard } from './admin-metric-card'
 import { BankAccountCard } from './bank-account-card'
 
-type CurrencyFilter = 'all' | Currency
 type StatusFilter = 'all' | 'active' | 'inactive'
 
 interface BankStats {
   total: number
   active: number
-  usd: number
-  uyu: number
 }
 
 function calculateStats(accounts: BankAccount[]): BankStats {
   return {
     total: accounts.length,
     active: accounts.filter((a) => a.isActive).length,
-    usd: accounts.filter((a) => a.currency === 'USD' && a.isActive).length,
-    uyu: accounts.filter((a) => a.currency === 'UYU' && a.isActive).length,
   }
 }
 
@@ -55,17 +43,12 @@ export function AdminBankData({
   onToggleActive,
   onDelete,
 }: AdminBankDataProps) {
-  const [currencyFilter, setCurrencyFilter] = useState<CurrencyFilter>('all')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
 
   const stats = useMemo(() => calculateStats(accounts), [accounts])
 
   const filteredAccounts = useMemo(() => {
     let result = [...accounts]
-
-    if (currencyFilter !== 'all') {
-      result = result.filter((account) => account.currency === currencyFilter)
-    }
 
     if (statusFilter !== 'all') {
       result = result.filter((account) =>
@@ -76,7 +59,7 @@ export function AdminBankData({
     result.sort((a, b) => a.displayOrder - b.displayOrder)
 
     return result
-  }, [accounts, currencyFilter, statusFilter])
+  }, [accounts, statusFilter])
 
   return (
     <div className="space-y-6">
@@ -98,7 +81,7 @@ export function AdminBankData({
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <AdminMetricCard
           label="Total Cuentas"
           value={stats.total}
@@ -110,50 +93,9 @@ export function AdminBankData({
           value={stats.active}
           icon={<CheckCircle className="w-4 h-4" />}
         />
-        <AdminMetricCard
-          label="Cuentas USD"
-          value={stats.usd}
-          icon={<DollarSign className="w-4 h-4" />}
-          subtitle="Dolares"
-        />
-        <AdminMetricCard
-          label="Cuentas UYU"
-          value={stats.uyu}
-          icon={<Globe className="w-4 h-4" />}
-          subtitle="Pesos Uruguayos"
-        />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <Select
-          value={currencyFilter}
-          onValueChange={(value) => setCurrencyFilter(value as CurrencyFilter)}
-        >
-          <SelectTrigger className="w-full sm:w-44 bg-white dark:bg-stone-900 border-stone-200 dark:border-stone-700">
-            <SelectValue placeholder="Moneda" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">
-              <span className="flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-stone-400" />
-                Todas las monedas
-              </span>
-            </SelectItem>
-            <SelectItem value="USD">
-              <span className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-emerald-500" />
-                USD - Dolares
-              </span>
-            </SelectItem>
-            <SelectItem value="UYU">
-              <span className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-blue-500" />
-                UYU - Pesos
-              </span>
-            </SelectItem>
-          </SelectContent>
-        </Select>
-
         <Select
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as StatusFilter)}
@@ -190,7 +132,7 @@ export function AdminBankData({
           : filteredAccounts.length === 1
             ? '1 cuenta bancaria'
             : `${filteredAccounts.length} cuentas bancarias`}
-        {(currencyFilter !== 'all' || statusFilter !== 'all') &&
+        {statusFilter !== 'all' &&
           accounts.length !== filteredAccounts.length && (
             <span className="text-stone-400 dark:text-stone-500">
               {' '}de {accounts.length} totales
@@ -219,18 +161,15 @@ export function AdminBankData({
             Sin cuentas bancarias
           </h3>
           <p className="text-sm text-stone-500 dark:text-stone-400 text-center max-w-sm">
-            {currencyFilter !== 'all' || statusFilter !== 'all'
+            {statusFilter !== 'all'
               ? 'No se encontraron cuentas con los filtros aplicados'
               : 'Agrega una cuenta bancaria para recibir pagos por transferencia'}
           </p>
-          {currencyFilter !== 'all' || statusFilter !== 'all' ? (
+          {statusFilter !== 'all' ? (
             <Button
               variant="ghost"
               className="mt-4"
-              onClick={() => {
-                setCurrencyFilter('all')
-                setStatusFilter('all')
-              }}
+              onClick={() => setStatusFilter('all')}
             >
               Limpiar filtros
             </Button>

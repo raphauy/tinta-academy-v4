@@ -10,6 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import type { Pricing } from '@/services/checkout-service'
 import type { Coupon } from '@prisma/client'
+import { formatAmountWithCurrency } from '@/lib/utils'
 
 // ============================================
 // TYPES
@@ -65,23 +66,20 @@ export function CheckoutSummary({
   coupon,
   currency,
 }: CheckoutSummaryProps) {
-  const formatUSD = (amount: number) =>
-    amount % 1 === 0 ? amount.toString() : amount.toFixed(2)
+  const displayPrice = formatAmountWithCurrency(
+    currency === 'UYU' ? pricing.finalPriceUYU : pricing.finalPriceUSD,
+    currency
+  )
 
-  const displayPrice =
-    currency === 'UYU'
-      ? `UYU ${pricing.finalPriceUYU.toLocaleString('es-UY')}`
-      : `USD ${formatUSD(pricing.finalPriceUSD)}`
+  const originalPrice = formatAmountWithCurrency(
+    currency === 'UYU' ? pricing.originalPriceUYU : pricing.originalPriceUSD,
+    currency
+  )
 
-  const originalPrice =
-    currency === 'UYU'
-      ? `UYU ${pricing.originalPriceUYU.toLocaleString('es-UY')}`
-      : `USD ${formatUSD(pricing.originalPriceUSD)}`
-
-  const discountAmount =
-    currency === 'UYU'
-      ? `UYU ${pricing.discountAmountUYU.toLocaleString('es-UY')}`
-      : `USD ${formatUSD(pricing.discountAmountUSD)}`
+  const discountAmount = formatAmountWithCurrency(
+    currency === 'UYU' ? pricing.discountAmountUYU : pricing.discountAmountUSD,
+    currency
+  )
 
   return (
     <Card className="sticky top-8">
