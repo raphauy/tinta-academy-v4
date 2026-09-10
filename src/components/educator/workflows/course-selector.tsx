@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Check, ChevronsUpDown, Calendar, Users } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, commandSubstringFilter } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -87,7 +87,7 @@ export function CourseSelector({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0" align="start">
-        <Command>
+        <Command filter={commandSubstringFilter}>
           <CommandInput placeholder="Buscar curso..." />
           <CommandList>
             <CommandEmpty>No se encontraron cursos.</CommandEmpty>

@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
+import { cn, commandSubstringFilter } from '@/lib/utils'
 import type { EnrollmentStatus } from '@prisma/client'
 
 // Type matching what getEducatorStudents returns (students with enrollments)
@@ -143,7 +143,7 @@ export function AllStudentsList({ students, courses }: AllStudentsListProps) {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-            <Command>
+            <Command filter={commandSubstringFilter}>
               <CommandInput placeholder="Buscar curso..." />
               <CommandList>
                 <CommandEmpty>No se encontraron cursos.</CommandEmpty>

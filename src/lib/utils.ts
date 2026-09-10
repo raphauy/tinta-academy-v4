@@ -56,6 +56,29 @@ export function generateSlug(title: string): string {
 }
 
 /**
+ * Lowercases and strips accents so "Méndez" matches "mendez".
+ */
+export function normalizeSearchText(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+}
+
+/**
+ * Filter for cmdk `<Command filter={...}>`: every word typed must appear as a
+ * substring of the item value, ignoring accents and case.
+ *
+ * Replaces cmdk's default fuzzy matching, which matches scattered letters
+ * (e.g. "razar" would match "Laura Madrazo") and confuses users.
+ */
+export function commandSubstringFilter(value: string, search: string): number {
+  const haystack = normalizeSearchText(value)
+  const words = normalizeSearchText(search).split(/\s+/).filter(Boolean)
+  return words.every((word) => haystack.includes(word)) ? 1 : 0
+}
+
+/**
  * Formats an order amount, e.g. "3.200" (UYU) or "350.50" (USD).
  * Uruguayan pesos use local thousand separators; whole amounts drop the
  * decimals in both currencies.

@@ -17,7 +17,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
+import { cn, commandSubstringFilter } from '@/lib/utils'
 import type { StudentForSelection } from '@/services/student-service'
 
 interface ViewAsBannerProps {
@@ -97,7 +97,7 @@ export function ViewAsBanner({
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-              <Command>
+              <Command filter={commandSubstringFilter}>
                 <CommandInput placeholder="Buscar estudiante..." />
                 <CommandList>
                   <CommandEmpty>No se encontraron estudiantes.</CommandEmpty>
