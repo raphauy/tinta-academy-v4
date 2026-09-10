@@ -24,7 +24,6 @@
  */
 
 import { config } from 'dotenv'
-import { fromZonedTime } from 'date-fns-tz'
 
 config({ path: '.env.local' })
 
@@ -39,7 +38,7 @@ const ALUMNO = {
   firstName: 'Ruben',
   lastName: 'Azar',
   identityDocument: '1717082-6',
-  dateOfBirth: '1960-11-01', // yyyy-MM-dd, se guarda como medianoche de Montevideo
+  dateOfBirth: '1960-11-01', // yyyy-MM-dd, se guarda como medianoche UTC (igual que el checkout)
   phone: '+59894440955',
   address: 'Calle del Sol 879',
   city: '',
@@ -126,7 +125,7 @@ async function main() {
     lastName: ALUMNO.lastName,
     identityDocument: ALUMNO.identityDocument,
     dateOfBirth: ALUMNO.dateOfBirth
-      ? fromZonedTime(ALUMNO.dateOfBirth, 'America/Montevideo')
+      ? new Date(`${ALUMNO.dateOfBirth}T00:00:00.000Z`)
       : undefined,
     phone: ALUMNO.phone,
     address: ALUMNO.address,
