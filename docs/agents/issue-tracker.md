@@ -6,7 +6,7 @@ Issues and specs for this repo live as GitHub issues (`raphauy/tinta-academy-v4`
 
 ## Conventions
 
-- **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc for multi-line bodies.
+- **Create an issue**: `gh issue create --title "..." --body "..."`. Use a heredoc for multi-line bodies. Specs (from `/to-spec`) are titled `Spec: <title>`.
 - **Read an issue**: `gh issue view <number> --comments`, filtering comments by `jq` and also fetching labels.
 - **List issues**: `gh issue list --state open --json number,title,body,labels,comments --jq '[.[] | {number, title, body, labels: [.labels[].name], comments: [.comments[].body]}]'` with appropriate `--label` and `--state` filters.
 - **Comment on an issue**: `gh issue comment <number> --body "..."`
@@ -14,6 +14,15 @@ Issues and specs for this repo live as GitHub issues (`raphauy/tinta-academy-v4`
 - **Close**: `gh issue close <number> --comment "..."`
 
 Infer the repo from `git remote -v`; `gh` does this automatically when run inside a clone.
+
+## Tamaño de los tickets
+
+Al partir una spec (`/to-tickets`), los tickets van **grandes**: el único tope es que uno entre en
+una sola sesión de `/implement`. Cada sesión cuesta tiempo de arranque y de revisión, así que se
+agrupa por lo que se demuestra junto —la base y el sitio que la lee; el panel entero de una
+sección— y no por capa ni por pantalla. Se parte sólo cuando el conjunto no entra en una sesión o
+cuando dos partes pueden avanzar en paralelo y eso vale la pena. No hace falta consultar la
+granularidad: se propone la partición gruesa directamente.
 
 ## Pull requests as a triage surface
 

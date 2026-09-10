@@ -52,7 +52,37 @@ El snapshot se re-resuelve en cada regeneración explícita del diploma (accione
 Valor calculado: `max(course.classDates)`, con fallback a `course.endDate` y luego `course.startDate`. Es la fecha default que figura en el diploma cuando el educador no la sobreescribe.
 
 ### Cursos elegibles (para diploma)
-Todos los cursos con `CourseType` distinto de `wset` (es decir: `taller`, `cata`, `curso`, `experiencia`), en cualquier modalidad (`presencial`, `online`, `webinar`).
+Todos los cursos con `CourseType` distinto de `wset` (es decir: `taller`, `cata`, `curso`, `experiencia`), en cualquier modalidad (`presencial`, `online`, `webinar`, `semipresencial`).
+
+---
+
+## Cursos y modalidades
+
+### Modalidad
+Forma en que se dicta un curso. Se elige al crearlo y no cambia después. Valores: **Presencial** (clases con fecha y lugar), **Webinar** (una clase virtual en vivo con link), **Online** (solo contenido grabado, a ritmo propio) y **Semipresencial**.
+- *Aliases a evitar:* "tipo de curso" (eso es `CourseType`: wset, taller, cata, etc.).
+
+### Semipresencial
+Modalidad que combina **clases** con fecha (presenciales y/o virtuales) con **contenido grabado** a ritmo propio. Tiene un único lugar y un único link de acceso virtual para todo el curso. Sigue el ciclo de vida de los cursos con fecha (anunciado → inscripciones → en curso → finalizado).
+- *Aliases a evitar:* "híbrido", "mixto", "blended", "semi-presencial".
+- *Relaciones:* 1 Curso semipresencial → 1..N Clases, 0..N Módulos.
+
+### Clase
+Encuentro con fecha y hora dentro de un curso. Cada clase es **presencial** (en el lugar del curso) o **virtual** (por el link de acceso del curso). En presencial y webinar todas las clases son del mismo tipo; en semipresencial se marca clase por clase.
+- *Aliases a evitar:* "sesión", "encuentro", "webinar" (para referirse a una clase individual), "lección" (eso es contenido grabado).
+
+### Módulo
+Agrupación ordenada de lecciones dentro del contenido grabado de un curso (online o semipresencial).
+
+### Lección
+Unidad de contenido grabado dentro de un módulo: video, resumen y materiales, con progreso por estudiante y comentarios. Se ve a ritmo propio desde que la inscripción está confirmada.
+- *Aliases a evitar:* "clase" (eso es un encuentro con fecha), "video" (la lección es más que el video).
+
+### Contenido grabado
+Conjunto de módulos y lecciones de un curso. En el semipresencial se presenta como sección separada del calendario de clases, sin orden relativo entre clases y lecciones.
+
+### Materiales
+Archivos o links de apoyo. Existen en dos niveles: **materiales del curso** (generales, visibles en el detalle del curso) y **materiales de la lección** (dentro del contenido grabado). Un semipresencial puede tener ambos.
 
 ---
 
