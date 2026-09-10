@@ -52,8 +52,8 @@ export async function sendOtpAction(email: string): Promise<ActionResult> {
     // Generate OTP
     const otp = generateOtp()
 
-    // Create token with 10 minute expiration
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+    // Create token with 30 minute expiration
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000)
     await createOtpToken({
       userId: user.id,
       token: otp,

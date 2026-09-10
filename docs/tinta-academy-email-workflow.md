@@ -72,7 +72,7 @@ Usuario ingresa email
 
 ### 1. Código de verificación (OTP)
 - **Destinatario:** Usuario que intenta iniciar sesión
-- **Contenido:** Código de 6 dígitos válido por 10 minutos
+- **Contenido:** Código de 6 dígitos válido por 30 minutos
 - **Propósito:** Autenticación sin contraseña
 
 ### 2. Confirmación de compra

@@ -35,7 +35,7 @@ export default function OtpEmail({ otp = '847291' }: OtpEmailProps) {
             </Section>
 
             <Text style={styles.text}>
-              Este código expira en 10 minutos. Si no solicitaste este código,
+              Este código expira en 30 minutos. Si no solicitaste este código,
               puedes ignorar este mensaje.
             </Text>
           </Section>
