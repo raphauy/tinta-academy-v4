@@ -1,0 +1,8 @@
+# Este repo lleva su trabajo de desarrollo en GitHub issues (raphauy/tinta-academy-v4).
+#
+# El hook ~/.claude/hooks/marcar-issue.sh mira este archivo: donde está, un "#NN"
+# en el prompt marca el issue de la sesión y la statusline lo muestra. El contenido
+# de este archivo no se lee: alcanza con que exista.
+#
+# Linear sigue siendo el canal con el dueño de OnMind (issues de cliente). Los mapas
+# de wayfinder, specs y tickets de decisión van a GitHub. Ver docs/agents/issue-tracker.md.

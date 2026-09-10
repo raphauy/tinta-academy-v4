@@ -46,7 +46,4 @@ dev.log
 # scratch outputs locales (test-diploma-render.ts, etc.)
 /tmp/
 
-# audit files (internal use only)
-/plans/audit/
-
 .automaker

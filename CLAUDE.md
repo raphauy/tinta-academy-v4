@@ -50,3 +50,21 @@ User (role) → Student/Educator | Course → Enrollment | Order | EmailTemplate
 - El issue generalmente está escrito por el dueño de OnMind que no es técnico, por lo que los comentarios que se agreguen no deben ser técnicos, deben ser concretos y para el usuario de OnMind, no para el desarrollador.
 - Escribir comentarios en primera persona
 - Marcar Done solo después de que el usuario pruebe y confirme.
+
+## Agent skills
+
+Plugin `mattpocock-skills` habilitado a nivel proyecto (`.claude/settings.json`). Flujo típico: `/wayfinder` para features grandes; `/grill-with-docs` → `/to-spec` → `/to-tickets` → `/implement` para medianas; `/diagnosing-bugs` para bugs. `/revisar` sigue vigente para la revisión con reglas del proyecto.
+
+Regla que prevalece sobre lo que diga cualquier skill (incluido `/implement`): **nunca commitear por cuenta propia**. El commit se hace solo cuando el usuario lo pide, siempre en `main`, y el push lo hace él.
+
+### Issue tracker
+
+GitHub issues de `raphauy/tinta-academy-v4` (mapas, specs y tickets de decisión). Linear queda solo como canal con el cliente. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Labels por defecto (`needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` en la raíz (glosario) + `docs/adr/`. See `docs/agents/domain.md`.

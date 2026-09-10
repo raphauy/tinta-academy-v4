@@ -1,6 +1,10 @@
-# Glosario — Tinta Academy
+# Tinta Academy
 
-Lenguaje ubicuo del dominio. **Solo definiciones, aliases prohibidos y relaciones**. Ninguna decisión de implementación: eso vive en los PRDs y archivos de fase.
+Plataforma de educación en vinos. Los educadores venden y gestionan cursos; los estudiantes los compran y acceden a ellos. Pagos por MercadoPago o transferencia bancaria.
+
+## Language
+
+Lenguaje ubicuo del dominio. **Solo definiciones, aliases prohibidos y relaciones**. Ninguna decisión de implementación: eso vive en las specs (issues de GitHub) y en los ADRs de `docs/adr/`.
 
 Formato por término:
 - **Definición concisa**.
