@@ -14,6 +14,13 @@ import { footerLinks, contactInfo } from '@/config/footer'
 import { subscribeToNewsletter } from '@/app/(public)/actions'
 import { toast } from 'sonner'
 import { toLocalDate } from '@/lib/utils'
+import { CLASS_ICONS } from '@/components/course/modality-icons'
+import { ClassKindBadge } from '@/components/course/class-kind-badge'
+import {
+  getClassKind,
+  getModalityLabel,
+  hasRecordedContent,
+} from '@/lib/course-modality'
 import {
   Clock,
   MapPin,
@@ -33,6 +40,8 @@ import {
 type CourseWithRelations = Course & {
   educator: Educator
   tags: Tag[]
+  /** Solo la fecha de cada clase virtual: los links de acceso no llegan a la página pública */
+  virtualClasses?: Array<{ date: Date }>
   modules?: Array<{
     id: string
     title: string
@@ -172,6 +181,10 @@ function getWsetIncluded(wsetLevel: number | null | undefined): string[] {
 export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPageProps) {
   const router = useRouter()
   const isWset = course.type === 'wset'
+  const isSemipresencial = course.modality === 'semipresencial'
+  const modules = course.modules ?? []
+  const showRecordedContent = hasRecordedContent(course.modality) && modules.length > 0
+  const hasFreeLessons = modules.some((m) => m.lessons.some((l) => l.isFree))
 
   // Determine enrollment state
   const enrollableStatuses = ['announced', 'enrolling', 'available']
@@ -240,7 +253,7 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
           <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
             <div className="max-w-3xl">
               <p className="text-sm uppercase tracking-wider mb-2 opacity-80">
-                {getCourseTypeName(course.type, course.wsetLevel)} • {course.modality}
+                {getCourseTypeName(course.type, course.wsetLevel)} • {getModalityLabel(course.modality)}
               </p>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
                 {course.title}
@@ -337,9 +350,13 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                 <CardContent className="space-y-3">
                   {course.classDates.map((date, index) => {
                     const endTime = getEndTime(course.startTime, course.classDuration)
+                    const classKind = isSemipresencial
+                      ? getClassKind(date, course.virtualClasses ?? [])
+                      : null
+                    const ClassIcon = classKind ? CLASS_ICONS[classKind] : BookOpen
                     return (
                       <div key={index} className="flex items-start gap-3">
-                        <BookOpen className="size-5 text-muted-foreground mt-0.5" />
+                        <ClassIcon className="size-5 text-muted-foreground mt-0.5" />
                         <div>
                           <span className="font-medium">Clase {index + 1}:</span>{' '}
                           <span>
@@ -350,6 +367,7 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                               {' '}- {course.startTime} a {endTime} h
                             </span>
                           )}
+                          {classKind && <ClassKindBadge kind={classKind} />}
                         </div>
                       </div>
                     )
@@ -384,9 +402,12 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
               </Card>
             )}
 
-            {/* Curriculum Card - Online courses */}
-            {course.modality === 'online' && course.modules && course.modules.length > 0 && (
-              <CurriculumSection modules={course.modules} />
+            {/* Curriculum Card - contenido grabado (online y semipresencial) */}
+            {showRecordedContent && (
+              <CurriculumSection
+                modules={modules}
+                title={isSemipresencial ? 'Contenido grabado' : 'Contenido del curso'}
+              />
             )}
 
             {/* Educator Card */}
@@ -436,32 +457,10 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
               </CardHeader>
               <CardContent className="space-y-4">
                 {course.modality === 'online' ? (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <PlayCircle className="size-5 text-muted-foreground" />
-                      <span>Online · A tu ritmo</span>
-                    </div>
-                    {course.modules && course.modules.length > 0 && (
-                      <>
-                        <div className="flex items-center gap-3">
-                          <BookOpen className="size-5 text-muted-foreground" />
-                          <span>
-                            {course.modules.length} {course.modules.length === 1 ? 'módulo' : 'módulos'} · {course.modules.reduce((s, m) => s + m.lessons.length, 0)} lecciones
-                          </span>
-                        </div>
-                        {(() => {
-                          const totalSecs = course.modules.flatMap(m => m.lessons).reduce((s, l) => s + (l.videoDuration || 0), 0)
-                          const hours = Math.round(totalSecs / 3600 * 10) / 10
-                          return hours > 0 ? (
-                            <div className="flex items-center gap-3">
-                              <Clock className="size-5 text-muted-foreground" />
-                              <span>{hours}h de contenido en video</span>
-                            </div>
-                          ) : null
-                        })()}
-                      </>
-                    )}
-                  </>
+                  <div className="flex items-center gap-3">
+                    <PlayCircle className="size-5 text-muted-foreground" />
+                    <span>Online · A tu ritmo</span>
+                  </div>
                 ) : (
                   <>
                     {course.duration && (
@@ -481,6 +480,27 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                         </div>
                       </div>
                     )}
+                  </>
+                )}
+                {/* Contenido grabado: online y semipresencial */}
+                {showRecordedContent && (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <BookOpen className="size-5 text-muted-foreground" />
+                      <span>
+                        {modules.length} {modules.length === 1 ? 'módulo' : 'módulos'} · {modules.reduce((s, m) => s + m.lessons.length, 0)} lecciones
+                      </span>
+                    </div>
+                    {(() => {
+                      const totalSecs = modules.flatMap(m => m.lessons).reduce((s, l) => s + (l.videoDuration || 0), 0)
+                      const hours = Math.round(totalSecs / 3600 * 10) / 10
+                      return hours > 0 ? (
+                        <div className="flex items-center gap-3">
+                          <Clock className="size-5 text-muted-foreground" />
+                          <span>{hours}h de contenido en video</span>
+                        </div>
+                      ) : null
+                    })()}
                   </>
                 )}
                 {course.maxCapacity && (
@@ -569,8 +589,8 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                   </Button>
                 ) : null}
 
-                {/* Preview free lessons — only for online courses when not enrolled */}
-                {course.modality === 'online' && !isEnrolled && (
+                {/* Preview free lessons — online courses, and semipresencial ones with free lessons, when not enrolled */}
+                {!isEnrolled && (course.modality === 'online' || (isSemipresencial && hasFreeLessons)) && (
                   <Button asChild variant="outline" size="lg" className="w-full">
                     <Link href={`/learn/${course.slug}`}>
                       <PlayCircle className="w-4 h-4 mr-2" />
@@ -626,8 +646,10 @@ function formatLessonDuration(seconds: number): string {
 
 function CurriculumSection({
   modules,
+  title,
 }: {
   modules: NonNullable<CourseWithRelations['modules']>
+  title: string
 }) {
   const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0)
   const totalSeconds = modules
@@ -654,7 +676,7 @@ function CurriculumSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Contenido del curso</CardTitle>
+        <CardTitle>{title}</CardTitle>
         <p className="text-sm text-muted-foreground">
           {modules.length} {modules.length === 1 ? 'módulo' : 'módulos'} · {totalLessons}{' '}
           {totalLessons === 1 ? 'lección' : 'lecciones'}

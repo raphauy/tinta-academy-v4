@@ -1,5 +1,7 @@
-import { format } from 'date-fns'
+import { addDays, addMinutes, format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { fromZonedTime } from 'date-fns-tz'
+import { findClassOnDate } from '@/lib/course-modality'
 
 // Available variables with metadata for UI display
 export const AVAILABLE_VARIABLES = [
@@ -48,6 +50,16 @@ export const AVAILABLE_VARIABLES = [
     description: 'Link al curso en el portal',
     example: 'https://academy.tinta.wine/student/courses/abc123',
   },
+  {
+    key: 'courseLocation',
+    description: 'Lugar y dirección del curso',
+    example: 'Sala Tinta, Av. Italia 1234',
+  },
+  {
+    key: 'accessLink',
+    description: 'Link de acceso a la clase virtual',
+    example: 'https://zoom.us/j/123456789',
+  },
 ] as const
 
 // Type for all supported template variables
@@ -61,6 +73,8 @@ export type TemplateVariables = {
   examDate: string
   educatorName: string
   courseUrl: string
+  courseLocation: string
+  accessLink: string
 }
 
 // Variable keys for validation
@@ -135,6 +149,8 @@ const COURSE_VARIABLE_KEYS = [
   'courseEndDate',
   'examDate',
   'courseUrl',
+  'courseLocation',
+  'accessLink',
 ]
 
 /**
@@ -142,6 +158,82 @@ const COURSE_VARIABLE_KEYS = [
  */
 export function usesCourseVariables(template: string): boolean {
   return COURSE_VARIABLE_KEYS.some((key) => template.includes(`{{${key}}}`))
+}
+
+/** Zona horaria en la que se cargan las horas de inicio de las clases. */
+const CLASS_TIMEZONE = 'America/Montevideo'
+
+type CourseLocationInput = {
+  location: string | null
+  address: string | null
+}
+
+type CourseAccessInput = {
+  modality: string
+  streamingUrl: string | null
+  startTime: string | null
+  classDuration: number | null
+  virtualClasses: ReadonlyArray<{ date: Date; streamingUrl: string | null }>
+}
+
+/**
+ * Momento en que termina una clase: la hora de inicio del curso más la duración
+ * de clase. Sin hora de inicio, la clase dura todo el día.
+ */
+function getClassEnd(
+  date: Date,
+  startTime: string | null,
+  classDuration: number | null
+): Date {
+  // Una fecha de clase es un día calendario: se lee en UTC, como en toLocalDate
+  const dayStart = fromZonedTime(`${date.toISOString().slice(0, 10)}T00:00:00`, CLASS_TIMEZONE)
+  const [hours, minutes] = (startTime ?? '').split(':').map(Number)
+  if (!startTime || Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return addDays(dayStart, 1)
+  }
+  return addMinutes(dayStart, hours * 60 + minutes + (classDuration ?? 0))
+}
+
+/**
+ * Envío para el que se resuelve el link de acceso: un recordatorio disparado por
+ * una fecha de clase (null si el curso no tiene esa clase) o cualquier otro envío.
+ */
+export type AccessLinkSend = { classDate: Date | null } | { sentAt: Date }
+
+/** Lugar del curso para {{courseLocation}}: nombre y dirección, vacío si no hay dato. */
+export function resolveCourseLocation(course: CourseLocationInput): string {
+  return [course.location, course.address]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(', ')
+}
+
+/**
+ * Link de acceso para {{accessLink}}, vacío cuando no hay dato.
+ * - Webinar: el link del curso.
+ * - Semipresencial, recordatorio por fecha de clase: el link de esa clase
+ *   (vacío si la clase es presencial o todavía no tiene link).
+ * - Semipresencial, cualquier otro envío: el link de la próxima clase virtual
+ *   con link cargado que todavía no terminó al momento del envío.
+ */
+export function resolveAccessLink(course: CourseAccessInput, send: AccessLinkSend): string {
+  if (course.modality === 'webinar') return course.streamingUrl ?? ''
+  if (course.modality !== 'semipresencial') return ''
+
+  if ('classDate' in send) {
+    if (!send.classDate) return ''
+    return findClassOnDate(send.classDate, course.virtualClasses)?.streamingUrl ?? ''
+  }
+
+  const { sentAt } = send
+  const nextClass = course.virtualClasses
+    .filter(
+      (vc) =>
+        vc.streamingUrl &&
+        getClassEnd(vc.date, course.startTime, course.classDuration) > sentAt
+    )
+    .sort((a, b) => a.date.getTime() - b.date.getTime())[0]
+  return nextClass?.streamingUrl ?? ''
 }
 
 // Input types for buildVariablesForStudent
@@ -153,13 +245,14 @@ type StudentInput = {
   }
 }
 
-type CourseInput = {
-  id: string
-  title: string
-  startDate: Date | null
-  endDate: Date | null
-  examDate: Date | null
-}
+type CourseInput = CourseLocationInput &
+  CourseAccessInput & {
+    id: string
+    title: string
+    startDate: Date | null
+    endDate: Date | null
+    examDate: Date | null
+  }
 
 type EducatorInput = {
   name: string
@@ -188,5 +281,7 @@ export function buildVariablesForStudent(
     examDate: formatDateSpanish(course.examDate),
     educatorName: educator.name,
     courseUrl: `${baseUrl}/student/courses/${course.id}`,
+    courseLocation: resolveCourseLocation(course),
+    accessLink: resolveAccessLink(course, { sentAt: new Date() }),
   }
 }

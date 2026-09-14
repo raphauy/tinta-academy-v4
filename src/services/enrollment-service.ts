@@ -252,6 +252,14 @@ export async function getStudentEnrollmentByCourse(
             },
           },
           tags: true,
+          // Semipresencial: cada clase virtual con su link de acceso
+          virtualClasses: {
+            orderBy: { date: 'asc' },
+          },
+          // Para saber si ya hay contenido grabado para ver
+          modules: {
+            select: { _count: { select: { lessons: true } } },
+          },
         },
       },
     },

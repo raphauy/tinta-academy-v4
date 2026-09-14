@@ -9,7 +9,6 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  Users,
   Lightbulb,
   ArrowRight,
   Eye,
@@ -363,6 +362,21 @@ export default function CommunicationsDocsPage() {
                         <TableCell><code className="text-xs bg-muted px-1 py-0.5 rounded">{'{{courseUrl}}'}</code></TableCell>
                         <TableCell>Link a la página del curso</TableCell>
                         <TableCell className="text-muted-foreground">https://...</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell><code className="text-xs bg-muted px-1 py-0.5 rounded">{'{{courseLocation}}'}</code></TableCell>
+                        <TableCell>Lugar y dirección del curso. Queda vacío si el curso no tiene lugar cargado</TableCell>
+                        <TableCell className="text-muted-foreground">Sala Tinta, Av. Italia 1234</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell><code className="text-xs bg-muted px-1 py-0.5 rounded">{'{{accessLink}}'}</code></TableCell>
+                        <TableCell>
+                          Link de acceso a la clase virtual. En un recordatorio por fecha de clase es el link
+                          de esa clase; en los demás envíos, el de la próxima clase virtual con link cargado
+                          que todavía no terminó.
+                          En un webinar es el link del webinar. Queda vacío si no hay link
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">https://zoom.us/j/...</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>

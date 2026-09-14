@@ -17,6 +17,14 @@ import {
 import { emailTheme } from './email-theme'
 import { EmailHeader } from './email-header'
 
+/** Clase virtual de un semipresencial, con su link si ya está cargado. */
+export interface VirtualClassAccess {
+  /** Fecha y hora legibles, por ejemplo "Martes 15 de septiembre de 2026, 19:00 h" */
+  dateLabel: string
+  streamingUrl?: string
+  streamingPassword?: string
+}
+
 interface OrderConfirmationEmailProps {
   customerName?: string
   orderNumber?: string
@@ -32,6 +40,8 @@ interface OrderConfirmationEmailProps {
   // Webinar streaming fields
   streamingUrl?: string
   streamingPassword?: string
+  // Semipresencial: cada clase virtual con su link
+  virtualClasses?: VirtualClassAccess[]
 }
 
 export default function OrderConfirmationEmail({
@@ -49,6 +59,7 @@ export default function OrderConfirmationEmail({
   courseUrl = 'https://academy.tinta.wine/student/courses/wset-level-2',
   streamingUrl,
   streamingPassword,
+  virtualClasses,
 }: OrderConfirmationEmailProps) {
   void _paymentMethod // Suppress unused variable warning
   const isWebinar = !!streamingUrl
@@ -193,6 +204,42 @@ export default function OrderConfirmationEmail({
                 )}
                 <Text style={styles.webinarNote}>
                   Guarda este email para tener el link de acceso disponible el día del evento.
+                </Text>
+              </Section>
+            )}
+
+            {/* Semipresencial: acceso a cada clase virtual */}
+            {virtualClasses && virtualClasses.length > 0 && (
+              <Section style={styles.webinarBox}>
+                <Text style={styles.webinarTitle}>🎥 Clases virtuales</Text>
+                <Text style={styles.webinarText}>
+                  Estas son las clases virtuales del curso y su link de acceso:
+                </Text>
+                {virtualClasses.map((virtualClass) => (
+                  <Section key={virtualClass.dateLabel} style={styles.virtualClassItem}>
+                    <Text style={styles.virtualClassDate}>{virtualClass.dateLabel}</Text>
+                    {virtualClass.streamingUrl ? (
+                      <>
+                        <Button style={styles.virtualClassButton} href={virtualClass.streamingUrl}>
+                          Acceder a la clase
+                        </Button>
+                        {virtualClass.streamingPassword && (
+                          <Text style={styles.virtualClassPassword}>
+                            Contraseña de acceso: <strong>{virtualClass.streamingPassword}</strong>
+                          </Text>
+                        )}
+                      </>
+                    ) : (
+                      <Text style={styles.virtualClassPending}>
+                        El link de esta clase estará disponible más adelante.
+                      </Text>
+                    )}
+                  </Section>
+                ))}
+                <Text style={styles.webinarNote}>
+                  {virtualClasses.some((virtualClass) => !virtualClass.streamingUrl)
+                    ? 'Los links que todavía no están los vas a encontrar en tu panel de estudiante.'
+                    : 'Guarda este email para tener los links de acceso a mano el día de cada clase.'}
                 </Text>
               </Section>
             )}
@@ -422,5 +469,38 @@ const styles = {
     fontStyle: 'italic' as const,
     margin: '12px 0 0 0',
     textAlign: 'center' as const,
+  },
+  virtualClassItem: {
+    backgroundColor: '#ffffff',
+    borderRadius: '4px',
+    margin: '0 0 12px 0',
+    padding: '12px 16px',
+  },
+  virtualClassDate: {
+    color: emailTheme.colors.foreground,
+    fontSize: '14px',
+    fontWeight: '600',
+    margin: '0 0 8px 0',
+  },
+  virtualClassButton: {
+    backgroundColor: '#16a34a',
+    borderRadius: emailTheme.borderRadius,
+    color: '#ffffff',
+    display: 'inline-block',
+    fontSize: '13px',
+    fontWeight: '600',
+    padding: '8px 16px',
+    textDecoration: 'none',
+  },
+  virtualClassPassword: {
+    color: emailTheme.colors.foreground,
+    fontSize: '13px',
+    margin: '8px 0 0 0',
+  },
+  virtualClassPending: {
+    color: emailTheme.colors.mutedForeground,
+    fontSize: '13px',
+    fontStyle: 'italic' as const,
+    margin: 0,
   },
 }

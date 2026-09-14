@@ -22,6 +22,8 @@ const SAMPLE_VARIABLES: TemplateVariables = {
   examDate: "20 de marzo de 2025",
   educatorName: "Gabriela Zimmer",
   courseUrl: "https://academy.tinta.wine/student/courses/abc123",
+  courseLocation: "Sala Tinta, Av. Italia 1234",
+  accessLink: "https://zoom.us/j/123456789",
 }
 
 // Placeholder values when no course is selected
@@ -35,6 +37,9 @@ export const NO_COURSE_VARIABLES: TemplateVariables = {
   examDate: "[Sin fecha]",
   educatorName: "Gabriela Zimmer",
   courseUrl: "[Sin URL]",
+  // Sin curso, lugar y link de acceso quedan vacíos, igual que en el envío
+  courseLocation: "",
+  accessLink: "",
 }
 
 interface TemplatePreviewProps {

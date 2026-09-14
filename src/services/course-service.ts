@@ -187,6 +187,11 @@ export async function getCourseBySlug(slug: string, includeUnpublished = false) 
           },
         },
       },
+      // Solo la fecha: los links de acceso de las clases virtuales no llegan a la página pública
+      virtualClasses: {
+        orderBy: { date: 'asc' },
+        select: { date: true },
+      },
     },
   })
 

@@ -6,6 +6,7 @@ import {
   formatDateForTemplate,
   type TemplateVariables
 } from './email-template-service'
+import { resolveAccessLink, resolveCourseLocation } from '@/lib/email/template-variables'
 import { signUnsubscribeToken } from '@/lib/unsubscribe-token'
 
 /**
@@ -250,7 +251,9 @@ export async function processCampaignSend(
     where: { id: campaignId },
     include: {
       template: true,
-      course: true,
+      course: {
+        include: { virtualClasses: true }
+      },
       educator: true,
       recipients: {
         where: { status: 'pending' },
@@ -279,6 +282,12 @@ export async function processCampaignSend(
 
   let sent = 0
   let failed = 0
+
+  // Lugar y link de acceso son datos del curso: iguales para todos los destinatarios
+  const courseLocation = campaign.course ? resolveCourseLocation(campaign.course) : undefined
+  const accessLink = campaign.course
+    ? resolveAccessLink(campaign.course, { sentAt: new Date() })
+    : undefined
 
   // Process each recipient
   for (const recipient of campaign.recipients) {
@@ -312,7 +321,9 @@ export async function processCampaignSend(
       educatorName: campaign.educator.name,
       courseUrl: campaign.course
         ? `${baseUrl}/student/courses/${campaign.course.id}`
-        : undefined
+        : undefined,
+      courseLocation,
+      accessLink
     }
 
     // Render template with variables

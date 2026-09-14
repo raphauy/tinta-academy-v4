@@ -13,7 +13,13 @@ import {
   cancelScheduledCampaign,
   getCampaignsWithStats,
 } from '@/services/email-campaign-service'
-import { renderTemplate, formatDateSpanish, type TemplateVariables } from '@/lib/email/template-variables'
+import {
+  renderTemplate,
+  formatDateSpanish,
+  resolveAccessLink,
+  resolveCourseLocation,
+  type TemplateVariables,
+} from '@/lib/email/template-variables'
 import { sendDynamicEmail } from '@/services/email-service'
 
 const TEST_EMAIL_VARIABLES: TemplateVariables = {
@@ -26,6 +32,8 @@ const TEST_EMAIL_VARIABLES: TemplateVariables = {
   examDate: '20 de marzo de 2025',
   educatorName: 'Gabriela Zimmer',
   courseUrl: 'https://academy.tinta.wine/student/courses/abc123',
+  courseLocation: 'Sala Tinta, Av. Italia 1234',
+  accessLink: 'https://zoom.us/j/123456789',
 }
 import { getStudentsByCourse } from '@/services/student-selection-service'
 import { getStudentIdsByFilter } from '@/services/audience-filter-service'
@@ -501,7 +509,20 @@ export async function sendTestEmailAction(
     if (courseId) {
       const course = await prisma.course.findFirst({
         where: { id: courseId, educatorId: educator.id },
-        select: { id: true, title: true, startDate: true, endDate: true, examDate: true },
+        select: {
+          id: true,
+          title: true,
+          startDate: true,
+          endDate: true,
+          examDate: true,
+          modality: true,
+          location: true,
+          address: true,
+          streamingUrl: true,
+          startTime: true,
+          classDuration: true,
+          virtualClasses: { select: { date: true, streamingUrl: true } },
+        },
       })
 
       if (course) {
@@ -510,6 +531,8 @@ export async function sendTestEmailAction(
         variables.courseEndDate = formatDateSpanish(course.endDate)
         variables.examDate = formatDateSpanish(course.examDate)
         variables.courseUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://academy.tinta.wine'}/student/courses/${course.id}`
+        variables.courseLocation = resolveCourseLocation(course)
+        variables.accessLink = resolveAccessLink(course, { sentAt: new Date() })
       }
     }
 

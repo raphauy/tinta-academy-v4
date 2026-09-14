@@ -1,6 +1,8 @@
 import { Resend } from 'resend'
 import OtpEmail from '@/components/emails/otp-email'
-import OrderConfirmationEmail from '@/components/emails/order-confirmation'
+import OrderConfirmationEmail, {
+  type VirtualClassAccess,
+} from '@/components/emails/order-confirmation'
 import TransferInstructionsEmail from '@/components/emails/transfer-instructions'
 import PaymentRejectedEmail from '@/components/emails/payment-rejected'
 import WsetDataReminderEmail from '@/components/emails/wset-data-reminder'
@@ -80,6 +82,8 @@ interface SendOrderConfirmationEmailInput {
   // Webinar streaming fields
   streamingUrl?: string
   streamingPassword?: string
+  // Semipresencial: cada clase virtual con su link
+  virtualClasses?: VirtualClassAccess[]
 }
 
 export async function sendOrderConfirmationEmail(
@@ -100,6 +104,7 @@ export async function sendOrderConfirmationEmail(
     courseId,
     streamingUrl,
     streamingPassword,
+    virtualClasses,
   } = input
 
   const courseUrl = `${baseUrl}/student/courses/${courseId}`
@@ -115,6 +120,9 @@ export async function sendOrderConfirmationEmail(
     if (streamingUrl) {
       console.log(`  Streaming URL: ${streamingUrl}`)
       console.log(`  Streaming Password: ${streamingPassword || 'N/A'}`)
+    }
+    for (const virtualClass of virtualClasses ?? []) {
+      console.log(`  Virtual class ${virtualClass.dateLabel}: ${virtualClass.streamingUrl || 'link pendiente'}`)
     }
     console.log('========================================\n')
     return
@@ -140,6 +148,7 @@ export async function sendOrderConfirmationEmail(
       courseUrl,
       streamingUrl,
       streamingPassword,
+      virtualClasses,
     }),
   })
 }

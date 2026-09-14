@@ -20,13 +20,21 @@ import {
   Users,
   GraduationCap,
   FolderOpen,
-  BookOpen
+  BookOpen,
+  PlayCircle
 } from 'lucide-react'
 import { ModalityLabel } from '@/components/course/modality-label'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toLocalDate } from '@/lib/utils'
+import { CLASS_ICONS } from '@/components/course/modality-icons'
+import { ClassKindBadge } from '@/components/course/class-kind-badge'
+import {
+  MODALITIES_WITH_PRESENCIAL_CLASSES,
+  findClassOnDate,
+  getClassKind,
+} from '@/lib/course-modality'
 import type { getStudentEnrollmentByCourse } from '@/services/enrollment-service'
 import type { DiplomaIssueForStudent } from '@/services/diploma-service'
 import type { MaterialType } from '@prisma/client'
@@ -155,8 +163,11 @@ export function StudentCourseDetail({
   const materials = course.materials || []
   const imageUrl = course.imageUrl || DEFAULT_COURSE_IMAGE
   const statusBadge = getStatusBadge(course)
+  const isSemipresencial = course.modality === 'semipresencial'
+  const recordedLessonCount = course.modules.reduce((sum, m) => sum + m._count.lessons, 0)
 
   const backUrl = viewAs ? `/student/courses?viewAs=${viewAs}` : '/student/courses'
+  const learnUrl = viewAs ? `/learn/${course.slug}?viewAs=${viewAs}` : `/learn/${course.slug}`
 
   return (
     <div className="space-y-6">
@@ -261,19 +272,54 @@ export function StudentCourseDetail({
           <CardContent className="space-y-3">
             {course.classDates.map((date, index) => {
               const endTime = getEndTime(course.startTime, course.classDuration)
+              // En semipresencial cada clase es presencial o virtual, y cada virtual tiene su link
+              const classKind = isSemipresencial
+                ? getClassKind(date, course.virtualClasses)
+                : null
+              const virtualClass =
+                classKind === 'virtual'
+                  ? findClassOnDate(date, course.virtualClasses)
+                  : undefined
+              const ClassIcon = classKind ? CLASS_ICONS[classKind] : BookOpen
               return (
                 <div key={index} className="flex items-start gap-3">
-                  <BookOpen className="size-5 text-muted-foreground mt-0.5" />
-                  <div>
-                    <span className="font-medium">Clase {index + 1}:</span>{' '}
-                    <span className="capitalize">
-                      {formatClassDate(new Date(date))}
-                    </span>
-                    {course.startTime && endTime && (
-                      <span className="text-muted-foreground">
-                        {' '}- {course.startTime} a {endTime} h
+                  <ClassIcon className="size-5 text-muted-foreground mt-0.5" />
+                  <div className="space-y-2">
+                    <div>
+                      <span className="font-medium">Clase {index + 1}:</span>{' '}
+                      <span className="capitalize">
+                        {formatClassDate(new Date(date))}
                       </span>
-                    )}
+                      {course.startTime && endTime && (
+                        <span className="text-muted-foreground">
+                          {' '}- {course.startTime} a {endTime} h
+                        </span>
+                      )}
+                      {classKind && <ClassKindBadge kind={classKind} />}
+                    </div>
+                    {classKind === 'virtual' &&
+                      (virtualClass?.streamingUrl ? (
+                        <div className="flex flex-wrap items-center gap-3">
+                          <Button asChild size="sm">
+                            <a href={virtualClass.streamingUrl} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="size-4 mr-2" />
+                              Acceder a la clase
+                            </a>
+                          </Button>
+                          {virtualClass.streamingPassword && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-muted-foreground">Contraseña:</span>
+                              <code className="bg-muted px-2 py-1 rounded font-mono">
+                                {virtualClass.streamingPassword}
+                              </code>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Link disponible más adelante
+                        </p>
+                      ))}
                   </div>
                 </div>
               )
@@ -295,8 +341,8 @@ export function StudentCourseDetail({
         </Card>
       )}
 
-      {/* Event details card (for presencial) */}
-      {course.modality === 'presencial' && (
+      {/* Event details card (presencial y semipresencial) */}
+      {MODALITIES_WITH_PRESENCIAL_CLASSES.includes(course.modality) && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -366,6 +412,38 @@ export function StudentCourseDetail({
                   Máximo {course.maxCapacity} {course.maxCapacity === 1 ? 'persona' : 'personas'}
                 </p>
               </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Contenido grabado del semipresencial: lleva al reproductor de lecciones */}
+      {isSemipresencial && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <PlayCircle className="size-4 text-primary" />
+              Contenido grabado
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {recordedLessonCount > 0 ? (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Además de las clases, el curso incluye {recordedLessonCount}{' '}
+                  {recordedLessonCount === 1 ? 'lección grabada' : 'lecciones grabadas'} para ver a tu ritmo.
+                </p>
+                <Button asChild className="w-full sm:w-auto">
+                  <Link href={learnUrl}>
+                    <PlayCircle className="size-4 mr-2" />
+                    Ver contenido grabado
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                El contenido grabado estará disponible más adelante.
+              </p>
             )}
           </CardContent>
         </Card>

@@ -69,6 +69,22 @@ export function findClassOnDate<T extends { date: Date | string }>(
   return classes.find((c) => isSameClassDate(c.date, date))
 }
 
+/** Tipo de una clase con fecha: presencial (en el lugar del curso) o virtual (por link de acceso). */
+export type ClassKind = 'presencial' | 'virtual'
+
+export const CLASS_KIND_LABELS: Record<ClassKind, string> = {
+  presencial: 'Presencial',
+  virtual: 'Virtual',
+}
+
+/** Tipo de la clase de esa fecha: virtual si es una de las clases virtuales del curso. */
+export function getClassKind(
+  date: Date | string,
+  virtualClasses: ReadonlyArray<{ date: Date | string }>
+): ClassKind {
+  return findClassOnDate(date, virtualClasses) ? 'virtual' : 'presencial'
+}
+
 /** Deja solo las clases cuya fecha está en classDates, una por fecha. */
 export function keepClassesOnDates<T extends { date: Date }>(
   classes: ReadonlyArray<T>,

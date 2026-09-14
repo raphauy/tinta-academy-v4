@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { getCourseBySlug } from '@/services/course-service'
 import { isUserEnrolledInCourse } from '@/services/enrollment-service'
 import { CourseDetailPage } from '@/components/course-detail'
+import { getModalityLabel } from '@/lib/course-modality'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: `${course.title} | Tinta Academy`,
-    description: course.description || `${courseTypeName} - ${course.modality} en Tinta Academy`,
+    description: course.description || `${courseTypeName} - ${getModalityLabel(course.modality)} en Tinta Academy`,
     openGraph: {
       title: course.title,
       description: course.description || `${courseTypeName} de vinos en Tinta Academy`,

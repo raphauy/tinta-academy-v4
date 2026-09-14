@@ -61,6 +61,8 @@ export interface TemplateVariables {
   examDate?: string
   educatorName?: string
   courseUrl?: string
+  courseLocation?: string
+  accessLink?: string
 }
 
 /**
@@ -76,6 +78,9 @@ const VARIABLE_PLACEHOLDERS: Record<keyof TemplateVariables, string> = {
   examDate: '[Sin fecha]',
   educatorName: '[Sin educador]',
   courseUrl: '[Sin URL]',
+  // Lugar y link de acceso quedan vacíos cuando el curso no los tiene
+  courseLocation: '',
+  accessLink: '',
 }
 
 /**

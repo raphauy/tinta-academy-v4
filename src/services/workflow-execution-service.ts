@@ -14,6 +14,7 @@ import {
   formatDateForTemplate,
   type TemplateVariables,
 } from './email-template-service'
+import { resolveAccessLink, resolveCourseLocation } from '@/lib/email/template-variables'
 import {
   TRIGGER_TO_COURSE_FIELD,
   COURSE_FIELD_LABELS,
@@ -266,6 +267,14 @@ export function validateCourseDatesForWorkflow(
   }
 }
 
+/** Fecha de la clase que dispara un paso por fecha de clase (triggerClassIndex empieza en 1). */
+function getTriggerClassDate(
+  classDates: ReadonlyArray<Date> | undefined,
+  triggerClassIndex: number | null | undefined
+): Date | null {
+  return classDates?.[(triggerClassIndex ?? 1) - 1] ?? null
+}
+
 /**
  * Calculate the scheduled date for a workflow step based on course dates
  */
@@ -293,8 +302,7 @@ function calculateScheduledAt(
       baseDate = course.registrationDeadline
       break
     case 'class_date':
-      const idx = (step.triggerClassIndex ?? 1) - 1
-      baseDate = course.classDates?.[idx] ?? null
+      baseDate = getTriggerClassDate(course.classDates, step.triggerClassIndex)
       break
   }
 
@@ -777,7 +785,9 @@ export async function getPendingWorkflowExecutions() {
     include: {
       courseWorkflow: {
         include: {
-          course: true,
+          course: {
+            include: { virtualClasses: true },
+          },
           workflowTemplate: {
             include: {
               educator: true,
@@ -828,6 +838,13 @@ export async function processWorkflowExecution(
     examDate: formatDateForTemplate(course.examDate),
     educatorName: workflowTemplate.educator.name,
     courseUrl: `${baseUrl}/student/courses/${course.id}`,
+    courseLocation: resolveCourseLocation(course),
+    accessLink: resolveAccessLink(
+      course,
+      workflowStep.triggerType === 'class_date'
+        ? { classDate: getTriggerClassDate(course.classDates, workflowStep.triggerClassIndex) }
+        : { sentAt: new Date() }
+    ),
   }
 
   // Render template

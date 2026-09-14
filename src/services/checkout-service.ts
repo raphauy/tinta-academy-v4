@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { endOfDay } from 'date-fns'
+import { endOfDay, format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import { PaymentMethod, Currency, OrderStatus, EnrollmentStatus, Course, Coupon, BankAccount, Student } from '@prisma/client'
 import { createOrder, getOrderById, updateOrderStatus, setMercadoPagoPreference } from './order-service'
 import { validateCoupon, ValidateCouponResult } from './coupon-service'
@@ -16,7 +17,7 @@ import {
   sendAdminOrderCreatedNotificationEmail,
 } from './email-service'
 import { generateExecutionsForNewStudent } from './workflow-execution-service'
-import { formatAmount } from '@/lib/utils'
+import { formatAmount, toLocalDate } from '@/lib/utils'
 
 // ============================================
 // TYPES
@@ -113,6 +114,13 @@ function formatDate(date: Date | null): string {
     month: 'long',
     year: 'numeric',
   })
+}
+
+/** Fecha de una clase con su hora de inicio: "Martes 15 de septiembre de 2026, 19:00 h". */
+function formatClassDateTime(date: Date, startTime: string | null): string {
+  const day = format(toLocalDate(date), "EEEE d 'de' MMMM 'de' yyyy", { locale: es })
+  const label = day.charAt(0).toUpperCase() + day.slice(1)
+  return startTime ? `${label}, ${startTime} h` : label
 }
 
 function getCourseLocation(course: Course): string {
@@ -671,6 +679,15 @@ export async function completeCheckout(orderId: string): Promise<{
     const courseType = courseTypeLabels[course.type] || 'Curso'
     const wsetLevel = course.wsetLevel ? `WSET Nivel ${course.wsetLevel}` : ''
 
+    // Semipresencial: cada clase virtual con su link, o el aviso de que llega más adelante
+    const virtualClasses =
+      course.modality === 'semipresencial'
+        ? await prisma.virtualClass.findMany({
+            where: { courseId: course.id },
+            orderBy: { date: 'asc' },
+          })
+        : []
+
     sendOrderConfirmationEmail({
       to: updatedOrder.user.email,
       customerName: updatedOrder.user.name || 'Estudiante',
@@ -687,6 +704,11 @@ export async function completeCheckout(orderId: string): Promise<{
       // Include streaming info for webinars
       streamingUrl: course.modality === 'webinar' ? course.streamingUrl ?? undefined : undefined,
       streamingPassword: course.modality === 'webinar' ? course.streamingPassword ?? undefined : undefined,
+      virtualClasses: virtualClasses.map((vc) => ({
+        dateLabel: formatClassDateTime(vc.date, course.startTime),
+        streamingUrl: vc.streamingUrl ?? undefined,
+        streamingPassword: vc.streamingPassword ?? undefined,
+      })),
     }).catch((error) => {
       console.error('Error sending order confirmation email:', error)
     })
