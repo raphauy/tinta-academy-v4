@@ -314,7 +314,8 @@ export function CourseDatesSection({
                           </Label>
                           <Input
                             id={`virtual-class-url-${index}`}
-                            type="url"
+                            type="text"
+                            inputMode="url"
                             value={virtualClass.streamingUrl}
                             onChange={(e) =>
                               handleVirtualClassAccessChange(date, {

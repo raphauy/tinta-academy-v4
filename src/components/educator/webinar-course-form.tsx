@@ -133,7 +133,7 @@ export function WebinarCourseForm({
       streamingPassword: course?.streamingPassword ?? '',
       maxCapacity: course?.maxCapacity ?? undefined,
       priceUSD: course?.priceUSD ?? 0,
-      priceUYU: course?.priceUYU ?? undefined,
+      priceUYU: course?.priceUYU || undefined, // 0 equivale a "sin cargar": el checkout lo calcula desde USD
       imageUrl: course?.imageUrl ?? '',
     },
   })
@@ -541,7 +541,8 @@ export function WebinarCourseForm({
             <Label htmlFor="streamingUrl">Link de Acceso *</Label>
             <Input
               id="streamingUrl"
-              type="url"
+              type="text"
+              inputMode="url"
               placeholder="https://zoom.us/j/123456789 o https://meet.google.com/xxx-xxxx-xxx"
               {...register('streamingUrl')}
             />

@@ -171,7 +171,7 @@ export function SemipresencialCourseForm({
       address: course?.address ?? '',
       maxCapacity: course?.maxCapacity ?? undefined,
       priceUSD: course?.priceUSD ?? 0,
-      priceUYU: course?.priceUYU ?? undefined,
+      priceUYU: course?.priceUYU || undefined, // 0 equivale a "sin cargar": el checkout lo calcula desde USD
       imageUrl: course?.imageUrl ?? '',
     },
   })

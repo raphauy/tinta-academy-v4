@@ -115,9 +115,11 @@ export function ConditionRow({
         </SelectContent>
       </Select>
 
-      {/* Value selector - dynamic based on property */}
+      {/* Value selector - dynamic based on property. The key remounts it when the
+          property changes, so a reused Select doesn't reset the new default value to '' */}
       <div className="flex-1 min-w-[200px]">
         <ValueSelector
+          key={condition.property}
           property={condition.property}
           value={condition.value}
           onChange={handleValueChange}
