@@ -1,4 +1,5 @@
 import type { CourseType, CourseModality, AudienceFilter } from '@prisma/client'
+import { COURSE_MODALITIES, MODALITY_LABELS } from '@/lib/course-modality'
 
 // ============================================
 // DATE RANGE TYPES
@@ -143,7 +144,7 @@ export const CONDITION_PROPERTIES: Record<
   },
   modality: {
     label: 'Modalidad',
-    description: 'Filtrar por modalidad (presencial u online)',
+    description: 'Filtrar por modalidad (presencial, semipresencial, webinar u online)',
   },
   wsetLevel: {
     label: 'Nivel WSET',
@@ -200,14 +201,9 @@ export const COURSE_TYPE_OPTIONS: Record<
   experiencia: { label: 'Experiencia' },
 }
 
-export const COURSE_MODALITY_OPTIONS: Record<
-  CourseModality,
-  { label: string }
-> = {
-  presencial: { label: 'Presencial' },
-  online: { label: 'Online' },
-  webinar: { label: 'Webinar' },
-}
+export const COURSE_MODALITY_OPTIONS = Object.fromEntries(
+  COURSE_MODALITIES.map((modality) => [modality, { label: MODALITY_LABELS[modality] }])
+) as Record<CourseModality, { label: string }>
 
 export const WSET_LEVEL_OPTIONS = [
   { value: 1, label: 'WSET Nivel 1' },

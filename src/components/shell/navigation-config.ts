@@ -19,12 +19,11 @@ import {
   Mail,
   Filter,
   HelpCircle,
-  MapPin,
-  Video,
-  Monitor,
   Blocks,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { COURSE_MODALITIES, MODALITY_LABELS } from '@/lib/course-modality'
+import { MODALITY_ICONS } from '@/components/course/modality-icons'
 
 export interface NavItem {
   label: string
@@ -73,11 +72,11 @@ export const educatorNavItems: NavItem[] = [
     label: 'Crear Curso',
     href: '/educator/courses/create',
     icon: PlusCircle,
-    children: [
-      { label: 'Presencial', href: '/educator/courses/create?modality=presencial', icon: MapPin },
-      { label: 'Webinar', href: '/educator/courses/create?modality=webinar', icon: Video },
-      { label: 'Online', href: '/educator/courses/create?modality=online', icon: Monitor },
-    ],
+    children: COURSE_MODALITIES.map((modality) => ({
+      label: MODALITY_LABELS[modality],
+      href: `/educator/courses/create?modality=${modality}`,
+      icon: MODALITY_ICONS[modality],
+    })),
   },
   { label: 'Estudiantes', href: '/educator/students', icon: Users },
   {

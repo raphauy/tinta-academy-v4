@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { getCourseById } from '@/services/course-service'
 import { getModulesByCourse } from '@/services/module-service'
+import { hasRecordedContent } from '@/lib/course-modality'
 import { CourseContentEditor } from '@/components/educator/modules/course-content-editor'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
@@ -43,7 +44,7 @@ export default async function ModulesPage({ params }: ModulesPageProps) {
     redirect('/educator/courses')
   }
 
-  if (course.modality !== 'online') {
+  if (!hasRecordedContent(course.modality)) {
     redirect(`/educator/courses/${courseId}/edit`)
   }
 

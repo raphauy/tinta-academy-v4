@@ -63,13 +63,18 @@ Forma en que se dicta un curso. Se elige al crearlo y no cambia después. Valore
 - *Aliases a evitar:* "tipo de curso" (eso es `CourseType`: wset, taller, cata, etc.).
 
 ### Semipresencial
-Modalidad que combina **clases** con fecha (presenciales y/o virtuales) con **contenido grabado** a ritmo propio. Tiene un único lugar y un único link de acceso virtual para todo el curso. Sigue el ciclo de vida de los cursos con fecha (anunciado → inscripciones → en curso → finalizado).
+Modalidad que combina **clases** con fecha (presenciales y/o virtuales) con **contenido grabado** a ritmo propio. Tiene un único lugar para las clases presenciales, y cada clase virtual tiene su propio link de acceso. Sigue el ciclo de vida de los cursos con fecha (anunciado → inscripciones → en curso → finalizado).
 - *Aliases a evitar:* "híbrido", "mixto", "blended", "semi-presencial".
 - *Relaciones:* 1 Curso semipresencial → 1..N Clases, 0..N Módulos.
 
 ### Clase
-Encuentro con fecha y hora dentro de un curso. Cada clase es **presencial** (en el lugar del curso) o **virtual** (por el link de acceso del curso). En presencial y webinar todas las clases son del mismo tipo; en semipresencial se marca clase por clase.
+Encuentro con fecha y hora dentro de un curso. Cada clase es **presencial** (en el lugar del curso) o **virtual** (por un link de acceso). En presencial y webinar todas las clases son del mismo tipo; en semipresencial se marca clase por clase.
 - *Aliases a evitar:* "sesión", "encuentro", "webinar" (para referirse a una clase individual), "lección" (eso es contenido grabado).
+
+### Link de acceso
+URL de Zoom, Meet u otra plataforma para entrar a una clase virtual, con contraseña opcional. En webinar hay uno para el curso; en semipresencial cada clase virtual tiene el suyo, y puede cargarse más adelante.
+- *Aliases a evitar:* "link de streaming" en UI (en código el campo se llama `streamingUrl`).
+- *Relaciones:* 1 Clase virtual → 0..1 Link de acceso.
 
 ### Módulo
 Agrupación ordenada de lecciones dentro del contenido grabado de un curso (online o semipresencial).

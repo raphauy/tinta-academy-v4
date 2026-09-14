@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Laptop, MapPin, BookOpen, Users } from 'lucide-react'
 import { SearchFilterBar } from '@/components/shared/search-filter-bar'
+import { MODALITIES_WITH_PRESENCIAL_CLASSES } from '@/lib/course-modality'
 import { FiltersPanel } from '@/components/shared/filters-panel'
 import type { AdminCourse } from '@/services/course-service'
 import type { Tag } from '@prisma/client'
@@ -96,7 +97,10 @@ export function AdminCourses({
 
   const stats = useMemo(() => {
     const online = courses.filter((c) => c.modality === 'online').length
-    const presencial = courses.filter((c) => c.modality === 'presencial').length
+    // Los semipresenciales cuentan como presenciales: tienen clases presenciales con fecha
+    const presencial = courses.filter((c) =>
+      MODALITIES_WITH_PRESENCIAL_CLASSES.includes(c.modality)
+    ).length
     const totalEnrolled = courses.reduce((sum, c) => sum + c.enrolledCount, 0)
     return { online, presencial, totalEnrolled }
   }, [courses])

@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronDown, MapPin, Video, Monitor, Plus } from 'lucide-react'
+import { ChevronDown, Plus } from 'lucide-react'
+import type { CourseModality } from '@prisma/client'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -9,27 +10,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { COURSE_MODALITIES, MODALITY_LABELS } from '@/lib/course-modality'
+import { MODALITY_ICONS } from '@/components/course/modality-icons'
 
-const MODALITY_OPTIONS = [
-  {
-    label: 'Presencial',
-    href: '/educator/courses/create?modality=presencial',
-    icon: MapPin,
-    description: 'Curso con clases en ubicación física',
-  },
-  {
-    label: 'Webinar',
-    href: '/educator/courses/create?modality=webinar',
-    icon: Video,
-    description: 'Evento en vivo por Zoom/Meet',
-  },
-  {
-    label: 'Online',
-    href: '/educator/courses/create?modality=online',
-    icon: Monitor,
-    description: 'Curso asíncrono con materiales',
-  },
-]
+const MODALITY_DESCRIPTIONS: Record<CourseModality, string> = {
+  presencial: 'Curso con clases en ubicación física',
+  semipresencial: 'Clases presenciales y virtuales + contenido grabado',
+  webinar: 'Evento en vivo por Zoom/Meet',
+  online: 'Curso asíncrono con materiales',
+}
+
+const MODALITY_OPTIONS = COURSE_MODALITIES.map((modality) => ({
+  label: MODALITY_LABELS[modality],
+  href: `/educator/courses/create?modality=${modality}`,
+  icon: MODALITY_ICONS[modality],
+  description: MODALITY_DESCRIPTIONS[modality],
+}))
 
 export function CreateCourseDropdown() {
   return (

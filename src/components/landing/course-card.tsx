@@ -1,5 +1,6 @@
 import type { Course, Educator } from '@/types/landing'
-import { Calendar, Clock, Users, MapPin, Monitor, Video, BookOpen, PlayCircle } from 'lucide-react'
+import { Calendar, Clock, Users, Monitor, BookOpen, PlayCircle } from 'lucide-react'
+import { ModalityLabel } from '@/components/course/modality-label'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -86,22 +87,7 @@ export function CourseCard({ course, educator, onView, isPast }: CourseCardProps
         </div>
         <div className="absolute top-3 right-3">
           <Badge variant="outline" className="bg-background/95 backdrop-blur-sm">
-            {course.modality === 'online' ? (
-              <>
-                <Monitor size={12} />
-                Online
-              </>
-            ) : course.modality === 'webinar' ? (
-              <>
-                <Video size={12} />
-                Webinar
-              </>
-            ) : (
-              <>
-                <MapPin size={12} />
-                {course.location}
-              </>
-            )}
+            <ModalityLabel modality={course.modality} location={course.location} />
           </Badge>
         </div>
       </div>

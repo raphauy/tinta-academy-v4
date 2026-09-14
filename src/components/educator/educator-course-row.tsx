@@ -8,9 +8,6 @@ import {
   Calendar,
   Clock,
   Users,
-  MapPin,
-  Monitor,
-  Video,
   MoreVertical,
   Pencil,
   Eye,
@@ -19,6 +16,8 @@ import {
   GraduationCap,
   MonitorPlay,
 } from 'lucide-react'
+import { ModalityLabel } from '@/components/course/modality-label'
+import { hasRecordedContent } from '@/lib/course-modality'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -155,22 +154,7 @@ export function EducatorCourseRow({
 
               {/* Modality badge - same style as landing */}
               <span className="inline-flex items-center gap-1 px-3 py-1 bg-background border border-border rounded-full text-xs font-medium text-foreground">
-                {course.modality === 'online' ? (
-                  <>
-                    <Monitor size={12} className="text-primary" />
-                    Online
-                  </>
-                ) : course.modality === 'webinar' ? (
-                  <>
-                    <Video size={12} className="text-primary" />
-                    Webinar
-                  </>
-                ) : (
-                  <>
-                    <MapPin size={12} className="text-primary" />
-                    Presencial
-                  </>
-                )}
+                <ModalityLabel modality={course.modality} iconClassName="text-primary" />
               </span>
 
               {/* Status badge */}
@@ -237,8 +221,8 @@ export function EducatorCourseRow({
 
           {/* Action buttons - always at bottom */}
           <div className="flex items-center gap-2 order-2 sm:order-0 sm:mt-auto">
-            {/* Gestionar contenido + Previsualizar - solo para cursos online */}
-            {course.modality === 'online' && (
+            {/* Gestionar contenido + Previsualizar - solo para cursos con contenido grabado */}
+            {hasRecordedContent(course.modality) && (
               <>
                 <Button variant="outline" size="sm" asChild className="gap-2">
                   <Link href={`/educator/courses/${course.id}/modules`}>
@@ -280,7 +264,7 @@ export function EducatorCourseRow({
                 </Link>
               </DropdownMenuItem>
 
-              {course.modality === 'online' && (
+              {hasRecordedContent(course.modality) && (
                 <>
                   <DropdownMenuItem asChild>
                     <Link href={`/educator/courses/${course.id}/modules`}>

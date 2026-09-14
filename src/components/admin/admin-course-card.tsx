@@ -5,9 +5,6 @@ import Image from 'next/image'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
-  MapPin,
-  Monitor,
-  Video,
   Users,
   Wallet,
   Calendar,
@@ -17,6 +14,7 @@ import {
   Mail,
   Trash2,
 } from 'lucide-react'
+import { ModalityLabel } from '@/components/course/modality-label'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -206,22 +204,7 @@ export function AdminCourseCard({ course, onEducatorClick }: AdminCourseCardProp
 
                   {/* Modality badge */}
                   <span className="inline-flex items-center gap-1 px-3 py-1 bg-background border border-border rounded-full text-xs font-medium text-foreground">
-                    {course.modality === 'online' ? (
-                      <>
-                        <Monitor size={12} className="text-primary" />
-                        Online
-                      </>
-                    ) : course.modality === 'webinar' ? (
-                      <>
-                        <Video size={12} className="text-primary" />
-                        Webinar
-                      </>
-                    ) : (
-                      <>
-                        <MapPin size={12} className="text-primary" />
-                        Presencial
-                      </>
-                    )}
+                    <ModalityLabel modality={course.modality} iconClassName="text-primary" />
                   </span>
 
                   {/* Status badge */}

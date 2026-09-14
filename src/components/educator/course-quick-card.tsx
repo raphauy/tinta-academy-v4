@@ -1,10 +1,12 @@
 import Link from 'next/link'
-import { Users, Clock, MapPin, Monitor, Video, Calendar, ChevronRight, FileEdit, GraduationCap } from 'lucide-react'
+import { Users, Clock, Calendar, ChevronRight, FileEdit, GraduationCap } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import type { EducatorCourseQuickAccess } from '@/services/educator-service'
 import { toLocalDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { ModalityLabel } from '@/components/course/modality-label'
+import { hasClassDates } from '@/lib/course-modality'
 
 export interface CourseQuickCardProps {
   course: EducatorCourseQuickAccess
@@ -13,8 +15,7 @@ export interface CourseQuickCardProps {
 type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline' | 'verde-uva' | 'muted' | 'neutral' | 'warning' | 'info' | 'success' | 'orange' | 'purple' | 'stone'
 
 export function CourseQuickCard({ course }: CourseQuickCardProps) {
-  const isOnline = course.modality === 'online'
-  const isWebinar = course.modality === 'webinar'
+  const hasDates = hasClassDates(course.modality)
 
   const getTypeLabel = () => {
     switch (course.type) {
@@ -121,22 +122,7 @@ export function CourseQuickCard({ course }: CourseQuickCardProps) {
 
           {/* Modality badge */}
           <Badge variant="neutral">
-            {isOnline ? (
-              <>
-                <Monitor className="w-3 h-3" />
-                Online
-              </>
-            ) : isWebinar ? (
-              <>
-                <Video className="w-3 h-3" />
-                Webinar
-              </>
-            ) : (
-              <>
-                <MapPin className="w-3 h-3" />
-                Presencial
-              </>
-            )}
+            <ModalityLabel modality={course.modality} />
           </Badge>
 
           {/* Status badge */}
@@ -160,7 +146,7 @@ export function CourseQuickCard({ course }: CourseQuickCardProps) {
 
         {/* Stats */}
         <div className="flex items-center gap-3 text-xs text-stone-500 dark:text-stone-400">
-          {isOnline ? (
+          {!hasDates ? (
             <>
               <span className="flex items-center gap-1">
                 <Users className="w-3.5 h-3.5" />

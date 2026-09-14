@@ -8,8 +8,6 @@ import { es } from 'date-fns/locale'
 import {
   Calendar,
   Clock,
-  MapPin,
-  Monitor,
   FileText,
   ArrowRight,
   ChevronDown,
@@ -21,6 +19,7 @@ import {
   Link2,
   File
 } from 'lucide-react'
+import { ModalityLabel } from '@/components/course/modality-label'
 import { Button } from '@/components/ui/button'
 import { toLocalDate } from '@/lib/utils'
 import type { getStudentEnrollments } from '@/services/enrollment-service'
@@ -163,22 +162,7 @@ export function StudentCourseCard({ enrollment, viewAs }: StudentCourseCardProps
 
               {/* Right badge: Modality/Location */}
               <span className="inline-flex items-center gap-1 px-3 py-1 bg-background border border-border rounded-full text-xs font-medium text-foreground">
-                {course.modality === 'online' ? (
-                  <>
-                    <Monitor size={12} className="text-primary" />
-                    Online
-                  </>
-                ) : course.modality === 'webinar' ? (
-                  <>
-                    <Video size={12} className="text-primary" />
-                    Webinar
-                  </>
-                ) : (
-                  <>
-                    <MapPin size={12} className="text-primary" />
-                    {course.location || 'Presencial'}
-                  </>
-                )}
+                <ModalityLabel modality={course.modality} location={course.location} iconClassName="text-primary" />
               </span>
             </div>
 

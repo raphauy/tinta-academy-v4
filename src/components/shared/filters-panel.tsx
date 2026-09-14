@@ -1,7 +1,9 @@
 'use client'
 
-import { X, Monitor, MapPin, Video } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { COURSE_MODALITIES, MODALITY_LABELS } from '@/lib/course-modality'
+import { MODALITY_ICONS } from '@/components/course/modality-icons'
 import { FilterButton } from './filter-button'
 
 export interface StatusOption {
@@ -86,27 +88,19 @@ export function FiltersPanel({
               >
                 Todas
               </FilterButton>
-              <FilterButton
-                active={currentModality === 'presencial'}
-                onClick={() => onModalityChange('presencial')}
-                icon={<MapPin size={14} />}
-              >
-                Presencial
-              </FilterButton>
-              <FilterButton
-                active={currentModality === 'webinar'}
-                onClick={() => onModalityChange('webinar')}
-                icon={<Video size={14} />}
-              >
-                Webinar
-              </FilterButton>
-              <FilterButton
-                active={currentModality === 'online'}
-                onClick={() => onModalityChange('online')}
-                icon={<Monitor size={14} />}
-              >
-                Online
-              </FilterButton>
+              {COURSE_MODALITIES.map((modality) => {
+                const Icon = MODALITY_ICONS[modality]
+                return (
+                  <FilterButton
+                    key={modality}
+                    active={currentModality === modality}
+                    onClick={() => onModalityChange(modality)}
+                    icon={<Icon size={14} />}
+                  >
+                    {MODALITY_LABELS[modality]}
+                  </FilterButton>
+                )
+              })}
             </div>
           </div>
         )}

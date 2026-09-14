@@ -184,6 +184,9 @@ model Course {
   // Online course relations
   modules CourseModule[]
 
+  // Semipresencial: clases virtuales, cada una con su link de acceso
+  virtualClasses VirtualClass[]
+
   // Diploma relations
   diplomaTemplate DiplomaTemplate?
   diplomaIssues   DiplomaIssue[]
@@ -214,6 +217,27 @@ model CourseMaterial {
 
   @@index([courseId])
   @@index([order])
+}
+
+// ============================================
+// VIRTUAL CLASSES (semipresencial)
+// ============================================
+
+// Clase virtual de un curso semipresencial. Su fecha es una de Course.classDates;
+// las fechas de clase sin fila acá son clases presenciales.
+model VirtualClass {
+  id                String   @id @default(cuid())
+  courseId          String
+  date              DateTime
+  // Link de acceso de esta clase; puede cargarse más adelante
+  streamingUrl      String?
+  streamingPassword String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, date])
 }
 
 // ============================================
@@ -493,6 +517,7 @@ enum CourseModality {
   presencial
   online
   webinar
+  semipresencial
 }
 
 enum CourseStatus {

@@ -1,4 +1,5 @@
-import { Calendar, Clock, MapPin, Monitor, Video } from 'lucide-react'
+import { Calendar, Clock } from 'lucide-react'
+import { ModalityLabel } from '@/components/course/modality-label'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -132,22 +133,7 @@ export function CourseCard({
           {/* Modality/Location Badge */}
           <div className="absolute top-3 right-3">
             <Badge variant="outline" className="bg-background/95 backdrop-blur-sm shadow-sm">
-              {course.modality === 'online' ? (
-                <>
-                  <Monitor size={12} className="mr-1" />
-                  Online
-                </>
-              ) : course.modality === 'webinar' ? (
-                <>
-                  <Video size={12} className="mr-1" />
-                  Webinar
-                </>
-              ) : (
-                <>
-                  <MapPin size={12} className="mr-1" />
-                  {course.location || 'Presencial'}
-                </>
-              )}
+              <ModalityLabel modality={course.modality} location={course.location} iconClassName="mr-1" />
             </Badge>
           </div>
         </div>

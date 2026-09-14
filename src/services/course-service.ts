@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Prisma, CourseModality, CourseType, CourseStatus } from '@prisma/client'
+import { keepClassesOnDates } from '@/lib/course-modality'
 
 interface CourseFilters {
   modality?: string
@@ -13,6 +14,13 @@ interface EducatorCourseFilters {
   modality?: CourseModality
 }
 
+/** Clase virtual de un semipresencial: su fecha es una de classDates y el link puede faltar. */
+export interface VirtualClassInput {
+  date: Date
+  streamingUrl?: string
+  streamingPassword?: string
+}
+
 export interface CreateCourseInput {
   title: string
   slug: string
@@ -24,6 +32,7 @@ export interface CreateCourseInput {
   duration?: string
   // Class schedule fields
   classDates?: Date[]
+  virtualClasses?: VirtualClassInput[]
   startTime?: string
   classDuration?: number
   examDate?: Date
@@ -56,6 +65,7 @@ export interface UpdateCourseInput {
   duration?: string
   // Class schedule fields
   classDates?: Date[]
+  virtualClasses?: VirtualClassInput[]
   startTime?: string
   classDuration?: number
   examDate?: Date
@@ -195,6 +205,7 @@ export async function getCourseById(id: string) {
     include: {
       educator: true,
       tags: true,
+      virtualClasses: { orderBy: { date: 'asc' } },
     },
   })
 }
@@ -271,6 +282,42 @@ export async function getEducatorCourses(
   })
 }
 
+function toVirtualClassRows(virtualClasses: VirtualClassInput[], classDates: Date[]) {
+  return keepClassesOnDates(virtualClasses, classDates).map((vc) => ({
+    date: vc.date,
+    streamingUrl: vc.streamingUrl?.trim() || null,
+    streamingPassword: vc.streamingPassword?.trim() || null,
+  }))
+}
+
+/**
+ * Escritura de las clases virtuales al actualizar un curso:
+ * - si llegan clases virtuales, reemplazan a las guardadas (solo las que caen en una fecha de clase);
+ * - si solo cambian las fechas, se borran las clases virtuales de fechas que ya no existen.
+ */
+async function buildVirtualClassesUpdate(
+  id: string,
+  data: UpdateCourseInput
+): Promise<Prisma.VirtualClassUpdateManyWithoutCourseNestedInput | undefined> {
+  if (data.virtualClasses !== undefined) {
+    const classDates =
+      data.classDates ??
+      (await prisma.course.findUnique({ where: { id }, select: { classDates: true } }))
+        ?.classDates ??
+      []
+    return {
+      deleteMany: {},
+      create: toVirtualClassRows(data.virtualClasses, classDates),
+    }
+  }
+
+  if (data.classDates !== undefined) {
+    return { deleteMany: { date: { notIn: data.classDates } } }
+  }
+
+  return undefined
+}
+
 export async function createCourse(data: CreateCourseInput) {
   return prisma.course.create({
     data: {
@@ -302,6 +349,14 @@ export async function createCourse(data: CreateCourseInput) {
       wsetLevel: data.wsetLevel,
       status: 'draft', // New courses start as draft
       educatorId: data.educatorId,
+      // Clases virtuales (solo semipresencial), una por fecha de clase
+      ...(data.modality === 'semipresencial' &&
+        data.virtualClasses &&
+        data.virtualClasses.length > 0 && {
+          virtualClasses: {
+            create: toVirtualClassRows(data.virtualClasses, data.classDates ?? []),
+          },
+        }),
       // Connect tags if provided
       ...(data.tagIds &&
         data.tagIds.length > 0 && {
@@ -318,6 +373,8 @@ export async function createCourse(data: CreateCourseInput) {
 }
 
 export async function updateCourse(id: string, data: UpdateCourseInput) {
+  const virtualClasses = await buildVirtualClassesUpdate(id, data)
+
   return prisma.course.update({
     where: { id },
     data: {
@@ -331,6 +388,7 @@ export async function updateCourse(id: string, data: UpdateCourseInput) {
       ...(data.duration !== undefined && { duration: data.duration }),
       // Class schedule fields
       ...(data.classDates !== undefined && { classDates: data.classDates }),
+      ...(virtualClasses && { virtualClasses }),
       ...(data.startTime !== undefined && { startTime: data.startTime }),
       ...(data.classDuration !== undefined && { classDuration: data.classDuration }),
       ...(data.examDate !== undefined && { examDate: data.examDate }),

@@ -9,7 +9,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Monitor,
   FileText,
   Download,
   ExternalLink,
@@ -23,6 +22,7 @@ import {
   FolderOpen,
   BookOpen
 } from 'lucide-react'
+import { ModalityLabel } from '@/components/course/modality-label'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -191,22 +191,7 @@ export function StudentCourseDetail({
             </span>
             {/* Modality badge */}
             <span className="inline-flex items-center gap-1 px-3 py-1 bg-white/90 rounded-full text-xs font-medium text-stone-700">
-              {course.modality === 'online' ? (
-                <>
-                  <Monitor size={12} />
-                  Online
-                </>
-              ) : course.modality === 'webinar' ? (
-                <>
-                  <Video size={12} />
-                  Webinar
-                </>
-              ) : (
-                <>
-                  <MapPin size={12} />
-                  Presencial
-                </>
-              )}
+              <ModalityLabel modality={course.modality} />
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white">{course.title}</h1>

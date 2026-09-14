@@ -8,6 +8,7 @@ import { getCourseWorkflows } from '@/services/workflow-execution-service'
 import { getConfirmedEnrollmentCount } from '@/services/enrollment-service'
 import {
   PresencialCourseForm,
+  SemipresencialCourseForm,
   WebinarCourseForm,
   OnlineCourseForm,
   MaterialsSection,
@@ -15,6 +16,11 @@ import {
 } from '@/components/educator'
 import { CourseWorkflowsSection } from '@/components/educator/courses/course-workflows-section'
 import { getDiplomaTemplateByCourseId } from '@/services/diploma-template-service'
+import {
+  getModalityCourseTitle,
+  getModalityLabel,
+  hasRecordedContent,
+} from '@/lib/course-modality'
 import { getCourseProgress } from '@/services/diploma-service'
 import { Button } from '@/components/ui/button'
 import {
@@ -48,15 +54,9 @@ export async function generateMetadata({ params }: EditCoursePageProps) {
     return { title: 'Editar Curso | Tinta Academy' }
   }
 
-  const modalityLabels: Record<string, string> = {
-    presencial: 'Curso Presencial',
-    webinar: 'Webinar',
-    online: 'Curso Online',
-  }
-
   return {
     title: `Editar: ${course.title} | Tinta Academy`,
-    description: `Editar ${modalityLabels[course.modality] ?? 'curso'}`,
+    description: `Editar ${getModalityCourseTitle(course.modality)}`,
   }
 }
 
@@ -141,13 +141,6 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
                 'Plantilla configurada. Emití diplomas a los estudiantes.',
             }
 
-  // Modality labels for display
-  const modalityLabels: Record<string, string> = {
-    presencial: 'Curso Presencial',
-    webinar: 'Webinar',
-    online: 'Curso Online',
-  }
-
   // Render the appropriate form based on modality
   const renderForm = () => {
     if (course.modality === 'webinar') {
@@ -170,6 +163,17 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
       )
     }
 
+    if (course.modality === 'semipresencial') {
+      return (
+        <SemipresencialCourseForm
+          mode="edit"
+          course={course}
+          initialTags={tags}
+          hasActiveWorkflows={hasActiveWorkflows}
+        />
+      )
+    }
+
     // Default to presencial form
     return (
       <PresencialCourseForm
@@ -186,7 +190,7 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            Editar {modalityLabels[course.modality] ?? 'Curso'}
+            Editar {getModalityCourseTitle(course.modality)}
           </h1>
           <p className="text-muted-foreground">
             Modificá la información de &ldquo;{course.title}&rdquo;.
@@ -197,8 +201,8 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
 
       {renderForm()}
 
-      {/* Module management link for online courses */}
-      {course.modality === 'online' && (
+      {/* Gestión de módulos y lecciones para cursos con contenido grabado */}
+      {hasRecordedContent(course.modality) && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -206,7 +210,8 @@ export default async function EditCoursePage({ params }: EditCoursePageProps) {
               Contenido del Curso
             </CardTitle>
             <CardDescription>
-              Gestioná los módulos y lecciones con videos de tu curso online.
+              Gestioná los módulos y lecciones con videos de tu curso{' '}
+              {getModalityLabel(course.modality).toLowerCase()}.
             </CardDescription>
           </CardHeader>
           <CardContent>

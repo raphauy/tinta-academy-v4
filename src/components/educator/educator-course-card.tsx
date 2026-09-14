@@ -8,15 +8,14 @@ import {
   Calendar,
   Clock,
   Users,
-  MapPin,
   Monitor,
-  Video,
   MoreVertical,
   Pencil,
   Eye,
   EyeOff,
   Trash2
 } from 'lucide-react'
+import { ModalityLabel } from '@/components/course/modality-label'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -120,22 +119,7 @@ export function EducatorCourseCard({
         {/* Location/modality badge - top right */}
         <div className="absolute top-3 right-3">
           <span className="inline-flex items-center gap-1 px-3 py-1 bg-background/95 backdrop-blur-sm rounded-full text-xs font-medium text-foreground">
-            {course.modality === 'online' ? (
-              <>
-                <Monitor size={12} />
-                Online
-              </>
-            ) : course.modality === 'webinar' ? (
-              <>
-                <Video size={12} />
-                Webinar
-              </>
-            ) : (
-              <>
-                <MapPin size={12} />
-                {course.location || 'Presencial'}
-              </>
-            )}
+            <ModalityLabel modality={course.modality} location={course.location} />
           </span>
         </div>
         {/* Status badge - bottom left */}

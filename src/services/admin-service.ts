@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { MODALITIES_WITH_PRESENCIAL_CLASSES } from '@/lib/course-modality'
 import { purchasedStudentWhere } from './student-service'
 import { formatAmountWithCurrency } from '@/lib/utils'
 
@@ -144,8 +145,10 @@ export async function getDashboardTotals(): Promise<DashboardTotals> {
     prisma.course.count({ where: { status: { not: 'draft' } } }),
     // Online courses count
     prisma.course.count({ where: { modality: 'online', status: { not: 'draft' } } }),
-    // Presencial courses count
-    prisma.course.count({ where: { modality: 'presencial', status: { not: 'draft' } } }),
+    // Presencial courses count (incluye semipresenciales: también tienen clases presenciales con fecha)
+    prisma.course.count({
+      where: { modality: { in: [...MODALITIES_WITH_PRESENCIAL_CLASSES] }, status: { not: 'draft' } },
+    }),
     // Revenue this month (paid orders)
     prisma.order.aggregate({
       _sum: { finalAmount: true },

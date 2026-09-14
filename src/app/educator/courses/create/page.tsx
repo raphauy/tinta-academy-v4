@@ -2,7 +2,13 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { getTags } from '@/services/tag-service'
-import { PresencialCourseForm, WebinarCourseForm, OnlineCourseForm } from '@/components/educator'
+import { getModalityCourseTitle, isCourseModality } from '@/lib/course-modality'
+import {
+  PresencialCourseForm,
+  SemipresencialCourseForm,
+  WebinarCourseForm,
+  OnlineCourseForm,
+} from '@/components/educator'
 
 interface CreateCoursePageProps {
   searchParams: Promise<{ modality?: string }>
@@ -11,14 +17,14 @@ interface CreateCoursePageProps {
 export async function generateMetadata({ searchParams }: CreateCoursePageProps) {
   const { modality } = await searchParams
 
-  const titles: Record<string, string> = {
-    presencial: 'Crear Curso Presencial',
-    webinar: 'Crear Webinar',
-    online: 'Crear Curso Online',
-  }
+  // Sin modalidad se abre el formulario presencial
+  const resolvedModality = modality ?? 'presencial'
+  const title = isCourseModality(resolvedModality)
+    ? `Crear ${getModalityCourseTitle(resolvedModality)}`
+    : 'Crear Curso'
 
   return {
-    title: `${titles[modality ?? 'presencial'] ?? 'Crear Curso'} | Tinta Academy`,
+    title: `${title} | Tinta Academy`,
   }
 }
 
@@ -59,6 +65,25 @@ export default async function CreateCoursePage({ searchParams }: CreateCoursePag
         </div>
 
         <WebinarCourseForm mode="create" initialTags={tags} />
+      </div>
+    )
+  }
+
+  // Semipresencial modality
+  if (modality === 'semipresencial') {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Crear Curso Semipresencial
+          </h1>
+          <p className="text-muted-foreground">
+            Clases con fecha, presenciales o virtuales, más contenido grabado que
+            los estudiantes ven a su ritmo.
+          </p>
+        </div>
+
+        <SemipresencialCourseForm mode="create" initialTags={tags} />
       </div>
     )
   }

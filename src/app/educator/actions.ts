@@ -23,6 +23,10 @@ import {
   getMaterialById,
 } from '@/services/material-service'
 import { getTags, createTag } from '@/services/tag-service'
+import {
+  validateSemipresencialSchedule,
+  virtualClassSchema,
+} from '@/lib/validations/course'
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -45,6 +49,8 @@ const createCourseSchema = z.object({
   duration: z.string().optional(),
   // Class schedule fields
   classDates: z.array(z.coerce.date()).optional(),
+  // Clases virtuales del semipresencial, cada una con su link
+  virtualClasses: z.array(virtualClassSchema).optional(),
   startTime: z.string().optional(),
   classDuration: z.coerce.number().int().positive().optional(),
   examDate: z.coerce.date().optional(),
@@ -139,6 +145,8 @@ export async function createCourseAction(
   // Parse classDates from JSON string
   const classDatesStr = formData.get('classDates') as string | null
   const classDates = classDatesStr ? JSON.parse(classDatesStr) : undefined
+  const virtualClassesStr = formData.get('virtualClasses') as string | null
+  const virtualClasses = virtualClassesStr ? JSON.parse(virtualClassesStr) : undefined
 
   // Parse tagIds from JSON string
   const tagIdsStr = formData.get('tagIds') as string | null
@@ -155,6 +163,7 @@ export async function createCourseAction(
     duration: (formData.get('duration') as string) || undefined,
     // Class schedule fields
     classDates,
+    virtualClasses,
     startTime: (formData.get('startTime') as string) || undefined,
     classDuration: formData.get('classDuration') || undefined,
     examDate: formData.get('examDate') || undefined,
@@ -179,6 +188,16 @@ export async function createCourseAction(
     return {
       success: false,
       error: validated.error.issues[0].message,
+    }
+  }
+
+  if (validated.data.modality === 'semipresencial') {
+    const scheduleError = validateSemipresencialSchedule({
+      classDates: validated.data.classDates ?? [],
+      virtualClasses: validated.data.virtualClasses ?? [],
+    })
+    if (scheduleError) {
+      return { success: false, error: scheduleError }
     }
   }
 
@@ -228,6 +247,8 @@ export async function updateCourseAction(
   // Parse classDates from JSON string
   const classDatesStr = formData.get('classDates') as string | null
   const classDates = classDatesStr ? JSON.parse(classDatesStr) : undefined
+  const virtualClassesStr = formData.get('virtualClasses') as string | null
+  const virtualClasses = virtualClassesStr ? JSON.parse(virtualClassesStr) : undefined
 
   // Parse tagIds from JSON string
   const tagIdsStr = formData.get('tagIds') as string | null
@@ -244,6 +265,7 @@ export async function updateCourseAction(
     duration: formData.get('duration') || undefined,
     // Class schedule fields
     classDates,
+    virtualClasses,
     startTime: formData.get('startTime') || undefined,
     classDuration: formData.get('classDuration') || undefined,
     examDate: formData.get('examDate') || undefined,
@@ -273,6 +295,18 @@ export async function updateCourseAction(
     return {
       success: false,
       error: validated.error.issues[0].message,
+    }
+  }
+
+  const { course: currentCourse } = ownershipResult
+
+  if ((validated.data.modality ?? currentCourse.modality) === 'semipresencial') {
+    const scheduleError = validateSemipresencialSchedule({
+      classDates: validated.data.classDates ?? currentCourse.classDates,
+      virtualClasses: validated.data.virtualClasses ?? [],
+    })
+    if (scheduleError) {
+      return { success: false, error: scheduleError }
     }
   }
 
