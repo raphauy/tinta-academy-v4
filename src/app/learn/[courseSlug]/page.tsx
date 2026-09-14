@@ -1,6 +1,7 @@
 import { redirect, notFound } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { hasCourseAccess } from '@/services/lesson-access-service'
 
 export default async function LearnCoursePage({
   params,
@@ -19,12 +20,14 @@ export default async function LearnCoursePage({
     where: { slug: courseSlug },
     select: {
       id: true,
+      priceUSD: true,
+      priceUYU: true,
       modules: {
         orderBy: { order: 'asc' },
         select: {
           lessons: {
             orderBy: { order: 'asc' },
-            select: { id: true, slug: true },
+            select: { id: true, slug: true, isFree: true },
           },
         },
       },
@@ -35,6 +38,15 @@ export default async function LearnCoursePage({
 
   const allLessons = course.modules.flatMap((m) => m.lessons)
   if (allLessons.length === 0) notFound()
+
+  // Sin acceso al curso (por ejemplo, desde "Ver lecciones gratuitas"): a la primera lección gratis
+  const hasAccess = session?.user?.id
+    ? await hasCourseAccess({ id: session.user.id, role: session.user.role }, course)
+    : false
+  if (!hasAccess) {
+    const firstFreeLesson = allLessons.find((l) => l.isFree) ?? allLessons[0]
+    redirect(`/learn/${courseSlug}/${firstFreeLesson.slug}${viewAsParam}`)
+  }
 
   // For viewAs, check progress of the target student
   const studentId = viewAs || (session?.user?.id

@@ -196,9 +196,10 @@ export function CoursePlayer({
     setTokenForPlaybackId(null)
   }
 
-  // Fetch playback token when lesson has a video ready
+  // Fetch playback token when the lesson is accessible and has a video ready
   useEffect(() => {
     if (
+      hasAccessToCurrentLesson &&
       currentLesson.videoStatus === 'ready' &&
       currentLesson.muxPlaybackId
     ) {
@@ -210,7 +211,7 @@ export function CoursePlayer({
         }
       })
     }
-  }, [currentLesson.id, currentLesson.videoStatus, currentLesson.muxPlaybackId])
+  }, [hasAccessToCurrentLesson, currentLesson.id, currentLesson.videoStatus, currentLesson.muxPlaybackId])
 
   const viewAsParam = viewAsStudentId ? `?viewAs=${viewAsStudentId}` : ''
 

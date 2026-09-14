@@ -6,6 +6,7 @@ import { isUserEnrolledInCourse } from '@/services/enrollment-service'
 import { getCourseProgress } from '@/services/lesson-progress-service'
 import { getEducatorByUserId } from '@/services/educator-service'
 import { canEducatorViewStudent } from '@/services/enrollment-service'
+import { hasCourseAccess, isFreeCourse } from '@/services/lesson-access-service'
 import { CoursePlayer } from '@/components/learn/course-player'
 
 export default async function LearnLessonPage({
@@ -44,7 +45,6 @@ export default async function LearnLessonPage({
   }
 
   const isPreview = (userRole === 'educator' || userRole === 'superadmin') && !viewAsStudentId
-  const isFreeCourse = course.priceUSD === 0
 
   // For viewAs: check enrollment of the target student
   let isEnrolled: boolean
@@ -53,12 +53,15 @@ export default async function LearnLessonPage({
       where: { id: viewAsStudentId },
       select: { userId: true },
     })
-    isEnrolled = isFreeCourse || (targetStudent
+    isEnrolled = isFreeCourse(course) || (targetStudent
       ? await isUserEnrolledInCourse(targetStudent.userId, course.id)
       : false)
   } else {
-    isEnrolled = isPreview || isFreeCourse || await isUserEnrolledInCourse(session.user.id, course.id)
+    isEnrolled = await hasCourseAccess({ id: session.user.id, role: userRole }, course)
   }
+
+  // Sin acceso, el video, el resumen y los materiales de la lección no llegan al navegador
+  const hasLessonAccess = isEnrolled || lesson.isFree
 
   // Get student progress
   let completedLessonIds: string[] = []
@@ -104,18 +107,20 @@ export default async function LearnLessonPage({
         id: lesson.id,
         title: lesson.title,
         slug: lesson.slug,
-        summary: lesson.summary,
+        summary: hasLessonAccess ? lesson.summary : null,
         videoDuration: lesson.videoDuration,
         videoStatus: lesson.videoStatus,
-        muxPlaybackId: lesson.muxPlaybackId,
+        muxPlaybackId: hasLessonAccess ? lesson.muxPlaybackId : null,
         isFree: lesson.isFree,
         moduleId: lesson.moduleId,
-        materials: lesson.materials.map((m) => ({
-          id: m.id,
-          name: m.name,
-          url: m.url,
-          type: m.type,
-        })),
+        materials: hasLessonAccess
+          ? lesson.materials.map((m) => ({
+              id: m.id,
+              name: m.name,
+              url: m.url,
+              type: m.type,
+            }))
+          : [],
       }}
       isEnrolled={isEnrolled}
       isPreview={isPreview}

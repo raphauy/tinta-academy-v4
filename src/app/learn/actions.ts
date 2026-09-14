@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import { getSignedPlaybackToken } from '@/services/mux-service'
 import { prisma } from '@/lib/prisma'
@@ -14,6 +13,9 @@ import {
   deleteComment,
 } from '@/services/lesson-comment-service'
 import { sendLessonCommentNotification } from '@/services/email-service'
+import { canPlayVideo, canViewLesson } from '@/services/lesson-access-service'
+
+const NO_LESSON_ACCESS = 'No tenés acceso a esta lección'
 
 type ActionResult<T = void> =
   | { success: true; data?: T }
@@ -29,6 +31,10 @@ export async function getPlaybackTokenAction(
     const session = await auth()
     if (!session?.user?.id) {
       return { success: false, error: 'No autenticado' }
+    }
+
+    if (!(await canPlayVideo({ id: session.user.id, role: session.user.role }, playbackId))) {
+      return { success: false, error: NO_LESSON_ACCESS }
     }
 
     const token = getSignedPlaybackToken(playbackId)
@@ -68,6 +74,10 @@ export async function getCommentsAction(
       return { success: false, error: 'No autenticado' }
     }
 
+    if (!(await canViewLesson({ id: session.user.id, role: session.user.role }, lessonId))) {
+      return { success: false, error: NO_LESSON_ACCESS }
+    }
+
     const comments = await getCommentsByLesson(lessonId)
     return { success: true, data: { comments } }
   } catch (error) {
@@ -91,6 +101,10 @@ export async function createCommentAction(
     const session = await auth()
     if (!session?.user?.id) {
       return { success: false, error: 'No autenticado' }
+    }
+
+    if (!(await canViewLesson({ id: session.user.id, role: session.user.role }, lessonId))) {
+      return { success: false, error: NO_LESSON_ACCESS }
     }
 
     const comment = await createComment({
@@ -229,6 +243,14 @@ export async function deleteCommentAction(
     const session = await auth()
     if (!session?.user?.id) {
       return { success: false, error: 'No autenticado' }
+    }
+
+    const comment = await prisma.lessonComment.findUnique({
+      where: { id: commentId },
+      select: { userId: true },
+    })
+    if (!comment || comment.userId !== session.user.id) {
+      return { success: false, error: 'Solo quien escribió el comentario puede borrarlo' }
     }
 
     await deleteComment(commentId)

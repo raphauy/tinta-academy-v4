@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { MaterialType } from '@prisma/client'
 import { deleteAsset } from '@/services/mux-service'
+import { isFreeCourse } from '@/services/lesson-access-service'
 
 // ============================================
 // QUERIES
@@ -113,7 +114,7 @@ export async function createLesson(data: CreateLessonInput) {
     if (courseModule) {
       const isFirstModule = courseModule.course.modules[0]?.id === data.moduleId
       const hasNoLessons = courseModule.course.modules[0]?.lessons.length === 0
-      const isPaidCourse = courseModule.course.priceUSD > 0
+      const isPaidCourse = !isFreeCourse(courseModule.course)
 
       if (isFirstModule && hasNoLessons && isPaidCourse) {
         isFree = true

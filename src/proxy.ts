@@ -88,11 +88,9 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Learn routes - student, educator, and superadmin can access (course player / preview)
+  // Learn routes - cualquier usuario con sesión, también visitantes sin rol que prueban
+  // lecciones gratis: la página y sus acciones controlan el acceso a cada lección
   if (pathname.startsWith('/learn')) {
-    if (user.role !== 'student' && user.role !== 'educator' && user.role !== 'superadmin') {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
     return NextResponse.next()
   }
 
