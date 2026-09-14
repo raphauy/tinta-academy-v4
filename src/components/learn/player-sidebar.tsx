@@ -76,7 +76,7 @@ export function PlayerSidebar({
     if (saved) {
       const parsed = new Set(JSON.parse(saved) as string[])
       if (currentModuleId) parsed.add(currentModuleId)
-      setExpandedModules(parsed)
+      setExpandedModules(parsed) // eslint-disable-line react-hooks/set-state-in-effect -- Standard hydration pattern (restore from sessionStorage)
     }
     setHydrated(true)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps -- only on mount

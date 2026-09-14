@@ -138,8 +138,10 @@ export default function LessonEditor({ courseId, lesson, onSaved, className }: L
   const [materialUrl, setMaterialUrl] = useState('')
   const [materialType, setMaterialType] = useState('document')
 
-  // Reset form state when lesson changes
-  useEffect(() => {
+  // Reset form state when lesson changes (adjusted during render instead of in an effect)
+  const [formLessonId, setFormLessonId] = useState<string | null>(null)
+  if ((lesson?.id ?? null) !== formLessonId) {
+    setFormLessonId(lesson?.id ?? null)
     if (lesson) {
       setTitle(lesson.title)
       setSlug(lesson.slug)
@@ -150,15 +152,23 @@ export default function LessonEditor({ courseId, lesson, onSaved, className }: L
       setMaterialUrl('')
       setMaterialType('document')
     }
-  }, [lesson?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }
 
-  // Handle video state — runs when lesson changes OR videoStatus changes
+  // Reset video state when lesson or its videoStatus changes
+  const videoStateKey = lesson ? `${lesson.id}:${lesson.videoStatus}` : null
+  const [resetVideoStateKey, setResetVideoStateKey] = useState<string | null>(null)
+  if (videoStateKey !== resetVideoStateKey) {
+    setResetVideoStateKey(videoStateKey)
+    if (lesson) {
+      setUploadUrl(null)
+      setPlaybackToken(null)
+      setTokenForPlaybackId(null)
+    }
+  }
+
+  // Load video data — runs when lesson changes OR videoStatus changes
   useEffect(() => {
     if (!lesson) return
-
-    setUploadUrl(null)
-    setPlaybackToken(null)
-    setTokenForPlaybackId(null)
 
     if (lesson.videoStatus === 'ready' && lesson.muxPlaybackId) {
       const pid = lesson.muxPlaybackId

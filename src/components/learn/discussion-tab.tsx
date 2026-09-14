@@ -207,12 +207,13 @@ export function DiscussionTab({ lessonId, currentUserId }: DiscussionTabProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
 
-  const loadComments = useCallback(async () => {
-    const result = await getCommentsAction(lessonId)
-    if (result.success && result.data) {
-      setComments(result.data.comments)
-    }
-    setLoading(false)
+  const loadComments = useCallback(() => {
+    return getCommentsAction(lessonId).then((result) => {
+      if (result.success && result.data) {
+        setComments(result.data.comments)
+      }
+      setLoading(false)
+    })
   }, [lessonId])
 
   useEffect(() => {

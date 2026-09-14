@@ -93,7 +93,7 @@ export async function createLesson(data: CreateLessonInput) {
   // Auto-mark first lesson of first module as free for paid courses
   let isFree = data.isFree ?? false
   if (!isFree) {
-    const module = await prisma.courseModule.findUnique({
+    const courseModule = await prisma.courseModule.findUnique({
       where: { id: data.moduleId },
       include: {
         course: {
@@ -110,10 +110,10 @@ export async function createLesson(data: CreateLessonInput) {
       },
     })
 
-    if (module) {
-      const isFirstModule = module.course.modules[0]?.id === data.moduleId
-      const hasNoLessons = module.course.modules[0]?.lessons.length === 0
-      const isPaidCourse = module.course.priceUSD > 0
+    if (courseModule) {
+      const isFirstModule = courseModule.course.modules[0]?.id === data.moduleId
+      const hasNoLessons = courseModule.course.modules[0]?.lessons.length === 0
+      const isPaidCourse = courseModule.course.priceUSD > 0
 
       if (isFirstModule && hasNoLessons && isPaidCourse) {
         isFree = true

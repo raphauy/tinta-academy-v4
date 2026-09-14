@@ -110,14 +110,17 @@ export function CoursePlayer({
   const [completedIds, setCompletedIds] = useState<Set<string>>(
     () => new Set(initialCompletedIds)
   )
+
+  // Sync completedIds when server data changes (navigation)
+  const [syncedCompletedIds, setSyncedCompletedIds] = useState(initialCompletedIds)
+  if (syncedCompletedIds !== initialCompletedIds) {
+    setSyncedCompletedIds(initialCompletedIds)
+    setCompletedIds(new Set(initialCompletedIds))
+  }
+
   const isCurrentLessonCompleted = completedIds.has(currentLesson.id)
   const completedLessons = completedIds.size
   const lastSavedTimeRef = useRef(0)
-
-  // Sync completedIds when server data changes (navigation)
-  useEffect(() => {
-    setCompletedIds(new Set(initialCompletedIds))
-  }, [initialCompletedIds])
 
   // Handle video time update — debounced save every 15 seconds
   const handleTimeUpdate = useCallback(
@@ -184,6 +187,15 @@ export function CoursePlayer({
   const nextLesson =
     currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null
 
+  // Reset playback token when the lesson video changes
+  const playbackStateKey = `${currentLesson.id}:${currentLesson.videoStatus}:${currentLesson.muxPlaybackId}`
+  const [resetPlaybackStateKey, setResetPlaybackStateKey] = useState(playbackStateKey)
+  if (playbackStateKey !== resetPlaybackStateKey) {
+    setResetPlaybackStateKey(playbackStateKey)
+    setPlaybackToken(null)
+    setTokenForPlaybackId(null)
+  }
+
   // Fetch playback token when lesson has a video ready
   useEffect(() => {
     if (
@@ -191,18 +203,12 @@ export function CoursePlayer({
       currentLesson.muxPlaybackId
     ) {
       const playbackId = currentLesson.muxPlaybackId
-      setPlaybackToken(null)
-      setTokenForPlaybackId(null)
-
       getPlaybackTokenAction(playbackId).then((result) => {
         if (result.success && result.data) {
           setPlaybackToken(result.data.token)
           setTokenForPlaybackId(playbackId)
         }
       })
-    } else {
-      setPlaybackToken(null)
-      setTokenForPlaybackId(null)
     }
   }, [currentLesson.id, currentLesson.videoStatus, currentLesson.muxPlaybackId])
 
