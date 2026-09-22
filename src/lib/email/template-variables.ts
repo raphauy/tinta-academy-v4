@@ -1,7 +1,7 @@
-import { addDays, addMinutes, format } from 'date-fns'
+import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
-import { fromZonedTime } from 'date-fns-tz'
 import { findClassOnDate } from '@/lib/course-modality'
+import { getClassEnd } from '@/lib/course-schedule'
 
 // Available variables with metadata for UI display
 export const AVAILABLE_VARIABLES = [
@@ -160,9 +160,6 @@ export function usesCourseVariables(template: string): boolean {
   return COURSE_VARIABLE_KEYS.some((key) => template.includes(`{{${key}}}`))
 }
 
-/** Zona horaria en la que se cargan las horas de inicio de las clases. */
-const CLASS_TIMEZONE = 'America/Montevideo'
-
 type CourseLocationInput = {
   location: string | null
   address: string | null
@@ -174,24 +171,6 @@ type CourseAccessInput = {
   startTime: string | null
   classDuration: number | null
   virtualClasses: ReadonlyArray<{ date: Date; streamingUrl: string | null }>
-}
-
-/**
- * Momento en que termina una clase: la hora de inicio del curso más la duración
- * de clase. Sin hora de inicio, la clase dura todo el día.
- */
-function getClassEnd(
-  date: Date,
-  startTime: string | null,
-  classDuration: number | null
-): Date {
-  // Una fecha de clase es un día calendario: se lee en UTC, como en toLocalDate
-  const dayStart = fromZonedTime(`${date.toISOString().slice(0, 10)}T00:00:00`, CLASS_TIMEZONE)
-  const [hours, minutes] = (startTime ?? '').split(':').map(Number)
-  if (!startTime || Number.isNaN(hours) || Number.isNaN(minutes)) {
-    return addDays(dayStart, 1)
-  }
-  return addMinutes(dayStart, hours * 60 + minutes + (classDuration ?? 0))
 }
 
 /**

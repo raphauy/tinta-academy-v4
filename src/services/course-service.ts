@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { Prisma, CourseModality, CourseType, CourseStatus } from '@prisma/client'
 import { keepClassesOnDates } from '@/lib/course-modality'
+import { getClassStart } from '@/lib/course-schedule'
 
 interface CourseFilters {
   modality?: string
@@ -138,14 +139,20 @@ export async function getCourses(filters: CourseFilters = {}) {
   })
 
   const now = new Date()
-  const upcomingCourses = courses.filter(course => 
-    course.status === 'available' || 
-    (course.startDate && course.startDate > now)
+
+  // startDate guarda solo el día: un curso con fecha sigue en próximos hasta la
+  // hora en que arranca, así se puede inscribir hasta el momento del curso.
+  const hasStarted = (course: (typeof courses)[number]) =>
+    course.startDate !== null && getClassStart(course.startDate, course.startTime) <= now
+
+  const upcomingCourses = courses.filter(
+    course => course.status === 'available' || (course.startDate !== null && !hasStarted(course))
   )
-  
-  const pastCourses = courses.filter(course => 
-    course.status === 'finished' || 
-    (course.startDate && course.startDate <= now && course.status !== 'available')
+
+  const pastCourses = courses.filter(
+    course =>
+      course.status === 'finished' ||
+      (hasStarted(course) && course.status !== 'available')
   )
 
   return {

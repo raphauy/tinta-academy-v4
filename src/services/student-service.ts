@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import type { Prisma } from '@prisma/client'
+import { getClassStart } from '@/lib/course-schedule'
 
 /**
  * Estudiantes que efectivamente compraron. El Student existe desde que se crea
@@ -118,18 +119,34 @@ export async function getStudentDashboardMetrics(
   })
 
   /**
-   * Get the most relevant date for a course based on its type:
-   * - WSET: first classDate > examDate > startDate
-   * - Taller/Cata/Curso: first classDate > startDate
+   * Fecha más relevante del curso y la hora que le corresponde:
+   * - WSET: primera clase > examen > inicio
+   * - Taller/Cata/Curso: primera clase > inicio
    */
-  function getEffectiveDate(course: (typeof enrollments)[0]['course']): Date | null {
+  function getEffectiveSchedule(
+    course: (typeof enrollments)[0]['course']
+  ): { date: Date; time: string | null } | null {
     const firstClassDate = course.classDates?.[0] ?? null
+    if (firstClassDate) return { date: firstClassDate, time: course.startTime }
 
-    if (course.type === 'wset') {
-      return firstClassDate ?? course.examDate ?? course.startDate
+    if (course.type === 'wset' && course.examDate) {
+      return { date: course.examDate, time: course.examTime }
     }
 
-    return firstClassDate ?? course.startDate
+    return course.startDate ? { date: course.startDate, time: course.startTime } : null
+  }
+
+  function getEffectiveDate(course: (typeof enrollments)[0]['course']): Date | null {
+    return getEffectiveSchedule(course)?.date ?? null
+  }
+
+  /**
+   * Momento en que arranca lo que viene: las fechas guardan solo el día, así que
+   * un curso de hoy más tarde sigue contando como próximo hasta que empieza.
+   */
+  function getEffectiveStart(course: (typeof enrollments)[0]['course']): Date | null {
+    const schedule = getEffectiveSchedule(course)
+    return schedule ? getClassStart(schedule.date, schedule.time) : null
   }
 
   // Calculate metrics
@@ -146,10 +163,10 @@ export async function getStudentDashboardMetrics(
     (e) => e.course.status === 'finished'
   ).length
 
-  // Upcoming courses: effectiveDate > now
+  // Upcoming courses: todavía no arrancaron
   const upcomingEnrollments = enrollments.filter((e) => {
-    const effectiveDate = getEffectiveDate(e.course)
-    return effectiveDate && effectiveDate > now
+    const start = getEffectiveStart(e.course)
+    return start !== null && start > now
   })
 
   const upcomingCoursesCount = upcomingEnrollments.length
@@ -178,11 +195,11 @@ export async function getStudentDashboardMetrics(
     tags: enrollment.course.tags.map((t) => ({ id: t.id, name: t.name })),
   })
 
-  // Upcoming courses sorted by effectiveDate (ascending - soonest first)
+  // Upcoming courses sorted by start (ascending - soonest first)
   const upcomingCourses = upcomingEnrollments
     .sort((a, b) => {
-      const dateA = getEffectiveDate(a.course)
-      const dateB = getEffectiveDate(b.course)
+      const dateA = getEffectiveStart(a.course)
+      const dateB = getEffectiveStart(b.course)
       if (!dateA && !dateB) return 0
       if (!dateA) return 1
       if (!dateB) return -1
@@ -191,11 +208,11 @@ export async function getStudentDashboardMetrics(
     .slice(0, 3)
     .map(mapToQuickAccess)
 
-  // Recent courses: sorted by effectiveDate desc (most recent/upcoming first)
+  // Recent courses: sorted by start desc (most recent/upcoming first)
   const recentCourses = [...enrollments]
     .sort((a, b) => {
-      const dateA = getEffectiveDate(a.course)
-      const dateB = getEffectiveDate(b.course)
+      const dateA = getEffectiveStart(a.course)
+      const dateB = getEffectiveStart(b.course)
       if (!dateA && !dateB) return 0
       if (!dateA) return 1
       if (!dateB) return -1

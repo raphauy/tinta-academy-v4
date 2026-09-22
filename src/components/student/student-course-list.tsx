@@ -7,6 +7,7 @@ import { BookOpen, GraduationCap, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { StudentCourseCard } from './student-course-card'
 import type { getStudentEnrollments } from '@/services/enrollment-service'
+import { getClassStart } from '@/lib/course-schedule'
 
 type EnrollmentWithCourse = Awaited<ReturnType<typeof getStudentEnrollments>>[number]
 
@@ -35,7 +36,8 @@ function getCourseStatus(course: EnrollmentWithCourse['course']): 'in_progress' 
     return 'completed'
   }
 
-  if (startDate && new Date(startDate) > now) {
+  // startDate guarda solo el día: el curso arranca a la hora de startTime
+  if (startDate && getClassStart(startDate, course.startTime) > now) {
     return 'upcoming'
   }
 

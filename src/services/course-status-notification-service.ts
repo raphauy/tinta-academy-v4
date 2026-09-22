@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { CourseStatus } from '@prisma/client'
 import { startOfDay } from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
+import { getClassStart } from '@/lib/course-schedule'
 import { sendEducatorStatusReminderEmail } from './email-service'
 
 const TIMEZONE = 'America/Montevideo'
@@ -29,6 +30,7 @@ interface CourseStatusSuggestion {
 function analyzeCourseStatus(course: {
   status: CourseStatus
   startDate: Date | null
+  startTime: string | null
   endDate: Date | null
   enrolledCount: number
   maxCapacity: number | null
@@ -49,12 +51,13 @@ function analyzeCourseStatus(course: {
   }
 
   // Check: Course has started (enrolling/full -> in_progress)
+  // Espera a la hora de inicio: marcarlo en curso antes cierra la inscripción,
+  // que sigue abierta hasta el momento del curso.
   if (
     (course.status === 'enrolling' || course.status === 'full') &&
     course.startDate !== null
   ) {
-    const startDate = startOfDay(toZonedTime(course.startDate, TIMEZONE))
-    if (startDate <= today) {
+    if (getClassStart(course.startDate, course.startTime) <= new Date()) {
       const formattedDate = course.startDate.toLocaleDateString('es-UY', {
         day: 'numeric',
         month: 'short',
@@ -124,6 +127,7 @@ export async function getCoursesPendingStatusChange(): Promise<
     const suggestion = analyzeCourseStatus({
       status: course.status,
       startDate: course.startDate,
+      startTime: course.startTime,
       endDate: course.endDate,
       enrolledCount: course.enrolledCount,
       maxCapacity: course.maxCapacity,

@@ -32,6 +32,9 @@ import {
 // VALIDATION SCHEMAS
 // ============================================
 
+/** Hora del día en formato "HH:mm", como la emite un <input type="time">. */
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/
+
 const createCourseSchema = z.object({
   title: z.string().min(3, 'El título debe tener al menos 3 caracteres'),
   slug: z
@@ -51,10 +54,10 @@ const createCourseSchema = z.object({
   classDates: z.array(z.coerce.date()).optional(),
   // Clases virtuales del semipresencial, cada una con su link
   virtualClasses: z.array(virtualClassSchema).optional(),
-  startTime: z.string().optional(),
+  startTime: z.string().regex(HHMM).optional(),
   classDuration: z.coerce.number().int().positive().optional(),
   examDate: z.coerce.date().optional(),
-  examTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  examTime: z.string().regex(HHMM).optional(),
   registrationDeadline: z.coerce.date().optional(),
   // Other fields
   maxCapacity: z.coerce.number().int().positive().optional(),

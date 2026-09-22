@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import { toLocalDate } from '@/lib/utils'
 import type { getStudentEnrollments } from '@/services/enrollment-service'
 import type { MaterialType } from '@prisma/client'
+import { getClassStart } from '@/lib/course-schedule'
 
 type EnrollmentWithCourse = Awaited<ReturnType<typeof getStudentEnrollments>>[number]
 
@@ -78,7 +79,8 @@ function getStatusBadge(course: EnrollmentWithCourse['course']): { label: string
     return { label: 'Completado', className: 'bg-green-100 text-green-800 border-green-200' }
   }
 
-  if (startDate && new Date(startDate) > now) {
+  // startDate guarda solo el día: el curso arranca a la hora de startTime
+  if (startDate && getClassStart(startDate, course.startTime) > now) {
     return { label: 'Próximamente', className: 'bg-blue-100 text-blue-800 border-blue-200' }
   }
 

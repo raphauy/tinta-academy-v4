@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Role } from '@prisma/client'
+import { getClassStart } from '@/lib/course-schedule'
 
 /**
  * Get educator by user ID with user relation
@@ -103,6 +104,7 @@ export async function getEducatorDashboardMetrics(
       priceUYU: true,
       duration: true,
       startDate: true,
+      startTime: true,
       enrolledCount: true,
       maxCapacity: true,
       enrollments: {
@@ -190,17 +192,25 @@ export async function getEducatorDashboardMetrics(
     averageProgress: course.status === 'finished' ? 100 : course.status === 'in_progress' ? 50 : 0,
   }))
 
-  // Get upcoming courses (startDate > now AND status in announced/enrolling)
+  // Get upcoming courses (todavía no arrancaron AND status in announced/enrolling)
+  // startDate guarda solo el día: la hora de arranque vive en startTime
+  const startsAt = (c: (typeof courses)[number]) =>
+    c.startDate ? getClassStart(c.startDate, c.startTime) : null
+
   const upcomingCourses = courses
-    .filter(
-      (c) =>
-        c.startDate &&
-        c.startDate > now &&
+    .filter((c) => {
+      const start = startsAt(c)
+      return (
+        start !== null &&
+        start > now &&
         (c.status === 'announced' || c.status === 'enrolling')
-    )
+      )
+    })
     .sort((a, b) => {
-      if (!a.startDate || !b.startDate) return 0
-      return a.startDate.getTime() - b.startDate.getTime()
+      const startA = startsAt(a)
+      const startB = startsAt(b)
+      if (!startA || !startB) return 0
+      return startA.getTime() - startB.getTime()
     })
     .map((c) => ({
       id: c.id,
