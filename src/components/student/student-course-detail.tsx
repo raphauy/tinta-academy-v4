@@ -417,13 +417,13 @@ export function StudentCourseDetail({
         </Card>
       )}
 
-      {/* Contenido grabado del semipresencial: lleva al reproductor de lecciones */}
+      {/* Contenido del curso del semipresencial: lleva al reproductor de lecciones */}
       {isSemipresencial && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <PlayCircle className="size-4 text-primary" />
-              Contenido grabado
+              Contenido del curso
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -431,18 +431,18 @@ export function StudentCourseDetail({
               <>
                 <p className="text-sm text-muted-foreground">
                   Además de las clases, el curso incluye {recordedLessonCount}{' '}
-                  {recordedLessonCount === 1 ? 'lección grabada' : 'lecciones grabadas'} para ver a tu ritmo.
+                  {recordedLessonCount === 1 ? 'lección' : 'lecciones'} para ver a tu ritmo.
                 </p>
                 <Button asChild className="w-full sm:w-auto">
                   <Link href={learnUrl}>
                     <PlayCircle className="size-4 mr-2" />
-                    Ver contenido grabado
+                    Ver contenido
                   </Link>
                 </Button>
               </>
             ) : (
               <p className="text-sm text-muted-foreground">
-                El contenido grabado estará disponible más adelante.
+                El contenido del curso estará disponible más adelante.
               </p>
             )}
           </CardContent>

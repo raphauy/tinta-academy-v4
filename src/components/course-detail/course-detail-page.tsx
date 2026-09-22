@@ -403,12 +403,7 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
             )}
 
             {/* Curriculum Card - contenido grabado (online y semipresencial) */}
-            {showRecordedContent && (
-              <CurriculumSection
-                modules={modules}
-                title={isSemipresencial ? 'Contenido grabado' : 'Contenido del curso'}
-              />
-            )}
+            {showRecordedContent && <CurriculumSection modules={modules} />}
 
             {/* Educator Card */}
             <Card>
@@ -646,10 +641,8 @@ function formatLessonDuration(seconds: number): string {
 
 function CurriculumSection({
   modules,
-  title,
 }: {
   modules: NonNullable<CourseWithRelations['modules']>
-  title: string
 }) {
   const totalLessons = modules.reduce((sum, m) => sum + m.lessons.length, 0)
   const totalSeconds = modules
@@ -676,7 +669,7 @@ function CurriculumSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle>Contenido del curso</CardTitle>
         <p className="text-sm text-muted-foreground">
           {modules.length} {modules.length === 1 ? 'módulo' : 'módulos'} · {totalLessons}{' '}
           {totalLessons === 1 ? 'lección' : 'lecciones'}
