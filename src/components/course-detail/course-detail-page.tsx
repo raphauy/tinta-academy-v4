@@ -187,8 +187,11 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
   const hasFreeLessons = modules.some((m) => m.lessons.some((l) => l.isFree))
 
   // Determine enrollment state
-  const enrollableStatuses = ['announced', 'enrolling', 'available']
+  // 'announced' is public but enrollment hasn't opened yet
+  const isAnnounced = course.status === 'announced'
+  const enrollableStatuses = ['enrolling', 'available']
   const isEnrollable = enrollableStatuses.includes(course.status)
+  const showEnrollmentBlock = isEnrollable || isAnnounced
   const isFull = course.maxCapacity ? course.enrolledCount >= course.maxCapacity : false
   // Compare with end of day so deadline day is fully included
   const isDeadlinePassed = course.registrationDeadline
@@ -547,7 +550,7 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
             )}
 
             {/* CTA Button */}
-            {isEnrollable && (
+            {showEnrollmentBlock && (
               <>
                 {isEnrolled ? (
                   course.modality === 'online' ? (
@@ -565,6 +568,11 @@ export function CourseDetailPage({ course, isEnrolled = false }: CourseDetailPag
                       </Link>
                     </Button>
                   )
+                ) : isAnnounced ? (
+                  <Button disabled size="lg" className="w-full">
+                    <Clock className="w-4 h-4 mr-2" />
+                    Inscripciones próximamente
+                  </Button>
                 ) : canEnroll ? (
                   <Button asChild size="lg" className="w-full">
                     <Link href={`/checkout/${course.id}`}>

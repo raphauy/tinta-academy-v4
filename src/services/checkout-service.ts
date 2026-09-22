@@ -26,6 +26,7 @@ import { formatAmount, toLocalDate } from '@/lib/utils'
 export type EnrollmentBlockReason =
   | 'already_enrolled'
   | 'course_full'
+  | 'enrollment_not_open'
   | 'course_closed'
   | 'deadline_passed'
 
@@ -283,7 +284,11 @@ export async function getCheckoutContext(
   }
 
   // Check if course is enrollable (status)
-  if (canEnroll && !['announced', 'enrolling', 'available'].includes(course.status)) {
+  // 'announced' is public but enrollment hasn't opened yet
+  if (canEnroll && course.status === 'announced') {
+    canEnroll = false
+    enrollmentBlockReason = 'enrollment_not_open'
+  } else if (canEnroll && !['enrolling', 'available'].includes(course.status)) {
     canEnroll = false
     enrollmentBlockReason = 'course_closed'
   }

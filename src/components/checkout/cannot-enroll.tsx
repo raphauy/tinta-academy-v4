@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { AlertCircle, Calendar, Users, Lock, CheckCircle } from 'lucide-react'
+import { AlertCircle, Calendar, Clock, Users, Lock, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -43,6 +43,14 @@ const blockReasonConfig: Record<
       'Este curso ha alcanzado su capacidad máxima. Te recomendamos inscribirte en la lista de espera o explorar otros cursos disponibles.',
     iconColor: 'text-amber-600',
     bgColor: 'bg-amber-50',
+  },
+  enrollment_not_open: {
+    icon: Clock,
+    title: 'Inscripciones próximamente',
+    description:
+      'Este curso todavía no tiene las inscripciones abiertas. Suscribite a nuestras novedades para enterarte cuando abran.',
+    iconColor: 'text-purple-600',
+    bgColor: 'bg-purple-50',
   },
   course_closed: {
     icon: Lock,
